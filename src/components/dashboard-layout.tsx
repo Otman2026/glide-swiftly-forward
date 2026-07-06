@@ -77,6 +77,37 @@ const NAV: NavGroup[] = [
 
 export function DashboardLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+  const [me, setMe] = useState<{ full_name: string | null; tenant_name: string | null }>({
+    full_name: null,
+    tenant_name: null,
+  });
+
+  useEffect(() => {
+    (async () => {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name, tenant_id")
+        .maybeSingle();
+      let tenant_name: string | null = null;
+      if (profile?.tenant_id) {
+        const { data: t } = await supabase
+          .from("tenants")
+          .select("name")
+          .eq("id", profile.tenant_id)
+          .maybeSingle();
+        tenant_name = t?.name ?? null;
+      }
+      setMe({ full_name: profile?.full_name ?? null, tenant_name });
+    })();
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    toast.success("تم تسجيل الخروج");
+    navigate({ to: "/auth" });
+  };
+
 
   return (
     <div className="flex min-h-screen bg-secondary/40" dir="rtl">
