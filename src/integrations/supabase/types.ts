@@ -14,16 +14,505 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      audit_log: {
+        Row: {
+          action: string
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          id: string
+          ip_address: string | null
+          new_data: Json | null
+          old_data: Json | null
+          tenant_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          ip_address?: string | null
+          new_data?: Json | null
+          old_data?: Json | null
+          tenant_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          ip_address?: string | null
+          new_data?: Json | null
+          old_data?: Json | null
+          tenant_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_log_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contracts: {
+        Row: {
+          contract_number: string
+          created_at: string
+          created_by: string | null
+          currency: string | null
+          customer_id: string
+          description: string | null
+          end_date: string | null
+          id: string
+          start_date: string | null
+          status: Database["public"]["Enums"]["contract_status"]
+          tenant_id: string
+          title: string
+          updated_at: string
+          value: number | null
+        }
+        Insert: {
+          contract_number: string
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          customer_id: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["contract_status"]
+          tenant_id: string
+          title: string
+          updated_at?: string
+          value?: number | null
+        }
+        Update: {
+          contract_number?: string
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          customer_id?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["contract_status"]
+          tenant_id?: string
+          title?: string
+          updated_at?: string
+          value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contracts_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customers: {
+        Row: {
+          address: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          tax_id: string | null
+          tenant_id: string
+          type: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          tax_id?: string | null
+          tenant_id: string
+          type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          tax_id?: string | null
+          tenant_id?: string
+          type?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customers_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      drivers: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string
+          hire_date: string | null
+          id: string
+          license_expiry: string | null
+          license_number: string | null
+          national_id: string | null
+          notes: string | null
+          phone: string | null
+          status: Database["public"]["Enums"]["driver_status"]
+          tenant_id: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name: string
+          hire_date?: string | null
+          id?: string
+          license_expiry?: string | null
+          license_number?: string | null
+          national_id?: string | null
+          notes?: string | null
+          phone?: string | null
+          status?: Database["public"]["Enums"]["driver_status"]
+          tenant_id: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          hire_date?: string | null
+          id?: string
+          license_expiry?: string | null
+          license_number?: string | null
+          national_id?: string | null
+          notes?: string | null
+          phone?: string | null
+          status?: Database["public"]["Enums"]["driver_status"]
+          tenant_id?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drivers_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          phone: string | null
+          tenant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscriptions: {
+        Row: {
+          created_at: string
+          ends_at: string | null
+          id: string
+          max_users: number | null
+          max_vehicles: number | null
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          price_monthly: number | null
+          starts_at: string
+          status: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          max_users?: number | null
+          max_vehicles?: number | null
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          price_monthly?: number | null
+          starts_at?: string
+          status?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          max_users?: number | null
+          max_vehicles?: number | null
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          price_monthly?: number | null
+          starts_at?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenants: {
+        Row: {
+          address: string | null
+          city: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          country: string | null
+          created_at: string
+          id: string
+          logo_url: string | null
+          name: string
+          slug: string
+          status: Database["public"]["Enums"]["tenant_status"]
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          country?: string | null
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name: string
+          slug: string
+          status?: Database["public"]["Enums"]["tenant_status"]
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          country?: string | null
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name?: string
+          slug?: string
+          status?: Database["public"]["Enums"]["tenant_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          tenant_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          tenant_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          tenant_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vehicles: {
+        Row: {
+          brand: string | null
+          capacity_tons: number | null
+          created_at: string
+          id: string
+          inspection_expiry: string | null
+          insurance_expiry: string | null
+          model: string | null
+          notes: string | null
+          plate_number: string
+          status: Database["public"]["Enums"]["vehicle_status"]
+          tenant_id: string
+          type: string | null
+          updated_at: string
+          vin: string | null
+          year: number | null
+        }
+        Insert: {
+          brand?: string | null
+          capacity_tons?: number | null
+          created_at?: string
+          id?: string
+          inspection_expiry?: string | null
+          insurance_expiry?: string | null
+          model?: string | null
+          notes?: string | null
+          plate_number: string
+          status?: Database["public"]["Enums"]["vehicle_status"]
+          tenant_id: string
+          type?: string | null
+          updated_at?: string
+          vin?: string | null
+          year?: number | null
+        }
+        Update: {
+          brand?: string | null
+          capacity_tons?: number | null
+          created_at?: string
+          id?: string
+          inspection_expiry?: string | null
+          insurance_expiry?: string | null
+          model?: string | null
+          notes?: string | null
+          plate_number?: string
+          status?: Database["public"]["Enums"]["vehicle_status"]
+          tenant_id?: string
+          type?: string | null
+          updated_at?: string
+          vin?: string | null
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_tenant: { Args: { _user_id: string }; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      has_tenant_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _tenant_id: string
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_system_owner: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role:
+        | "system_owner"
+        | "company_admin"
+        | "ops_manager"
+        | "fleet_manager"
+        | "maintenance"
+        | "accountant"
+        | "receptionist"
+        | "driver"
+      contract_status: "draft" | "active" | "expired" | "cancelled"
+      driver_status: "active" | "on_leave" | "inactive"
+      subscription_plan: "trial" | "starter" | "professional" | "enterprise"
+      tenant_status: "trial" | "active" | "suspended" | "cancelled"
+      vehicle_status: "available" | "in_use" | "maintenance" | "out_of_service"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +639,22 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: [
+        "system_owner",
+        "company_admin",
+        "ops_manager",
+        "fleet_manager",
+        "maintenance",
+        "accountant",
+        "receptionist",
+        "driver",
+      ],
+      contract_status: ["draft", "active", "expired", "cancelled"],
+      driver_status: ["active", "on_leave", "inactive"],
+      subscription_plan: ["trial", "starter", "professional", "enterprise"],
+      tenant_status: ["trial", "active", "suspended", "cancelled"],
+      vehicle_status: ["available", "in_use", "maintenance", "out_of_service"],
+    },
   },
 } as const
