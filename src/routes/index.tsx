@@ -105,7 +105,7 @@ function Landing() {
                 <span>دعم فني عربي</span>
               </div>
             </div>
-          </diV>
+          </div>
 
           {/* Transport type badges */}
           <div className="mt-20 grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-8">
