@@ -1,4 +1,7 @@
-import { Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { Link, Outlet, useRouterState, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import {
   LayoutDashboard,
   Users,
@@ -74,6 +77,37 @@ const NAV: NavGroup[] = [
 
 export function DashboardLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+  const [me, setMe] = useState<{ full_name: string | null; tenant_name: string | null }>({
+    full_name: null,
+    tenant_name: null,
+  });
+
+  useEffect(() => {
+    (async () => {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name, tenant_id")
+        .maybeSingle();
+      let tenant_name: string | null = null;
+      if (profile?.tenant_id) {
+        const { data: t } = await supabase
+          .from("tenants")
+          .select("name")
+          .eq("id", profile.tenant_id)
+          .maybeSingle();
+        tenant_name = t?.name ?? null;
+      }
+      setMe({ full_name: profile?.full_name ?? null, tenant_name });
+    })();
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    toast.success("تم تسجيل الخروج");
+    navigate({ to: "/auth" });
+  };
+
 
   return (
     <div className="flex min-h-screen bg-secondary/40" dir="rtl">
@@ -125,19 +159,24 @@ export function DashboardLayout() {
         <div className="border-t border-sidebar-border p-4">
           <div className="flex items-center gap-3 rounded-lg bg-sidebar-accent/60 p-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-full gradient-accent text-sm font-bold text-white">
-              م
+              {(me.full_name ?? "?").charAt(0)}
             </div>
             <div className="flex-1 overflow-hidden">
-              <div className="truncate text-sm font-semibold">مدير الشركة</div>
+              <div className="truncate text-sm font-semibold">{me.full_name ?? "مستخدم"}</div>
               <div className="truncate text-[11px] text-sidebar-foreground/60">
-                شركة النقل التجريبية
+                {me.tenant_name ?? "لا توجد شركة"}
               </div>
             </div>
-            <button className="text-sidebar-foreground/60 hover:text-sidebar-foreground">
+            <button
+              onClick={handleSignOut}
+              title="تسجيل الخروج"
+              className="text-sidebar-foreground/60 hover:text-sidebar-foreground"
+            >
               <LogOut className="h-4 w-4" />
             </button>
           </div>
         </div>
+
       </aside>
 
       {/* Main */}
