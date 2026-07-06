@@ -12,12 +12,21 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppWarehousesRouteImport } from './routes/app.warehouses'
 import { Route as AppVehiclesRouteImport } from './routes/app.vehicles'
+import { Route as AppTripsRouteImport } from './routes/app.trips'
+import { Route as AppSystemOwnerRouteImport } from './routes/app.system-owner'
 import { Route as AppShipmentsRouteImport } from './routes/app.shipments'
 import { Route as AppOrdersRouteImport } from './routes/app.orders'
+import { Route as AppMaintenanceRouteImport } from './routes/app.maintenance'
+import { Route as AppKpiRouteImport } from './routes/app.kpi'
+import { Route as AppFuelRouteImport } from './routes/app.fuel'
+import { Route as AppFinanceRouteImport } from './routes/app.finance'
 import { Route as AppDriversRouteImport } from './routes/app.drivers'
+import { Route as AppDocumentsRouteImport } from './routes/app.documents'
 import { Route as AppCustomersRouteImport } from './routes/app.customers'
 import { Route as AppContractsRouteImport } from './routes/app.contracts'
+import { Route as AppAccidentsRouteImport } from './routes/app.accidents'
 
 const AppRoute = AppRouteImport.update({
   id: '/app',
@@ -34,9 +43,24 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppWarehousesRoute = AppWarehousesRouteImport.update({
+  id: '/warehouses',
+  path: '/warehouses',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppVehiclesRoute = AppVehiclesRouteImport.update({
   id: '/vehicles',
   path: '/vehicles',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTripsRoute = AppTripsRouteImport.update({
+  id: '/trips',
+  path: '/trips',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSystemOwnerRoute = AppSystemOwnerRouteImport.update({
+  id: '/system-owner',
+  path: '/system-owner',
   getParentRoute: () => AppRoute,
 } as any)
 const AppShipmentsRoute = AppShipmentsRouteImport.update({
@@ -49,9 +73,34 @@ const AppOrdersRoute = AppOrdersRouteImport.update({
   path: '/orders',
   getParentRoute: () => AppRoute,
 } as any)
+const AppMaintenanceRoute = AppMaintenanceRouteImport.update({
+  id: '/maintenance',
+  path: '/maintenance',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppKpiRoute = AppKpiRouteImport.update({
+  id: '/kpi',
+  path: '/kpi',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFuelRoute = AppFuelRouteImport.update({
+  id: '/fuel',
+  path: '/fuel',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFinanceRoute = AppFinanceRouteImport.update({
+  id: '/finance',
+  path: '/finance',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppDriversRoute = AppDriversRouteImport.update({
   id: '/drivers',
   path: '/drivers',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDocumentsRoute = AppDocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCustomersRoute = AppCustomersRouteImport.update({
@@ -64,38 +113,70 @@ const AppContractsRoute = AppContractsRouteImport.update({
   path: '/contracts',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAccidentsRoute = AppAccidentsRouteImport.update({
+  id: '/accidents',
+  path: '/accidents',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/app/accidents': typeof AppAccidentsRoute
   '/app/contracts': typeof AppContractsRoute
   '/app/customers': typeof AppCustomersRoute
+  '/app/documents': typeof AppDocumentsRoute
   '/app/drivers': typeof AppDriversRoute
+  '/app/finance': typeof AppFinanceRoute
+  '/app/fuel': typeof AppFuelRoute
+  '/app/kpi': typeof AppKpiRoute
+  '/app/maintenance': typeof AppMaintenanceRoute
   '/app/orders': typeof AppOrdersRoute
   '/app/shipments': typeof AppShipmentsRoute
+  '/app/system-owner': typeof AppSystemOwnerRoute
+  '/app/trips': typeof AppTripsRoute
   '/app/vehicles': typeof AppVehiclesRoute
+  '/app/warehouses': typeof AppWarehousesRoute
   '/app/': typeof AppIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/app/accidents': typeof AppAccidentsRoute
   '/app/contracts': typeof AppContractsRoute
   '/app/customers': typeof AppCustomersRoute
+  '/app/documents': typeof AppDocumentsRoute
   '/app/drivers': typeof AppDriversRoute
+  '/app/finance': typeof AppFinanceRoute
+  '/app/fuel': typeof AppFuelRoute
+  '/app/kpi': typeof AppKpiRoute
+  '/app/maintenance': typeof AppMaintenanceRoute
   '/app/orders': typeof AppOrdersRoute
   '/app/shipments': typeof AppShipmentsRoute
+  '/app/system-owner': typeof AppSystemOwnerRoute
+  '/app/trips': typeof AppTripsRoute
   '/app/vehicles': typeof AppVehiclesRoute
+  '/app/warehouses': typeof AppWarehousesRoute
   '/app': typeof AppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/app/accidents': typeof AppAccidentsRoute
   '/app/contracts': typeof AppContractsRoute
   '/app/customers': typeof AppCustomersRoute
+  '/app/documents': typeof AppDocumentsRoute
   '/app/drivers': typeof AppDriversRoute
+  '/app/finance': typeof AppFinanceRoute
+  '/app/fuel': typeof AppFuelRoute
+  '/app/kpi': typeof AppKpiRoute
+  '/app/maintenance': typeof AppMaintenanceRoute
   '/app/orders': typeof AppOrdersRoute
   '/app/shipments': typeof AppShipmentsRoute
+  '/app/system-owner': typeof AppSystemOwnerRoute
+  '/app/trips': typeof AppTripsRoute
   '/app/vehicles': typeof AppVehiclesRoute
+  '/app/warehouses': typeof AppWarehousesRoute
   '/app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
@@ -103,33 +184,60 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/app'
+    | '/app/accidents'
     | '/app/contracts'
     | '/app/customers'
+    | '/app/documents'
     | '/app/drivers'
+    | '/app/finance'
+    | '/app/fuel'
+    | '/app/kpi'
+    | '/app/maintenance'
     | '/app/orders'
     | '/app/shipments'
+    | '/app/system-owner'
+    | '/app/trips'
     | '/app/vehicles'
+    | '/app/warehouses'
     | '/app/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/app/accidents'
     | '/app/contracts'
     | '/app/customers'
+    | '/app/documents'
     | '/app/drivers'
+    | '/app/finance'
+    | '/app/fuel'
+    | '/app/kpi'
+    | '/app/maintenance'
     | '/app/orders'
     | '/app/shipments'
+    | '/app/system-owner'
+    | '/app/trips'
     | '/app/vehicles'
+    | '/app/warehouses'
     | '/app'
   id:
     | '__root__'
     | '/'
     | '/app'
+    | '/app/accidents'
     | '/app/contracts'
     | '/app/customers'
+    | '/app/documents'
     | '/app/drivers'
+    | '/app/finance'
+    | '/app/fuel'
+    | '/app/kpi'
+    | '/app/maintenance'
     | '/app/orders'
     | '/app/shipments'
+    | '/app/system-owner'
+    | '/app/trips'
     | '/app/vehicles'
+    | '/app/warehouses'
     | '/app/'
   fileRoutesById: FileRoutesById
 }
@@ -161,11 +269,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/warehouses': {
+      id: '/app/warehouses'
+      path: '/warehouses'
+      fullPath: '/app/warehouses'
+      preLoaderRoute: typeof AppWarehousesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/vehicles': {
       id: '/app/vehicles'
       path: '/vehicles'
       fullPath: '/app/vehicles'
       preLoaderRoute: typeof AppVehiclesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/trips': {
+      id: '/app/trips'
+      path: '/trips'
+      fullPath: '/app/trips'
+      preLoaderRoute: typeof AppTripsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/system-owner': {
+      id: '/app/system-owner'
+      path: '/system-owner'
+      fullPath: '/app/system-owner'
+      preLoaderRoute: typeof AppSystemOwnerRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/shipments': {
@@ -182,11 +311,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppOrdersRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/maintenance': {
+      id: '/app/maintenance'
+      path: '/maintenance'
+      fullPath: '/app/maintenance'
+      preLoaderRoute: typeof AppMaintenanceRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/kpi': {
+      id: '/app/kpi'
+      path: '/kpi'
+      fullPath: '/app/kpi'
+      preLoaderRoute: typeof AppKpiRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/fuel': {
+      id: '/app/fuel'
+      path: '/fuel'
+      fullPath: '/app/fuel'
+      preLoaderRoute: typeof AppFuelRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/finance': {
+      id: '/app/finance'
+      path: '/finance'
+      fullPath: '/app/finance'
+      preLoaderRoute: typeof AppFinanceRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/drivers': {
       id: '/app/drivers'
       path: '/drivers'
       fullPath: '/app/drivers'
       preLoaderRoute: typeof AppDriversRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/documents': {
+      id: '/app/documents'
+      path: '/documents'
+      fullPath: '/app/documents'
+      preLoaderRoute: typeof AppDocumentsRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/customers': {
@@ -203,26 +367,51 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppContractsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/accidents': {
+      id: '/app/accidents'
+      path: '/accidents'
+      fullPath: '/app/accidents'
+      preLoaderRoute: typeof AppAccidentsRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
+  AppAccidentsRoute: typeof AppAccidentsRoute
   AppContractsRoute: typeof AppContractsRoute
   AppCustomersRoute: typeof AppCustomersRoute
+  AppDocumentsRoute: typeof AppDocumentsRoute
   AppDriversRoute: typeof AppDriversRoute
+  AppFinanceRoute: typeof AppFinanceRoute
+  AppFuelRoute: typeof AppFuelRoute
+  AppKpiRoute: typeof AppKpiRoute
+  AppMaintenanceRoute: typeof AppMaintenanceRoute
   AppOrdersRoute: typeof AppOrdersRoute
   AppShipmentsRoute: typeof AppShipmentsRoute
+  AppSystemOwnerRoute: typeof AppSystemOwnerRoute
+  AppTripsRoute: typeof AppTripsRoute
   AppVehiclesRoute: typeof AppVehiclesRoute
+  AppWarehousesRoute: typeof AppWarehousesRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAccidentsRoute: AppAccidentsRoute,
   AppContractsRoute: AppContractsRoute,
   AppCustomersRoute: AppCustomersRoute,
+  AppDocumentsRoute: AppDocumentsRoute,
   AppDriversRoute: AppDriversRoute,
+  AppFinanceRoute: AppFinanceRoute,
+  AppFuelRoute: AppFuelRoute,
+  AppKpiRoute: AppKpiRoute,
+  AppMaintenanceRoute: AppMaintenanceRoute,
   AppOrdersRoute: AppOrdersRoute,
   AppShipmentsRoute: AppShipmentsRoute,
+  AppSystemOwnerRoute: AppSystemOwnerRoute,
+  AppTripsRoute: AppTripsRoute,
   AppVehiclesRoute: AppVehiclesRoute,
+  AppWarehousesRoute: AppWarehousesRoute,
   AppIndexRoute: AppIndexRoute,
 }
 
