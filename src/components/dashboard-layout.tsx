@@ -1,0 +1,217 @@
+import { Link, Outlet, useRouterState } from "@tanstack/react-router";
+import {
+  LayoutDashboard,
+  Users,
+  FileText,
+  ClipboardList,
+  Package,
+  Truck,
+  UserCog,
+  Route as RouteIcon,
+  Fuel,
+  Wrench,
+  AlertTriangle,
+  Warehouse,
+  FolderArchive,
+  Wallet,
+  BarChart3,
+  Crown,
+  LogOut,
+  Search,
+  Bell,
+  type LucideIcon,
+} from "lucide-react";
+
+type NavItem = { to: string; label: string; icon: LucideIcon };
+type NavGroup = { title: string; items: NavItem[] };
+
+const NAV: NavGroup[] = [
+  {
+    title: "لوحة القيادة",
+    items: [
+      { to: "/app", label: "الرئيسية", icon: LayoutDashboard },
+      { to: "/app/kpi", label: "مؤشرات KPI", icon: BarChart3 },
+    ],
+  },
+  {
+    title: "CRM",
+    items: [
+      { to: "/app/customers", label: "العملاء", icon: Users },
+      { to: "/app/contracts", label: "العقود", icon: FileText },
+    ],
+  },
+  {
+    title: "TMS — النقل",
+    items: [
+      { to: "/app/orders", label: "أوامر النقل", icon: ClipboardList },
+      { to: "/app/shipments", label: "الشحنات", icon: Package },
+      { to: "/app/trips", label: "الرحلات", icon: RouteIcon },
+    ],
+  },
+  {
+    title: "FMS — الأسطول",
+    items: [
+      { to: "/app/vehicles", label: "المركبات", icon: Truck },
+      { to: "/app/drivers", label: "السائقون", icon: UserCog },
+      { to: "/app/fuel", label: "الوقود", icon: Fuel },
+      { to: "/app/maintenance", label: "الصيانة", icon: Wrench },
+      { to: "/app/accidents", label: "الحوادث", icon: AlertTriangle },
+    ],
+  },
+  {
+    title: "اللوجستيك والمالية",
+    items: [
+      { to: "/app/warehouses", label: "المستودعات", icon: Warehouse },
+      { to: "/app/documents", label: "الوثائق", icon: FolderArchive },
+      { to: "/app/finance", label: "المالية", icon: Wallet },
+    ],
+  },
+  {
+    title: "إدارة النظام",
+    items: [{ to: "/app/system-owner", label: "SAIFO Owner", icon: Crown }],
+  },
+];
+
+export function DashboardLayout() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  return (
+    <div className="flex min-h-screen bg-secondary/40" dir="rtl">
+      {/* Sidebar */}
+      <aside className="hidden w-72 flex-shrink-0 flex-col border-l border-sidebar-border bg-sidebar text-sidebar-foreground lg:flex">
+        <div className="flex items-center gap-3 border-b border-sidebar-border px-6 py-5">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl gradient-accent">
+            <Truck className="h-5 w-5 text-white" strokeWidth={2.5} />
+          </div>
+          <div>
+            <div className="text-sm font-black leading-tight">SAIFO</div>
+            <div className="-mt-0.5 text-[10px] font-bold tracking-widest text-accent">
+              TRANSPORT ERP
+            </div>
+          </div>
+        </div>
+
+        <nav className="flex-1 overflow-y-auto px-3 py-4">
+          {NAV.map((group) => (
+            <div key={group.title} className="mb-6">
+              <div className="mb-2 px-3 text-[10px] font-bold uppercase tracking-widest text-sidebar-foreground/50">
+                {group.title}
+              </div>
+              <div className="space-y-0.5">
+                {group.items.map((item) => {
+                  const active =
+                    pathname === item.to ||
+                    (item.to !== "/app" && pathname.startsWith(item.to));
+                  return (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${
+                        active
+                          ? "bg-sidebar-accent text-sidebar-primary-foreground border-r-2 border-sidebar-primary"
+                          : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
+                      }`}
+                    >
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </nav>
+
+        <div className="border-t border-sidebar-border p-4">
+          <div className="flex items-center gap-3 rounded-lg bg-sidebar-accent/60 p-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full gradient-accent text-sm font-bold text-white">
+              م
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <div className="truncate text-sm font-semibold">مدير الشركة</div>
+              <div className="truncate text-[11px] text-sidebar-foreground/60">
+                شركة النقل التجريبية
+              </div>
+            </div>
+            <button className="text-sidebar-foreground/60 hover:text-sidebar-foreground">
+              <LogOut className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main */}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <header className="flex items-center justify-between border-b border-border bg-background px-6 py-3">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="search"
+                placeholder="بحث في العملاء، الشحنات، المركبات..."
+                className="h-10 w-96 rounded-lg border border-border bg-secondary/60 pl-4 pr-10 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+              />
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 rounded-full bg-success/10 px-3 py-1">
+              <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
+              <span className="text-xs font-semibold text-success">تجربة — 13 يوم متبقي</span>
+            </div>
+            <button className="relative flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-background hover:bg-secondary">
+              <Bell className="h-4 w-4" />
+              <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-accent" />
+            </button>
+          </div>
+        </header>
+
+        <main className="flex-1 overflow-y-auto p-6">
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
+}
+
+export function PageHeader({
+  title,
+  subtitle,
+  action,
+}: {
+  title: string;
+  subtitle?: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <h1 className="text-2xl font-black text-primary md:text-3xl">{title}</h1>
+        {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
+      </div>
+      {action}
+    </div>
+  );
+}
+
+export function EmptyState({
+  icon: Icon,
+  title,
+  description,
+  action,
+}: {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border bg-card px-6 py-16 text-center">
+      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-accent/10 text-accent">
+        <Icon className="h-8 w-8" />
+      </div>
+      <h3 className="text-lg font-bold text-foreground">{title}</h3>
+      <p className="mt-2 max-w-md text-sm text-muted-foreground">{description}</p>
+      {action && <div className="mt-6">{action}</div>}
+    </div>
+  );
+}
