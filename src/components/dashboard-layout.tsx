@@ -159,19 +159,24 @@ export function DashboardLayout() {
         <div className="border-t border-sidebar-border p-4">
           <div className="flex items-center gap-3 rounded-lg bg-sidebar-accent/60 p-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-full gradient-accent text-sm font-bold text-white">
-              م
+              {(me.full_name ?? "?").charAt(0)}
             </div>
             <div className="flex-1 overflow-hidden">
-              <div className="truncate text-sm font-semibold">مدير الشركة</div>
+              <div className="truncate text-sm font-semibold">{me.full_name ?? "مستخدم"}</div>
               <div className="truncate text-[11px] text-sidebar-foreground/60">
-                شركة النقل التجريبية
+                {me.tenant_name ?? "لا توجد شركة"}
               </div>
             </div>
-            <button className="text-sidebar-foreground/60 hover:text-sidebar-foreground">
+            <button
+              onClick={handleSignOut}
+              title="تسجيل الخروج"
+              className="text-sidebar-foreground/60 hover:text-sidebar-foreground"
+            >
               <LogOut className="h-4 w-4" />
             </button>
           </div>
         </div>
+
       </aside>
 
       {/* Main */}
