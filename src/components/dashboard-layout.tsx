@@ -2,6 +2,7 @@ import { Link, Outlet, useRouterState, useNavigate } from "@tanstack/react-route
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { ReadOnlyBanner } from "@/components/read-only-banner";
 import {
   LayoutDashboard,
   Users,
@@ -349,6 +350,7 @@ export function DashboardLayout() {
         </header>
 
         <main className="flex-1 overflow-y-auto p-6">
+          <ReadOnlyBanner />
           <Outlet />
         </main>
       </div>
