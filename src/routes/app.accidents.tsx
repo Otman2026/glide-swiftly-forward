@@ -178,7 +178,7 @@ function AccidentsPage() {
         <Card label="تكلفة الإصلاح" value={`${counts.cost.toFixed(0)} MAD`} tone="destructive" />
       </div>
 
-      <div className="mb-4">
+      <div className="mb-4 flex flex-wrap items-center gap-2">
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
           <SelectContent>
@@ -186,6 +186,7 @@ function AccidentsPage() {
             {Object.entries(STAT).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}
           </SelectContent>
         </Select>
+        <SearchInput value={q} onChange={setQ} placeholder="ابحث بالمكان أو التأمين أو السائق…" />
       </div>
 
       {loading ? (
