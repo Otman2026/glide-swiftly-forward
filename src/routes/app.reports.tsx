@@ -83,7 +83,7 @@ function ReportsPage() {
       supabase.from("transport_orders").select("id,price,status,customer_id,created_at").gte("created_at", fromIso).lte("created_at", toIso),
       supabase.from("expenses").select("amount,expense_date,category").gte("expense_date", from).lte("expense_date", to),
       supabase.from("fuel_logs").select("liters,cost,vehicle_id,fuel_date").gte("fuel_date", from).lte("fuel_date", to),
-      supabase.from("maintenance_records").select("cost,vehicle_id,service_date").gte("service_date", from).lte("service_date", to),
+      supabase.from("maintenance_records").select("cost,vehicle_id,completed_date").gte("completed_date", from).lte("completed_date", to),
       supabase.from("incidents").select("repair_cost,vehicle_id,driver_id,incident_date").gte("incident_date", from).lte("incident_date", to),
       supabase.from("vehicles").select("id,plate_number,brand,model"),
       supabase.from("customers").select("id,name"),
