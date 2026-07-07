@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader, EmptyState } from "@/components/dashboard-layout";
-import { Wrench, Plus, Loader2, Trash2, Pencil, CheckCircle2, Printer, Download } from "lucide-react";
+import { Wrench, Plus, Loader2, Trash2, Pencil, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -10,8 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { exportToCSV } from "@/lib/csv";
-import { printHTML, esc } from "@/lib/print";
+import { ExportBar } from "@/components/export-bar";
 
 export const Route = createFileRoute("/app/maintenance")({ component: MaintPage });
 
@@ -129,34 +128,27 @@ function MaintPage() {
     cost: rows.reduce((s, r) => s + Number(r.cost), 0),
   };
 
-  const onExport = () => {
-    exportToCSV(filtered, [
-      { key: "maintenance_type", label: "النوع" },
-      { key: "vehicle", label: "الشاحنة", get: (r) => r.vehicles?.plate_number ?? "" },
-      { key: "scheduled_date", label: "التاريخ المجدول" },
-      { key: "completed_date", label: "الإتمام" },
-      { key: "workshop", label: "الورشة" },
-      { key: "cost", label: "التكلفة" },
-      { key: "status", label: "الحالة", get: (r) => STATUS[r.status]?.label ?? r.status },
-    ], `maintenance-${new Date().toISOString().slice(0, 10)}`);
-  };
-
-  const onPrint = () => {
-    const body = `<h1>تقرير أوامر الصيانة</h1><h2>${filtered.length} أمر · إجمالي التكلفة ${counts.cost.toFixed(0)} MAD</h2>
-      <table><thead><tr><th>النوع</th><th>الشاحنة</th><th>التاريخ</th><th>الإتمام</th><th>الورشة</th><th>التكلفة</th><th>الحالة</th></tr></thead>
-      <tbody>${filtered.map((r) => `<tr><td>${esc(r.maintenance_type)}</td><td>${esc(r.vehicles?.plate_number)}</td><td>${esc(r.scheduled_date)}</td><td>${esc(r.completed_date)}</td><td>${esc(r.workshop)}</td><td>${Number(r.cost).toFixed(2)}</td><td>${esc(STATUS[r.status]?.label ?? r.status)}</td></tr>`).join("")}</tbody></table>`;
-    printHTML("تقرير الصيانة", body);
-  };
-
   return (
     <>
       <PageHeader
         title="الصيانة الوقائية والتصحيحية"
         subtitle="أوامر الصيانة، الأعطال، قطع الغيار، وتنبيهات مواعيد الصيانة"
         action={
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={onExport} className="gap-2"><Download className="h-4 w-4" /> تصدير</Button>
-            <Button variant="outline" onClick={onPrint} className="gap-2"><Printer className="h-4 w-4" /> طباعة</Button>
+          <div className="flex flex-wrap gap-2">
+            <ExportBar
+              filename="maintenance"
+              title="أوامر الصيانة"
+              rows={filtered}
+              columns={[
+                { key: "maintenance_type", label: "النوع" },
+                { key: "vehicle", label: "الشاحنة", format: (r) => r.vehicles?.plate_number ?? "" },
+                { key: "scheduled_date", label: "التاريخ المجدول" },
+                { key: "completed_date", label: "الإتمام" },
+                { key: "workshop", label: "الورشة" },
+                { key: "cost", label: "التكلفة" },
+                { key: "status", label: "الحالة", format: (r) => STATUS[r.status]?.label ?? r.status },
+              ]}
+            />
             <Button onClick={openCreate} className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90"><Plus className="h-4 w-4" /> أمر صيانة</Button>
           </div>
         }

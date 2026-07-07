@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { PageHeader, EmptyState } from "@/components/dashboard-layout";
-import { Package, Plus, Search, Trash2, Loader2, MapPin, Printer, Download } from "lucide-react";
+import { Package, Plus, Search, Trash2, Loader2, MapPin, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
@@ -13,8 +13,8 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { exportToCSV } from "@/lib/csv";
 import { printHTML, esc } from "@/lib/print";
+import { ExportBar } from "@/components/export-bar";
 
 export const Route = createFileRoute("/app/shipments")({ component: ShipmentsPage });
 
@@ -128,19 +128,8 @@ function ShipmentsPage() {
       </div>`);
   };
 
-  const onExport = () => {
-    if (filtered.length === 0) return toast.error("لا توجد بيانات");
-    exportToCSV(filtered, [
-      { key: "shipment_number", label: "الرقم" },
-      { key: "origin", label: "من" },
-      { key: "destination", label: "إلى" },
-      { key: "vehicle", label: "المركبة", get: (r) => r.vehicles?.plate_number ?? "" },
-      { key: "driver", label: "السائق", get: (r) => r.drivers?.full_name ?? "" },
-      { key: "distance_km", label: "المسافة (كم)" },
-      { key: "status", label: "الحالة", get: (r) => STATUS_LABEL[r.status] },
-    ], `shipments-${new Date().toISOString().slice(0, 10)}`);
-    toast.success("تم التصدير");
-  };
+
+
 
   const filtered = rows.filter((r) => {
     if (statusFilter !== "all" && r.status !== statusFilter) return false;
@@ -152,8 +141,21 @@ function ShipmentsPage() {
     <>
       <PageHeader title="الشحنات" subtitle="متابعة الشحنات المعيَّنة، المركبة، السائق، والمسافة"
         action={
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={onExport} className="gap-2"><Download className="h-4 w-4" /> CSV</Button>
+          <div className="flex flex-wrap gap-2">
+            <ExportBar
+              filename="shipments"
+              title="الشحنات"
+              rows={filtered}
+              columns={[
+                { key: "shipment_number", label: "الرقم" },
+                { key: "origin", label: "من" },
+                { key: "destination", label: "إلى" },
+                { key: "vehicle", label: "المركبة", format: (r) => r.vehicles?.plate_number ?? "" },
+                { key: "driver", label: "السائق", format: (r) => r.drivers?.full_name ?? "" },
+                { key: "distance_km", label: "المسافة (كم)" },
+                { key: "status", label: "الحالة", format: (r) => STATUS_LABEL[r.status] },
+              ]}
+            />
             <Button onClick={() => setOpen(true)} className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
               <Plus className="h-4 w-4" /> شحنة جديدة
             </Button>

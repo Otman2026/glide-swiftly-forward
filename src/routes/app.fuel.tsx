@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader, EmptyState } from "@/components/dashboard-layout";
-import { Fuel, Plus, Loader2, Trash2, Pencil, Printer, Download } from "lucide-react";
+import { Fuel, Plus, Loader2, Trash2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -9,8 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { exportToCSV } from "@/lib/csv";
-import { printHTML, esc } from "@/lib/print";
+import { ExportBar } from "@/components/export-bar";
 
 export const Route = createFileRoute("/app/fuel")({ component: FuelPage });
 
@@ -101,34 +100,27 @@ function FuelPage() {
   const totalLiters = filtered.reduce((s, r) => s + Number(r.liters), 0);
   const totalCost = filtered.reduce((s, r) => s + Number(r.cost), 0);
 
-  const onExport = () => {
-    exportToCSV(filtered, [
-      { key: "fuel_date", label: "التاريخ" },
-      { key: "vehicle", label: "الشاحنة", get: (r) => r.vehicles?.plate_number ?? "" },
-      { key: "driver", label: "السائق", get: (r) => r.drivers?.full_name ?? "" },
-      { key: "liters", label: "اللترات" },
-      { key: "cost", label: "التكلفة" },
-      { key: "odometer", label: "العداد" },
-      { key: "station", label: "المحطة" },
-    ], `fuel-${new Date().toISOString().slice(0, 10)}`);
-  };
-
-  const onPrint = () => {
-    const body = `<h1>تقرير تعبئات الوقود</h1><h2>${filtered.length} تعبئة · ${totalLiters.toFixed(0)}L · ${totalCost.toFixed(0)} MAD</h2>
-      <table><thead><tr><th>التاريخ</th><th>الشاحنة</th><th>السائق</th><th>اللترات</th><th>التكلفة</th><th>العداد</th><th>المحطة</th></tr></thead>
-      <tbody>${filtered.map((r) => `<tr><td>${esc(r.fuel_date)}</td><td>${esc(r.vehicles?.plate_number)}</td><td>${esc(r.drivers?.full_name)}</td><td>${Number(r.liters).toFixed(2)}L</td><td>${Number(r.cost).toFixed(2)}</td><td>${esc(r.odometer)}</td><td>${esc(r.station)}</td></tr>`).join("")}</tbody></table>`;
-    printHTML("تقرير الوقود", body);
-  };
-
   return (
     <>
       <PageHeader
         title="إدارة الوقود"
         subtitle="التعبئة، الاستهلاك، التكلفة، تقارير حسب الشاحنة والسائق"
         action={
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={onExport} className="gap-2"><Download className="h-4 w-4" /> تصدير</Button>
-            <Button variant="outline" onClick={onPrint} className="gap-2"><Printer className="h-4 w-4" /> طباعة</Button>
+          <div className="flex flex-wrap gap-2">
+            <ExportBar
+              filename="fuel"
+              title="تعبئات الوقود"
+              rows={filtered}
+              columns={[
+                { key: "fuel_date", label: "التاريخ" },
+                { key: "vehicle", label: "الشاحنة", format: (r) => r.vehicles?.plate_number ?? "" },
+                { key: "driver", label: "السائق", format: (r) => r.drivers?.full_name ?? "" },
+                { key: "liters", label: "اللترات" },
+                { key: "cost", label: "التكلفة" },
+                { key: "odometer", label: "العداد" },
+                { key: "station", label: "المحطة" },
+              ]}
+            />
             <Button onClick={openCreate} className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90"><Plus className="h-4 w-4" /> تعبئة جديدة</Button>
           </div>
         }

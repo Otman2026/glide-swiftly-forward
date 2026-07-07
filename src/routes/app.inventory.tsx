@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader, EmptyState } from "@/components/dashboard-layout";
-import { Package, Plus, Trash2, Loader2, ArrowLeftRight, Download, Printer } from "lucide-react";
+import { Package, Plus, Trash2, Loader2, ArrowLeftRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
@@ -14,8 +14,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { exportToCSV } from "@/lib/csv";
-import { printHTML, esc } from "@/lib/print";
+import { ExportBar } from "@/components/export-bar";
 
 export const Route = createFileRoute("/app/inventory")({
   component: InventoryPage,
@@ -170,27 +169,24 @@ function ItemsTab({
     else { toast.success("تم الحذف"); onChange(); }
   };
 
-  const doExport = () => {
-    exportToCSV(items, [
-      { key: "sku", label: "SKU" }, { key: "name", label: "الاسم" },
-      { key: "warehouse_id", label: "المستودع", get: (r) => whById.get(r.warehouse_id) ?? "" },
-      { key: "quantity", label: "الكمية" }, { key: "unit", label: "الوحدة" },
-      { key: "unit_cost", label: "التكلفة" },
-    ], "inventory-items");
-  };
-
-  const doPrint = () => {
-    const rows = items.map((i) => `<tr><td>${esc(i.sku)}</td><td>${esc(i.name)}</td><td>${esc(whById.get(i.warehouse_id))}</td><td>${esc(i.quantity)} ${esc(i.unit)}</td><td>${esc(i.unit_cost)}</td></tr>`).join("");
-    printHTML("جرد المخزون", `<h1>تقرير جرد المخزون</h1><table><thead><tr><th>SKU</th><th>الاسم</th><th>المستودع</th><th>الكمية</th><th>التكلفة</th></tr></thead><tbody>${rows}</tbody></table>`);
-  };
-
   const availLocations = locations.filter((l) => l.warehouse_id === form.warehouse_id);
 
   return (
     <>
       <div className="mb-3 flex flex-wrap gap-2 justify-end">
-        <Button variant="outline" onClick={doPrint} className="gap-2"><Printer className="h-4 w-4" />طباعة</Button>
-        <Button variant="outline" onClick={doExport} className="gap-2"><Download className="h-4 w-4" />تصدير</Button>
+        <ExportBar
+          filename="inventory-items"
+          title="جرد المخزون"
+          rows={items}
+          columns={[
+            { key: "sku", label: "SKU" },
+            { key: "name", label: "الاسم" },
+            { key: "warehouse", label: "المستودع", format: (r) => whById.get(r.warehouse_id) ?? "" },
+            { key: "quantity", label: "الكمية" },
+            { key: "unit", label: "الوحدة" },
+            { key: "unit_cost", label: "التكلفة" },
+          ]}
+        />
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90"><Plus className="h-4 w-4" />صنف جديد</Button>
@@ -451,22 +447,23 @@ function MovementsTab({
   const typeLabel = (t: string) =>
     ({ receive: "استلام", deliver: "تسليم", transfer: "تحويل", adjust: "تسوية" })[t] ?? t;
 
-  const doExport = () => {
-    exportToCSV(movements, [
-      { key: "created_at", label: "التاريخ", get: (r) => new Date(r.created_at).toLocaleString("ar-MA") },
-      { key: "movement_type", label: "النوع", get: (r) => typeLabel(r.movement_type) },
-      { key: "item_id", label: "الصنف", get: (r) => itemById.get(r.item_id)?.name ?? "" },
-      { key: "quantity", label: "الكمية" },
-      { key: "from_warehouse_id", label: "من", get: (r) => (r.from_warehouse_id ? whById.get(r.from_warehouse_id) : "") },
-      { key: "to_warehouse_id", label: "إلى", get: (r) => (r.to_warehouse_id ? whById.get(r.to_warehouse_id) : "") },
-      { key: "reference", label: "المرجع" },
-    ], "stock-movements");
-  };
-
   return (
     <>
       <div className="mb-3 flex flex-wrap gap-2 justify-end">
-        <Button variant="outline" onClick={doExport} className="gap-2"><Download className="h-4 w-4" />تصدير</Button>
+        <ExportBar
+          filename="stock-movements"
+          title="حركات المخزون"
+          rows={movements}
+          columns={[
+            { key: "created_at", label: "التاريخ", format: (r) => new Date(r.created_at).toLocaleString("ar-MA") },
+            { key: "movement_type", label: "النوع", format: (r) => typeLabel(r.movement_type) },
+            { key: "item", label: "الصنف", format: (r) => itemById.get(r.item_id)?.name ?? "" },
+            { key: "quantity", label: "الكمية" },
+            { key: "from", label: "من", format: (r) => (r.from_warehouse_id ? (whById.get(r.from_warehouse_id) ?? "") : "") },
+            { key: "to", label: "إلى", format: (r) => (r.to_warehouse_id ? (whById.get(r.to_warehouse_id) ?? "") : "") },
+            { key: "reference", label: "المرجع" },
+          ]}
+        />
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90"><ArrowLeftRight className="h-4 w-4" />حركة جديدة</Button>
