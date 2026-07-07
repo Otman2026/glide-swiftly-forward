@@ -47,6 +47,7 @@ import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppAuditRouteImport } from './routes/app.audit'
 import { Route as AppArchiveRouteImport } from './routes/app.archive'
 import { Route as AppAccidentsRouteImport } from './routes/app.accidents'
+import { Route as AppCustomersIdRouteImport } from './routes/app.customers.$id'
 import { Route as ApiPublicWebhooksStripeRouteImport } from './routes/api.public.webhooks.stripe'
 import { Route as ApiPublicHooksScanAlertsRouteImport } from './routes/api.public.hooks.scan-alerts'
 
@@ -240,6 +241,11 @@ const AppAccidentsRoute = AppAccidentsRouteImport.update({
   path: '/accidents',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCustomersIdRoute = AppCustomersIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AppCustomersRoute,
+} as any)
 const ApiPublicWebhooksStripeRoute = ApiPublicWebhooksStripeRouteImport.update({
   id: '/api/public/webhooks/stripe',
   path: '/api/public/webhooks/stripe',
@@ -264,7 +270,7 @@ export interface FileRoutesByFullPath {
   '/app/billing': typeof AppBillingRoute
   '/app/contracts': typeof AppContractsRoute
   '/app/cost-centers': typeof AppCostCentersRoute
-  '/app/customers': typeof AppCustomersRoute
+  '/app/customers': typeof AppCustomersRouteWithChildren
   '/app/documents': typeof AppDocumentsRoute
   '/app/drivers': typeof AppDriversRoute
   '/app/finance': typeof AppFinanceRoute
@@ -291,6 +297,7 @@ export interface FileRoutesByFullPath {
   '/app/violations': typeof AppViolationsRoute
   '/app/warehouses': typeof AppWarehousesRoute
   '/app/': typeof AppIndexRoute
+  '/app/customers/$id': typeof AppCustomersIdRoute
   '/api/public/hooks/scan-alerts': typeof ApiPublicHooksScanAlertsRoute
   '/api/public/webhooks/stripe': typeof ApiPublicWebhooksStripeRoute
 }
@@ -305,7 +312,7 @@ export interface FileRoutesByTo {
   '/app/billing': typeof AppBillingRoute
   '/app/contracts': typeof AppContractsRoute
   '/app/cost-centers': typeof AppCostCentersRoute
-  '/app/customers': typeof AppCustomersRoute
+  '/app/customers': typeof AppCustomersRouteWithChildren
   '/app/documents': typeof AppDocumentsRoute
   '/app/drivers': typeof AppDriversRoute
   '/app/finance': typeof AppFinanceRoute
@@ -332,6 +339,7 @@ export interface FileRoutesByTo {
   '/app/violations': typeof AppViolationsRoute
   '/app/warehouses': typeof AppWarehousesRoute
   '/app': typeof AppIndexRoute
+  '/app/customers/$id': typeof AppCustomersIdRoute
   '/api/public/hooks/scan-alerts': typeof ApiPublicHooksScanAlertsRoute
   '/api/public/webhooks/stripe': typeof ApiPublicWebhooksStripeRoute
 }
@@ -348,7 +356,7 @@ export interface FileRoutesById {
   '/app/billing': typeof AppBillingRoute
   '/app/contracts': typeof AppContractsRoute
   '/app/cost-centers': typeof AppCostCentersRoute
-  '/app/customers': typeof AppCustomersRoute
+  '/app/customers': typeof AppCustomersRouteWithChildren
   '/app/documents': typeof AppDocumentsRoute
   '/app/drivers': typeof AppDriversRoute
   '/app/finance': typeof AppFinanceRoute
@@ -375,6 +383,7 @@ export interface FileRoutesById {
   '/app/violations': typeof AppViolationsRoute
   '/app/warehouses': typeof AppWarehousesRoute
   '/app/': typeof AppIndexRoute
+  '/app/customers/$id': typeof AppCustomersIdRoute
   '/api/public/hooks/scan-alerts': typeof ApiPublicHooksScanAlertsRoute
   '/api/public/webhooks/stripe': typeof ApiPublicWebhooksStripeRoute
 }
@@ -419,6 +428,7 @@ export interface FileRouteTypes {
     | '/app/violations'
     | '/app/warehouses'
     | '/app/'
+    | '/app/customers/$id'
     | '/api/public/hooks/scan-alerts'
     | '/api/public/webhooks/stripe'
   fileRoutesByTo: FileRoutesByTo
@@ -460,6 +470,7 @@ export interface FileRouteTypes {
     | '/app/violations'
     | '/app/warehouses'
     | '/app'
+    | '/app/customers/$id'
     | '/api/public/hooks/scan-alerts'
     | '/api/public/webhooks/stripe'
   id:
@@ -502,6 +513,7 @@ export interface FileRouteTypes {
     | '/app/violations'
     | '/app/warehouses'
     | '/app/'
+    | '/app/customers/$id'
     | '/api/public/hooks/scan-alerts'
     | '/api/public/webhooks/stripe'
   fileRoutesById: FileRoutesById
@@ -784,6 +796,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAccidentsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/customers/$id': {
+      id: '/app/customers/$id'
+      path: '/$id'
+      fullPath: '/app/customers/$id'
+      preLoaderRoute: typeof AppCustomersIdRouteImport
+      parentRoute: typeof AppCustomersRoute
+    }
     '/api/public/webhooks/stripe': {
       id: '/api/public/webhooks/stripe'
       path: '/api/public/webhooks/stripe'
@@ -801,6 +820,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AppCustomersRouteChildren {
+  AppCustomersIdRoute: typeof AppCustomersIdRoute
+}
+
+const AppCustomersRouteChildren: AppCustomersRouteChildren = {
+  AppCustomersIdRoute: AppCustomersIdRoute,
+}
+
+const AppCustomersRouteWithChildren = AppCustomersRoute._addFileChildren(
+  AppCustomersRouteChildren,
+)
+
 interface AppRouteChildren {
   AppAccidentsRoute: typeof AppAccidentsRoute
   AppArchiveRoute: typeof AppArchiveRoute
@@ -808,7 +839,7 @@ interface AppRouteChildren {
   AppBillingRoute: typeof AppBillingRoute
   AppContractsRoute: typeof AppContractsRoute
   AppCostCentersRoute: typeof AppCostCentersRoute
-  AppCustomersRoute: typeof AppCustomersRoute
+  AppCustomersRoute: typeof AppCustomersRouteWithChildren
   AppDocumentsRoute: typeof AppDocumentsRoute
   AppDriversRoute: typeof AppDriversRoute
   AppFinanceRoute: typeof AppFinanceRoute
@@ -844,7 +875,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppBillingRoute: AppBillingRoute,
   AppContractsRoute: AppContractsRoute,
   AppCostCentersRoute: AppCostCentersRoute,
-  AppCustomersRoute: AppCustomersRoute,
+  AppCustomersRoute: AppCustomersRouteWithChildren,
   AppDocumentsRoute: AppDocumentsRoute,
   AppDriversRoute: AppDriversRoute,
   AppFinanceRoute: AppFinanceRoute,

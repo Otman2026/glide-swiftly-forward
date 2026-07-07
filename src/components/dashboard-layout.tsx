@@ -85,6 +85,7 @@ const NAV: NavGroup[] = [
       { to: "/app/documents", label: "الوثائق", icon: FolderArchive },
       { to: "/app/invoices", label: "الفواتير", icon: FileText },
       { to: "/app/finance", label: "المالية", icon: Wallet },
+      { to: "/app/cost-centers", label: "مراكز التكلفة", icon: Wallet },
       { to: "/app/billing", label: "الاشتراكات والدفع", icon: CreditCard },
     ],
   },
