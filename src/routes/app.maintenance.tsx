@@ -171,7 +171,8 @@ function MaintPage() {
         <Card label="إجمالي التكلفة" value={`${counts.cost.toFixed(0)} MAD`} />
       </div>
 
-      <div className="mb-4">
+      <div className="mb-4 flex flex-wrap gap-3 items-center">
+        <SearchInput value={q} onChange={setQ} placeholder="بحث بنوع/ورشة/شاحنة…" />
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
           <SelectContent>
