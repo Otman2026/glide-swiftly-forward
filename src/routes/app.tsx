@@ -4,6 +4,7 @@ import { Loader2 } from "lucide-react";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { useAuth } from "@/hooks/use-auth";
 import { applyPrintBrand } from "@/lib/company";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/app")({
   component: AppGate,
@@ -18,8 +19,18 @@ function AppGate() {
   }, [loading, session, navigate]);
 
   useEffect(() => {
-    if (session) applyPrintBrand().catch(() => {});
-  }, [session]);
+    if (!session) return;
+    applyPrintBrand().catch(() => {});
+    (async () => {
+      const { data: p } = await supabase
+        .from("profiles")
+        .select("customer_id, driver_id")
+        .eq("id", session.user.id)
+        .maybeSingle();
+      if (p?.customer_id) navigate({ to: "/portal" });
+      else if (p?.driver_id) navigate({ to: "/driver" });
+    })();
+  }, [session, navigate]);
 
   if (loading || !session) {
     return (
