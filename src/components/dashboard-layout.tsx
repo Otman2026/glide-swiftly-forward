@@ -264,10 +264,18 @@ export function DashboardLayout() {
               <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
               <span className="text-xs font-semibold text-success">تجربة — 13 يوم متبقي</span>
             </div>
-            <button className="relative flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-background hover:bg-secondary">
+            <Link
+              to="/app/notifications"
+              className="relative flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-background hover:bg-secondary"
+              title="الإشعارات"
+            >
               <Bell className="h-4 w-4" />
-              <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-accent" />
-            </button>
+              {unread > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
+                  {unread > 99 ? "99+" : unread}
+                </span>
+              )}
+            </Link>
             <button
               onClick={handleSignOut}
               title="تسجيل الخروج"
