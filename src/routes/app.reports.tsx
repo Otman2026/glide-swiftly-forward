@@ -49,7 +49,7 @@ const toPdf = (rows: Row[], filename: string, title: string) => {
     head: [headers],
     body: rows.map((r) => headers.map((h) => String(r[h] ?? ""))),
     styles: { fontSize: 9, cellPadding: 3 },
-    headStyles: { fillBox: true, fillColor: [30, 41, 59], textColor: 255 },
+    headStyles: { fillColor: [30, 41, 59], textColor: 255 },
     alternateRowStyles: { fillColor: [245, 247, 250] },
   });
   doc.save(filename);
