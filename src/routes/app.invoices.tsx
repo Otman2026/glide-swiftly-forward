@@ -64,7 +64,9 @@ function InvoicesPage() {
   const [rows, setRows] = useState<Invoice[]>([]);
   const [customers, setCustomers] = useState<{ id: string; name: string }[]>([]);
   const [orders, setOrders] = useState<{ id: string; order_number: string; price: number | null }[]>([]);
-  const [tenant, setTenant] = useState<{ id: string; name: string; tax_id: string | null; registration_number: string | null } | null>(null);
+  const [tenant, setTenant] = useState<CompanySettings | null>(null);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [stampUrl, setStampUrl] = useState<string | null>(null);
 
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
