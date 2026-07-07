@@ -128,21 +128,31 @@ function InvoicesPage() {
 
   function resetForm() {
     setForm({
-      invoice_number: `INV-${Date.now().toString().slice(-6)}`,
+      invoice_number: "",
       customer_id: "",
       transport_order_id: "",
       issue_date: new Date().toISOString().slice(0, 10),
       due_date: "",
       status: "draft",
-      tax_rate: 19,
+      tax_rate: Number(tenant?.tax_rate ?? 20),
       notes: "",
     });
     setItems([{ description: "", quantity: 1, unit_price: 0 }]);
   }
 
-  function onOpenChange(v: boolean) {
+  async function onOpenChange(v: boolean) {
     setOpen(v);
-    if (v) resetForm();
+    if (v) {
+      resetForm();
+      if (tenant?.id) {
+        try {
+          const n = await allocateInvoiceNumber(tenant.id);
+          setForm((f) => ({ ...f, invoice_number: n }));
+        } catch (e: any) {
+          toast.error(e?.message ?? "تعذّر توليد رقم الفاتورة");
+        }
+      }
+    }
   }
 
   function onOrderSelect(orderId: string) {
