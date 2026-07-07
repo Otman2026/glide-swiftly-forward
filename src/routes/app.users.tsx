@@ -173,40 +173,54 @@ function UsersPage() {
         title="المستخدمون والصلاحيات"
         subtitle="إدارة الفريق وإسناد الأدوار"
         action={
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
-                <Plus className="h-4 w-4" /> إسناد دور
-              </Button>
-            </DialogTrigger>
-            <DialogContent dir="rtl">
-              <DialogHeader><DialogTitle>إسناد دور لمستخدم</DialogTitle></DialogHeader>
-              <form onSubmit={assignRole} className="space-y-4">
-                <div className="rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
-                  يجب على المستخدم إنشاء حساب في المنصة أولاً، ثم أدخل بريده هنا لإسناد الدور.
-                </div>
-                <div><Label>البريد الإلكتروني *</Label><Input type="email" required dir="ltr" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
-                <div>
-                  <Label>الدور *</Label>
-                  <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm">
-                    {ROLES.map(r => <option key={r.key} value={r.key}>{r.label}</option>)}
-                  </select>
-                </div>
-                <DialogFooter>
-                  <Button type="submit" disabled={saving} className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
-                    {saving && <Loader2 className="h-4 w-4 animate-spin" />} إسناد
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <div className="flex flex-wrap gap-2 items-center">
+            <SearchInput value={q} onChange={setQ} placeholder="بحث بالاسم/البريد/الدور…" />
+            <ExportBar
+              filename="users"
+              title="المستخدمون"
+              rows={filtered.map((m) => ({ ...m, roles_text: m.roles.join(", "), status: m.disabled_at ? "معطّل" : "نشط" }))}
+              columns={[
+                { key: "full_name", label: "الاسم" },
+                { key: "email", label: "البريد" },
+                { key: "status", label: "الحالة" },
+                { key: "roles_text", label: "الأدوار" },
+              ]}
+            />
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
+                  <Plus className="h-4 w-4" /> إسناد دور
+                </Button>
+              </DialogTrigger>
+              <DialogContent dir="rtl">
+                <DialogHeader><DialogTitle>إسناد دور لمستخدم</DialogTitle></DialogHeader>
+                <form onSubmit={assignRole} className="space-y-4">
+                  <div className="rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
+                    يجب على المستخدم إنشاء حساب في المنصة أولاً، ثم أدخل بريده هنا لإسناد الدور.
+                  </div>
+                  <div><Label>البريد الإلكتروني *</Label><Input type="email" required dir="ltr" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
+                  <div>
+                    <Label>الدور *</Label>
+                    <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm">
+                      {ROLES.map(r => <option key={r.key} value={r.key}>{r.label}</option>)}
+                    </select>
+                  </div>
+                  <DialogFooter>
+                    <Button type="submit" disabled={saving} className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
+                      {saving && <Loader2 className="h-4 w-4 animate-spin" />} إسناد
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
         }
       />
 
       {loading ? (
         <div className="flex items-center justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-accent" /></div>
-      ) : rows.length === 0 ? (
-        <EmptyState icon={UsersIcon} title="لا يوجد أعضاء" description="ابدأ بإسناد دور لأحد أعضاء فريقك." />
+      ) : filtered.length === 0 ? (
+        <EmptyState icon={UsersIcon} title="لا يوجد أعضاء" description={q ? "لا نتائج للبحث" : "ابدأ بإسناد دور لأحد أعضاء فريقك."} />
       ) : (
         <div className="rounded-2xl border border-border bg-card overflow-x-auto">
           <table className="w-full text-sm">
