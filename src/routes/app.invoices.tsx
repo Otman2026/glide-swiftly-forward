@@ -223,7 +223,7 @@ function InvoicesPage() {
                 { key: "status", label: "الحالة" },
                 { key: "subtotal", label: "المجموع الفرعي" },
                 { key: "tax_amount", label: "الضريبة" },
-                { key: "total_amount", label: "الإجمالي" },
+                { key: "total", label: "الإجمالي" },
               ]}
             />
             <Dialog open={open} onOpenChange={onOpenChange}>

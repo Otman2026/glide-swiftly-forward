@@ -28,7 +28,7 @@ export const Route = createFileRoute("/api/public/hooks/scan-alerts")({
         const [docs, maints, invs, incs, existing] = await Promise.all([
           supabaseAdmin.from("documents").select("tenant_id,name,expiry_date").not("expiry_date", "is", null).lte("expiry_date", in30),
           supabaseAdmin.from("maintenance_records").select("tenant_id,description,next_service_date").not("next_service_date", "is", null).lte("next_service_date", in30),
-          supabaseAdmin.from("invoices").select("tenant_id,invoice_number,due_date,total_amount").in("status", ["sent", "draft"]).not("due_date", "is", null).lt("due_date", nowIso),
+          supabaseAdmin.from("invoices").select("tenant_id,invoice_number,due_date,total").in("status", ["sent", "draft"]).not("due_date", "is", null).lt("due_date", nowIso),
           supabaseAdmin.from("incidents").select("tenant_id,description,incident_date").gte("incident_date", last7),
           supabaseAdmin.from("notifications").select("tenant_id,type,title").eq("is_read", false),
         ]);
@@ -65,7 +65,7 @@ export const Route = createFileRoute("/api/public/hooks/scan-alerts")({
             type: "invoice_overdue",
             severity: "error",
             title: `فاتورة متأخرة: ${i.invoice_number}`,
-            message: `المبلغ: ${Number(i.total_amount ?? 0).toFixed(2)} MAD — استحقت في ${new Date(i.due_date).toLocaleDateString("ar")}`,
+            message: `المبلغ: ${Number(i.total ?? 0).toFixed(2)} MAD — استحقت في ${new Date(i.due_date).toLocaleDateString("ar")}`,
             link: "/app/invoices",
           });
         });

@@ -62,10 +62,10 @@ function FinancePage() {
     setLoading(true);
     const [{ data: exp }, { data: orders }] = await Promise.all([
       supabase.from("expenses").select("id,expense_date,category,description,amount").order("expense_date", { ascending: false }),
-      supabase.from("transport_orders").select("total_amount").eq("status", "delivered"),
+      supabase.from("transport_orders").select("price").eq("status", "delivered"),
     ]);
     setExpenses(exp ?? []);
-    setRevenue((orders ?? []).reduce((s: number, r: any) => s + Number(r.total_amount ?? 0), 0));
+    setRevenue((orders ?? []).reduce((s: number, r: any) => s + Number(r.price ?? 0), 0));
     setLoading(false);
   };
 
