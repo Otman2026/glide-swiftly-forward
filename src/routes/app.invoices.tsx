@@ -435,12 +435,23 @@ function InvoicesPage() {
               <DialogHeader className="print:hidden">
                 <DialogTitle>فاتورة {viewing.invoice_number}</DialogTitle>
               </DialogHeader>
-              <div id="print-area" className="p-6 bg-white text-black rounded">
-                <div className="flex justify-between items-start mb-6">
-                  <div>
-                    <h2 className="text-2xl font-bold">{tenant?.name ?? "شركة النقل"}</h2>
-                    {tenant?.tax_id && <p className="text-sm">الرقم الضريبي: {tenant.tax_id}</p>}
-                    {tenant?.registration_number && <p className="text-sm">السجل التجاري: {tenant.registration_number}</p>}
+              <div id="print-area" className="relative p-6 bg-white text-black rounded">
+                <div className="flex justify-between items-start mb-6 border-b-2 border-black pb-3 gap-4">
+                  <div className="flex items-start gap-3">
+                    {logoUrl ? (
+                      <img src={logoUrl} alt="logo" className="h-16 max-w-[180px] object-contain" />
+                    ) : null}
+                    <div>
+                      <h2 className="text-2xl font-bold">{tenant?.name ?? "شركة النقل"}</h2>
+                      {tenant?.address && <p className="text-xs text-gray-600">{[tenant.address, tenant.city].filter(Boolean).join("، ")}</p>}
+                      {tenant?.tax_id && <p className="text-xs text-gray-600">ICE: {tenant.tax_id}</p>}
+                      {tenant?.registration_number && <p className="text-xs text-gray-600">RC: {tenant.registration_number}</p>}
+                      {(tenant?.contact_phone || tenant?.contact_email) && (
+                        <p className="text-xs text-gray-600" dir="ltr">
+                          {[tenant?.contact_phone, tenant?.contact_email].filter(Boolean).join(" · ")}
+                        </p>
+                      )}
+                    </div>
                   </div>
                   <div className="text-left">
                     <h3 className="text-xl font-bold">فاتورة</h3>
@@ -449,6 +460,9 @@ function InvoicesPage() {
                     {viewing.due_date && <p className="text-sm">الاستحقاق: {viewing.due_date}</p>}
                   </div>
                 </div>
+                {tenant?.invoice_header && (
+                  <div className="mb-3 rounded bg-gray-50 border border-gray-200 p-2 text-xs whitespace-pre-line">{tenant.invoice_header}</div>
+                )}
                 <div className="mb-4 border-t border-b py-2">
                   <p className="text-sm font-semibold">العميل:</p>
                   <p>{viewing.customer_id ? customerMap[viewing.customer_id] ?? "—" : "—"}</p>
@@ -473,14 +487,25 @@ function InvoicesPage() {
                     ))}
                   </tbody>
                 </table>
-                <div className="flex justify-end">
+                <div className="flex justify-between items-end gap-4">
+                  {tenant?.bank_details && (
+                    <div className="max-w-xs rounded border border-dashed border-gray-400 p-2 text-xs whitespace-pre-line">
+                      <b>البنك:</b> {tenant.bank_details}
+                    </div>
+                  )}
                   <div className="w-64 space-y-1 text-sm">
-                    <div className="flex justify-between"><span>المجموع الجزئي:</span><span>{Number(viewing.subtotal).toFixed(2)}</span></div>
-                    <div className="flex justify-between"><span>TVA {viewing.tax_rate}%:</span><span>{Number(viewing.tax_amount).toFixed(2)}</span></div>
-                    <div className="flex justify-between font-bold text-lg border-t pt-1"><span>الإجمالي:</span><span>{Number(viewing.total).toFixed(2)}</span></div>
+                    <div className="flex justify-between"><span>المجموع الجزئي:</span><span>{formatMoney(viewing.subtotal, tenant?.currency)}</span></div>
+                    <div className="flex justify-between"><span>TVA {viewing.tax_rate}%:</span><span>{formatMoney(viewing.tax_amount, tenant?.currency)}</span></div>
+                    <div className="flex justify-between font-bold text-lg border-t pt-1"><span>الإجمالي:</span><span>{formatMoney(viewing.total, tenant?.currency)}</span></div>
                   </div>
                 </div>
-                {viewing.notes && <div className="mt-4 pt-4 border-t text-sm"><b>ملاحظات:</b> {viewing.notes}</div>}
+                {viewing.notes && <div className="mt-4 pt-4 border-t text-sm whitespace-pre-line"><b>ملاحظات:</b> {viewing.notes}</div>}
+                {stampUrl && (
+                  <img src={stampUrl} alt="stamp" className="absolute bottom-6 left-6 h-24 opacity-80 -rotate-6" />
+                )}
+                {tenant?.invoice_footer && (
+                  <div className="mt-6 pt-3 border-t text-center text-xs text-gray-600 whitespace-pre-line">{tenant.invoice_footer}</div>
+                )}
               </div>
               <DialogFooter className="print:hidden">
                 <Button variant="outline" onClick={() => exportCSV(viewing, viewItems)}>
