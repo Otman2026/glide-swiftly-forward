@@ -96,12 +96,20 @@ function InvoicesPage() {
     setLoading(true);
     const { data: profile } = await supabase.from("profiles").select("tenant_id").maybeSingle();
     if (profile?.tenant_id) {
-      const { data: t } = await supabase
-        .from("tenants")
-        .select("id, name, tax_id, registration_number")
-        .eq("id", profile.tenant_id)
-        .maybeSingle();
-      if (t) setTenant(t as typeof tenant extends null ? never : { id: string; name: string; tax_id: string | null; registration_number: string | null });
+      const { data: t } = await supabase.from("tenants").select("*").eq("id", profile.tenant_id).maybeSingle();
+      if (t) {
+        const co = t as unknown as CompanySettings;
+        setTenant(co);
+        const [lu, su] = await Promise.all([resolveAssetUrl(co.logo_url), resolveAssetUrl(co.stamp_url)]);
+        setLogoUrl(lu); setStampUrl(su);
+        setPrintBrand({
+          companyName: co.name, logoUrl: lu, stampUrl: su,
+          headerNote: co.invoice_header, footerNote: co.invoice_footer,
+          bankDetails: co.bank_details, address: co.address, city: co.city,
+          contactEmail: co.contact_email, contactPhone: co.contact_phone,
+          taxId: co.tax_id, registrationNumber: co.registration_number,
+        });
+      }
     }
     const [{ data: inv }, { data: cust }, { data: ords }] = await Promise.all([
       supabase.from("invoices").select("*").order("issue_date", { ascending: false }),
