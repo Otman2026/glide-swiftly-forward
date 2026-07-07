@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import Stripe from "stripe";
-import { processStripeWebhookEvent } from "@/lib/stripe-webhook.server";
 
 export const Route = createFileRoute("/api/public/webhooks/stripe")({
   server: {
@@ -38,6 +37,7 @@ export const Route = createFileRoute("/api/public/webhooks/stripe")({
         }
 
         try {
+          const { processStripeWebhookEvent } = await import("@/lib/stripe-webhook.server");
           const result = await processStripeWebhookEvent(event);
           return Response.json({ received: true, ...result });
         } catch (error) {
