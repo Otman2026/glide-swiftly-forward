@@ -22,6 +22,9 @@ import {
   LogOut,
   Search,
   Bell,
+  Menu,
+  X,
+  Home,
   type LucideIcon,
 } from "lucide-react";
 
