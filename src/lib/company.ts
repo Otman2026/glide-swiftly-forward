@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { setPrintBrand } from "@/lib/print";
 
 export type CompanySettings = {
   id: string;
