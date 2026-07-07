@@ -9,6 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as DriverRouteImport } from './routes/driver'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -51,6 +53,16 @@ import { Route as AppCustomersIdRouteImport } from './routes/app.customers.$id'
 import { Route as ApiPublicWebhooksStripeRouteImport } from './routes/api.public.webhooks.stripe'
 import { Route as ApiPublicHooksScanAlertsRouteImport } from './routes/api.public.hooks.scan-alerts'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PortalRoute = PortalRouteImport.update({
   id: '/portal',
   path: '/portal',
@@ -264,6 +276,8 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/driver': typeof DriverRoute
   '/portal': typeof PortalRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/app/accidents': typeof AppAccidentsRoute
   '/app/archive': typeof AppArchiveRoute
   '/app/audit': typeof AppAuditRoute
@@ -306,6 +320,8 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/driver': typeof DriverRoute
   '/portal': typeof PortalRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/app/accidents': typeof AppAccidentsRoute
   '/app/archive': typeof AppArchiveRoute
   '/app/audit': typeof AppAuditRoute
@@ -350,6 +366,8 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/driver': typeof DriverRoute
   '/portal': typeof PortalRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/app/accidents': typeof AppAccidentsRoute
   '/app/archive': typeof AppArchiveRoute
   '/app/audit': typeof AppAuditRoute
@@ -395,6 +413,8 @@ export interface FileRouteTypes {
     | '/auth'
     | '/driver'
     | '/portal'
+    | '/privacy'
+    | '/terms'
     | '/app/accidents'
     | '/app/archive'
     | '/app/audit'
@@ -437,6 +457,8 @@ export interface FileRouteTypes {
     | '/auth'
     | '/driver'
     | '/portal'
+    | '/privacy'
+    | '/terms'
     | '/app/accidents'
     | '/app/archive'
     | '/app/audit'
@@ -480,6 +502,8 @@ export interface FileRouteTypes {
     | '/auth'
     | '/driver'
     | '/portal'
+    | '/privacy'
+    | '/terms'
     | '/app/accidents'
     | '/app/archive'
     | '/app/audit'
@@ -524,12 +548,28 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   DriverRoute: typeof DriverRoute
   PortalRoute: typeof PortalRoute
+  PrivacyRoute: typeof PrivacyRoute
+  TermsRoute: typeof TermsRoute
   ApiPublicHooksScanAlertsRoute: typeof ApiPublicHooksScanAlertsRoute
   ApiPublicWebhooksStripeRoute: typeof ApiPublicWebhooksStripeRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/portal': {
       id: '/portal'
       path: '/portal'
@@ -912,6 +952,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   DriverRoute: DriverRoute,
   PortalRoute: PortalRoute,
+  PrivacyRoute: PrivacyRoute,
+  TermsRoute: TermsRoute,
   ApiPublicHooksScanAlertsRoute: ApiPublicHooksScanAlertsRoute,
   ApiPublicWebhooksStripeRoute: ApiPublicWebhooksStripeRoute,
 }
