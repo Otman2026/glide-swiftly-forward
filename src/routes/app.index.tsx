@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/dashboard-layout";
-import { Truck, Package, ClipboardList, Users, FileText, UserCog, TrendingUp, Loader2 } from "lucide-react";
+import { Truck, Package, ClipboardList, Users, FileText, UserCog, TrendingUp, Loader2, Route as RouteIcon, Warehouse } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/app/")({ component: DashboardHome });
@@ -13,6 +13,8 @@ type Stats = {
   drivers: number;
   orders: number;
   shipments: number;
+  trips: number;
+  warehouses: number;
   revenue: number;
 };
 
@@ -22,13 +24,15 @@ function DashboardHome() {
   useEffect(() => {
     (async () => {
       const opts = { count: "exact" as const, head: true };
-      const [c, ct, v, d, o, sh, rev] = await Promise.all([
+      const [c, ct, v, d, o, sh, tr, wh, rev] = await Promise.all([
         supabase.from("customers").select("*", opts),
         supabase.from("contracts").select("*", opts),
         supabase.from("vehicles").select("*", opts),
         supabase.from("drivers").select("*", opts),
         supabase.from("transport_orders").select("*", opts),
         supabase.from("shipments").select("*", opts),
+        supabase.from("trips").select("*", opts),
+        supabase.from("warehouses").select("*", opts),
         supabase.from("transport_orders").select("price").eq("status", "delivered"),
       ]);
       setStats({
@@ -38,6 +42,8 @@ function DashboardHome() {
         drivers: d.count ?? 0,
         orders: o.count ?? 0,
         shipments: sh.count ?? 0,
+        trips: tr.count ?? 0,
+        warehouses: wh.count ?? 0,
         revenue: (rev.data ?? []).reduce((s, r) => s + Number(r.price ?? 0), 0),
       });
     })();
@@ -51,6 +57,8 @@ function DashboardHome() {
         { label: "السائقون", value: String(stats.drivers), icon: UserCog, color: "text-accent" },
         { label: "أوامر النقل", value: String(stats.orders), icon: ClipboardList, color: "text-chart-3" },
         { label: "الشحنات", value: String(stats.shipments), icon: Package, color: "text-accent" },
+        { label: "الرحلات", value: String(stats.trips), icon: RouteIcon, color: "text-primary" },
+        { label: "المستودعات", value: String(stats.warehouses), icon: Warehouse, color: "text-success" },
       ]
     : [];
 
