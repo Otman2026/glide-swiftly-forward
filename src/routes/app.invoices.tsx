@@ -201,11 +201,20 @@ function InvoicesPage() {
   }
 
   const customerMap = useMemo(() => Object.fromEntries(customers.map((c) => [c.id, c.name])), [customers]);
+  const filtered = useMemo(
+    () =>
+      matchQuery(
+        rows.map((r) => ({ ...r, _customer: r.customer_id ? customerMap[r.customer_id] ?? "" : "" })),
+        q,
+        ["invoice_number", "status", "_customer", "issue_date"] as const,
+      ),
+    [rows, q, customerMap],
+  );
   const kpi = useMemo(() => {
-    const total = rows.reduce((s, r) => s + Number(r.total), 0);
-    const paid = rows.reduce((s, r) => s + Number(r.paid_amount), 0);
-    return { count: rows.length, total, paid, due: total - paid };
-  }, [rows]);
+    const total = filtered.reduce((s, r) => s + Number(r.total), 0);
+    const paid = filtered.reduce((s, r) => s + Number(r.paid_amount), 0);
+    return { count: filtered.length, total, paid, due: total - paid };
+  }, [filtered]);
 
   return (
     <>
