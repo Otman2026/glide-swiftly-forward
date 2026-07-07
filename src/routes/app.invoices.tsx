@@ -366,8 +366,8 @@ function InvoicesPage() {
 
       {loading ? (
         <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
-      ) : rows.length === 0 ? (
-        <EmptyState icon={FileText} title="لا توجد فواتير" description="ابدأ بإصدار أول فاتورة نقل" />
+      ) : filtered.length === 0 ? (
+        <EmptyState icon={FileText} title="لا توجد فواتير" description={q ? "لا نتائج مطابقة للبحث" : "ابدأ بإصدار أول فاتورة نقل"} />
       ) : (
         <div className="rounded-lg border bg-card overflow-hidden">
           <table className="w-full text-sm">
@@ -383,7 +383,7 @@ function InvoicesPage() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((r) => (
+              {filtered.map((r) => (
                 <tr key={r.id} className="border-t hover:bg-secondary/30 cursor-pointer" onClick={() => openView(r)}>
                   <td className="p-3 font-medium">{r.invoice_number}</td>
                   <td className="p-3">{r.customer_id ? customerMap[r.customer_id] ?? "—" : "—"}</td>
