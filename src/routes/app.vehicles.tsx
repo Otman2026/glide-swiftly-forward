@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { DocumentsDialog } from "@/components/documents-dialog";
 import { exportToCSV } from "@/lib/csv";
 import { printHTML, esc } from "@/lib/print";
+import { ExportBar } from "@/components/export-bar";
 
 export const Route = createFileRoute("/app/vehicles")({ component: VehiclesPage });
 
@@ -146,9 +147,21 @@ function VehiclesPage() {
         title="أسطول المركبات (FMS)"
         subtitle="شاحنات، جرارات، مقطورات، حاويات، مركبات خفيفة — إدارة كاملة"
         action={
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={onExport} className="gap-2"><Download className="h-4 w-4" /> تصدير</Button>
-            <Button variant="outline" onClick={onPrint} className="gap-2"><Printer className="h-4 w-4" /> طباعة</Button>
+          <div className="flex flex-wrap gap-2">
+            <ExportBar
+              filename="vehicles"
+              title="أسطول المركبات"
+              rows={filtered}
+              columns={[
+                { key: "plate_number", label: "اللوحة" },
+                { key: "brand", label: "الماركة" },
+                { key: "model", label: "الطراز" },
+                { key: "year", label: "السنة" },
+                { key: "type", label: "النوع" },
+                { key: "capacity_tons", label: "الحمولة (طن)" },
+                { key: "status", label: "الحالة", format: (r) => STATUS_LABEL[r.status] ?? r.status },
+              ]}
+            />
             <Button onClick={openCreate} className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90"><Plus className="h-4 w-4" /> مركبة جديدة</Button>
           </div>
         }

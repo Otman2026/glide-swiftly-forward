@@ -24,6 +24,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { ExportBar } from "@/components/export-bar";
 
 export const Route = createFileRoute("/app/invoices")({
   component: InvoicesPage,
@@ -210,13 +211,28 @@ function InvoicesPage() {
         title="الفواتير"
         subtitle="إصدار وإدارة فواتير النقل — TVA، طباعة، تصدير"
         action={
-          <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="ms-2 h-4 w-4" />
-                فاتورة جديدة
-              </Button>
-            </DialogTrigger>
+          <div className="flex flex-wrap gap-2 items-center">
+            <ExportBar
+              filename="invoices"
+              title="الفواتير"
+              rows={rows}
+              columns={[
+                { key: "invoice_number", label: "رقم الفاتورة" },
+                { key: "issue_date", label: "تاريخ الإصدار" },
+                { key: "due_date", label: "تاريخ الاستحقاق" },
+                { key: "status", label: "الحالة" },
+                { key: "subtotal", label: "المجموع الفرعي" },
+                { key: "tax_amount", label: "الضريبة" },
+                { key: "total_amount", label: "الإجمالي" },
+              ]}
+            />
+            <Dialog open={open} onOpenChange={onOpenChange}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="ms-2 h-4 w-4" />
+                  فاتورة جديدة
+                </Button>
+              </DialogTrigger>
             <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" dir="rtl">
               <DialogHeader>
                 <DialogTitle>إنشاء فاتورة</DialogTitle>
@@ -325,6 +341,7 @@ function InvoicesPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          </div>
         }
       />
 
