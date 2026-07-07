@@ -61,6 +61,7 @@ function AccidentsPage() {
   const [form, setForm] = useState(emptyForm);
   const [docsFor, setDocsFor] = useState<Row | null>(null);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [q, setQ] = useState("");
 
   const load = async () => {
     setLoading(true);
