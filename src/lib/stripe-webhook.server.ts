@@ -1,7 +1,9 @@
 import Stripe from "stripe";
+import type { Database, Json } from "@/integrations/supabase/types";
 
 type PlanKey = "trial" | "starter" | "professional" | "enterprise";
 type BillingCycle = "monthly" | "yearly";
+type SubscriptionUpdate = Database["public"]["Tables"]["subscriptions"]["Update"];
 
 const PLAN_LIMITS: Record<PlanKey, { users: number | null; vehicles: number | null; price: number | null }> = {
   trial: { users: 5, vehicles: 10, price: 0 },
@@ -25,7 +27,7 @@ export async function processStripeWebhookEvent(event: Stripe.Event) {
 
   const inserted = await supabaseAdmin
     .from("stripe_webhook_events")
-    .insert({ id: event.id, event_type: event.type, payload: event as unknown as Record<string, unknown> });
+    .insert({ id: event.id, event_type: event.type, payload: event as unknown as Json });
 
   if (inserted.error) {
     if (inserted.error.code === "23505") return { duplicate: true };
@@ -134,7 +136,7 @@ export async function processStripeWebhookEvent(event: Stripe.Event) {
 
     if (!tenantId) return { processed: false };
 
-    const payload: Record<string, unknown> = {
+    const payload: SubscriptionUpdate = {
       status: subscription.status,
       stripe_price_id: getPriceId(subscription),
       current_period_end: getPeriodEnd(subscription),
