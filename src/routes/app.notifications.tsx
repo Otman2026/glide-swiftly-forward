@@ -2,8 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { PageHeader, EmptyState } from "@/components/dashboard-layout";
 import { supabase } from "@/integrations/supabase/client";
-import { Bell, Check, Trash2, Loader2, AlertTriangle, Info, CheckCircle2, XCircle } from "lucide-react";
+import { Bell, Check, Trash2, Loader2, AlertTriangle, Info, CheckCircle2, XCircle, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { generateAlerts } from "@/lib/alerts.functions";
 
 export const Route = createFileRoute("/app/notifications")({
   component: NotificationsPage,
