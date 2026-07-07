@@ -41,6 +41,7 @@ import { Route as AppFinanceRouteImport } from './routes/app.finance'
 import { Route as AppDriversRouteImport } from './routes/app.drivers'
 import { Route as AppDocumentsRouteImport } from './routes/app.documents'
 import { Route as AppCustomersRouteImport } from './routes/app.customers'
+import { Route as AppCostCentersRouteImport } from './routes/app.cost-centers'
 import { Route as AppContractsRouteImport } from './routes/app.contracts'
 import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppAuditRouteImport } from './routes/app.audit'
@@ -208,6 +209,11 @@ const AppCustomersRoute = AppCustomersRouteImport.update({
   path: '/customers',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCostCentersRoute = AppCostCentersRouteImport.update({
+  id: '/cost-centers',
+  path: '/cost-centers',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppContractsRoute = AppContractsRouteImport.update({
   id: '/contracts',
   path: '/contracts',
@@ -250,6 +256,7 @@ export interface FileRoutesByFullPath {
   '/app/audit': typeof AppAuditRoute
   '/app/billing': typeof AppBillingRoute
   '/app/contracts': typeof AppContractsRoute
+  '/app/cost-centers': typeof AppCostCentersRoute
   '/app/customers': typeof AppCustomersRoute
   '/app/documents': typeof AppDocumentsRoute
   '/app/drivers': typeof AppDriversRoute
@@ -289,6 +296,7 @@ export interface FileRoutesByTo {
   '/app/audit': typeof AppAuditRoute
   '/app/billing': typeof AppBillingRoute
   '/app/contracts': typeof AppContractsRoute
+  '/app/cost-centers': typeof AppCostCentersRoute
   '/app/customers': typeof AppCustomersRoute
   '/app/documents': typeof AppDocumentsRoute
   '/app/drivers': typeof AppDriversRoute
@@ -330,6 +338,7 @@ export interface FileRoutesById {
   '/app/audit': typeof AppAuditRoute
   '/app/billing': typeof AppBillingRoute
   '/app/contracts': typeof AppContractsRoute
+  '/app/cost-centers': typeof AppCostCentersRoute
   '/app/customers': typeof AppCustomersRoute
   '/app/documents': typeof AppDocumentsRoute
   '/app/drivers': typeof AppDriversRoute
@@ -372,6 +381,7 @@ export interface FileRouteTypes {
     | '/app/audit'
     | '/app/billing'
     | '/app/contracts'
+    | '/app/cost-centers'
     | '/app/customers'
     | '/app/documents'
     | '/app/drivers'
@@ -411,6 +421,7 @@ export interface FileRouteTypes {
     | '/app/audit'
     | '/app/billing'
     | '/app/contracts'
+    | '/app/cost-centers'
     | '/app/customers'
     | '/app/documents'
     | '/app/drivers'
@@ -451,6 +462,7 @@ export interface FileRouteTypes {
     | '/app/audit'
     | '/app/billing'
     | '/app/contracts'
+    | '/app/cost-centers'
     | '/app/customers'
     | '/app/documents'
     | '/app/drivers'
@@ -718,6 +730,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCustomersRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/cost-centers': {
+      id: '/app/cost-centers'
+      path: '/cost-centers'
+      fullPath: '/app/cost-centers'
+      preLoaderRoute: typeof AppCostCentersRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/contracts': {
       id: '/app/contracts'
       path: '/contracts'
@@ -768,6 +787,7 @@ interface AppRouteChildren {
   AppAuditRoute: typeof AppAuditRoute
   AppBillingRoute: typeof AppBillingRoute
   AppContractsRoute: typeof AppContractsRoute
+  AppCostCentersRoute: typeof AppCostCentersRoute
   AppCustomersRoute: typeof AppCustomersRoute
   AppDocumentsRoute: typeof AppDocumentsRoute
   AppDriversRoute: typeof AppDriversRoute
@@ -802,6 +822,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAuditRoute: AppAuditRoute,
   AppBillingRoute: AppBillingRoute,
   AppContractsRoute: AppContractsRoute,
+  AppCostCentersRoute: AppCostCentersRoute,
   AppCustomersRoute: AppCustomersRoute,
   AppDocumentsRoute: AppDocumentsRoute,
   AppDriversRoute: AppDriversRoute,
