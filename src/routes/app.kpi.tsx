@@ -59,14 +59,14 @@ function KpiPage() {
         supabase.from("drivers").select("id", { count: "exact", head: true }),
         supabase.from("customers").select("id", { count: "exact", head: true }),
         supabase.from("transport_orders").select("id", { count: "exact", head: true }),
-        supabase.from("transport_orders").select("total_amount").eq("status", "delivered"),
-        supabase.from("transport_orders").select("total_amount").eq("status", "delivered"),
+        supabase.from("transport_orders").select("price").eq("status", "delivered"),
+        supabase.from("transport_orders").select("price").eq("status", "delivered"),
         supabase.from("expenses").select("amount"),
         supabase.from("fuel_logs").select("liters,cost"),
         supabase.from("maintenance_records").select("cost"),
         supabase.from("incidents").select("repair_cost"),
-        supabase.from("transport_orders").select("status,total_amount,customer_id,created_at"),
-        supabase.from("transport_orders").select("total_amount,created_at").eq("status", "delivered"),
+        supabase.from("transport_orders").select("status,price,customer_id,created_at"),
+        supabase.from("transport_orders").select("price,created_at").eq("status", "delivered"),
         supabase.from("expenses").select("amount,expense_date,created_at"),
       ]);
       const sum = (arr: any[] | null, k: string) => (arr ?? []).reduce((a, b) => a + Number(b[k] ?? 0), 0);
@@ -77,7 +77,7 @@ function KpiPage() {
         customers: c.count ?? 0,
         orders: o.count ?? 0,
         ordersDelivered: (od.data ?? []).length,
-        revenue: sum(rev.data, "total_amount"),
+        revenue: sum(rev.data, "price"),
         expenses: sum(exp.data, "amount"),
         fuelLiters: sum(fuel.data, "liters"),
         fuelCost: sum(fuel.data, "cost"),
@@ -96,7 +96,7 @@ function KpiPage() {
         months.push({ month: label, revenue: 0, expenses: 0 });
         (ordersWithDate.data ?? []).forEach((r: any) => {
           const d = new Date(r.created_at);
-          if (`${d.getFullYear()}-${d.getMonth()}` === key) months[months.length - 1].revenue += Number(r.total_amount ?? 0);
+          if (`${d.getFullYear()}-${d.getMonth()}` === key) months[months.length - 1].revenue += Number(r.price ?? 0);
         });
         (expensesWithDate.data ?? []).forEach((r: any) => {
           const d = new Date(r.expense_date ?? r.created_at);
@@ -115,7 +115,7 @@ function KpiPage() {
       // Top customers by revenue
       const custMap: Record<string, number> = {};
       (allOrders.data ?? []).forEach((r: any) => {
-        if (r.customer_id) custMap[r.customer_id] = (custMap[r.customer_id] ?? 0) + Number(r.total_amount ?? 0);
+        if (r.customer_id) custMap[r.customer_id] = (custMap[r.customer_id] ?? 0) + Number(r.price ?? 0);
       });
       const topIds = Object.entries(custMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
       if (topIds.length) {
