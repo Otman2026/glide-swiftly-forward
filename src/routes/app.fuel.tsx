@@ -98,7 +98,15 @@ function FuelPage() {
     if (error) toast.error(error.message); else { toast.success("تم الحذف"); load(); }
   };
 
-  const filtered = useMemo(() => rows.filter((r) => vehicleFilter === "all" || r.vehicle_id === vehicleFilter), [rows, vehicleFilter]);
+  const filtered = useMemo(() => {
+    const s = q.trim().toLowerCase();
+    return rows.filter((r) => {
+      if (vehicleFilter !== "all" && r.vehicle_id !== vehicleFilter) return false;
+      if (!s) return true;
+      return [r.vehicles?.plate_number, r.drivers?.full_name, r.station, r.fuel_date]
+        .some((v) => String(v ?? "").toLowerCase().includes(s));
+    });
+  }, [rows, vehicleFilter, q]);
   const totalLiters = filtered.reduce((s, r) => s + Number(r.liters), 0);
   const totalCost = filtered.reduce((s, r) => s + Number(r.cost), 0);
 
