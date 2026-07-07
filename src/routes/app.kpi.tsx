@@ -3,6 +3,21 @@ import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/dashboard-layout";
 import { BarChart3, Truck, Users, Fuel, TrendingUp, Loader2, Package, AlertTriangle, Wrench } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  Legend,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
 
 export const Route = createFileRoute("/app/kpi")({
   component: KpiPage,
