@@ -169,6 +169,7 @@ function DocumentsPage() {
         </div>
       )}
 
+      <div className="mb-3"><SearchInput value={q} onChange={setQ} placeholder="ابحث بالعنوان أو المرجع…" /></div>
       <div className="mb-4 flex flex-wrap gap-2">
         <button onClick={() => setFilter("ALL")} className={`rounded-full px-4 py-2 text-xs font-semibold transition ${!filter || filter === "ALL" ? "bg-accent text-accent-foreground" : "bg-secondary text-muted-foreground hover:bg-secondary/70"}`}>الكل ({rows.length})</button>
         {DOC_TYPES.map(t => (
