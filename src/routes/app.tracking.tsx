@@ -4,7 +4,6 @@ import { PageHeader, EmptyState } from "@/components/dashboard-layout";
 import { supabase } from "@/integrations/supabase/client";
 import { MapPin, Loader2, Truck, Plus, X, Navigation } from "lucide-react";
 import { toast } from "sonner";
-import { ClientOnly } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/app/tracking")({
   component: TrackingPage,
