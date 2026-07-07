@@ -25,6 +25,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ExportBar } from "@/components/export-bar";
+import { SearchInput, matchQuery } from "@/components/search-input";
 
 export const Route = createFileRoute("/app/invoices")({
   component: InvoicesPage,
