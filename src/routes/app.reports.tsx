@@ -234,6 +234,10 @@ function ReportsPage() {
                 className={`${btn} bg-destructive/10 text-destructive hover:bg-destructive/20`}>
                 <FileText className="h-4 w-4" /> PDF
               </button>
+              <button onClick={() => toPrint(exportRows, title, `${from} → ${to}`)} disabled={disabled}
+                className={`${btn} bg-primary/10 text-primary hover:bg-primary/20`}>
+                <Printer className="h-4 w-4" /> طباعة بالشعار
+              </button>
             </div>
           );
         })()}
