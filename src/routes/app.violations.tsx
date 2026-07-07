@@ -118,7 +118,15 @@ function ViolationsPage() {
     if (error) toast.error(error.message); else { toast.success("تم الحذف"); load(); }
   };
 
-  const filtered = useMemo(() => rows.filter((r) => statusFilter === "all" || r.status === statusFilter), [rows, statusFilter]);
+  const filtered = useMemo(() => {
+    const base = rows.filter((r) => statusFilter === "all" || r.status === statusFilter);
+    const s = q.trim().toLowerCase();
+    if (!s) return base;
+    return base.filter((r) =>
+      [r.violation_type, r.location, r.reference_number, r.drivers?.full_name, r.vehicles?.plate_number]
+        .some((v) => String(v ?? "").toLowerCase().includes(s))
+    );
+  }, [rows, statusFilter, q]);
   const counts = {
     total: rows.length,
     pending: rows.filter((r) => r.status === "pending").length,
