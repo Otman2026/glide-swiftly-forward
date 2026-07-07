@@ -20,7 +20,7 @@ type OrderRow = {
   created_at: string;
   customers?: { name: string } | null;
   shipments?: { id: string; shipment_number: string; status: string }[];
-  invoices?: { id: string; invoice_number: string; status: string; total_amount: number }[];
+  invoices?: { id: string; invoice_number: string; status: string; total: number }[];
 };
 
 type Stage = {
@@ -54,7 +54,7 @@ function PipelinePage() {
     setLoading(true);
     const { data, error } = await supabase
       .from("transport_orders")
-      .select("id,order_number,origin,destination,status,price,currency,created_at,customers(name),shipments(id,shipment_number,status),invoices(id,invoice_number,status,total_amount)")
+      .select("id,order_number,origin,destination,status,price,currency,created_at,customers(name),shipments(id,shipment_number,status),invoices(id,invoice_number,status,total)")
       .order("created_at", { ascending: false })
       .limit(500);
     if (error) toast.error(error.message);
@@ -163,7 +163,7 @@ function OrderCard({ o }: { o: OrderRow }) {
       )}
       {invoice && (
         <div className="mt-1 text-[10px] text-success font-mono" dir="ltr">
-          📄 {invoice.invoice_number} · {Number(invoice.total_amount).toLocaleString()}
+          📄 {invoice.invoice_number} · {Number(invoice.total).toLocaleString()}
         </div>
       )}
     </Link>
