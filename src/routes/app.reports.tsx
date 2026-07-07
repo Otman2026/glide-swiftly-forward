@@ -56,6 +56,16 @@ const toPdf = (rows: Row[], filename: string, title: string) => {
   doc.save(filename);
 };
 
+const toPrint = (rows: Row[], title: string, subtitle: string) => {
+  const headers = rows.length ? Object.keys(rows[0]) : [];
+  const body = `<h1>${esc(title)}</h1><h2>${esc(subtitle)}</h2>` + (rows.length ? `
+    <table><thead><tr>${headers.map((h) => `<th>${esc(h)}</th>`).join("")}</tr></thead>
+    <tbody>${rows.map((r) => `<tr>${headers.map((h) => `<td>${esc(r[h])}</td>`).join("")}</tr>`).join("")}</tbody></table>
+  ` : `<p style="text-align:center;color:#64748b;padding:40px">لا توجد بيانات في الفترة المحددة.</p>`);
+  printHTML(title, body);
+};
+
+
 
 function ReportsPage() {
   const today = new Date().toISOString().slice(0, 10);
