@@ -1,10 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { PageHeader, EmptyState } from "@/components/dashboard-layout";
-import { Package, Plus, Search, Trash2, Loader2 } from "lucide-react";
+import { Package, Plus, Search, Trash2, Loader2, MapPin, Printer, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
+  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,28 +13,26 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { exportToCSV } from "@/lib/csv";
+import { printHTML, esc } from "@/lib/print";
 
 export const Route = createFileRoute("/app/shipments")({ component: ShipmentsPage });
 
+type Status = "planned" | "loading" | "in_transit" | "delivered" | "cancelled";
 type Shipment = {
-  id: string;
-  shipment_number: string;
-  origin: string;
-  destination: string;
-  distance_km: number | null;
-  status: "planned" | "loading" | "in_transit" | "delivered" | "cancelled";
-  order_id: string | null;
-  vehicle_id: string | null;
-  driver_id: string | null;
+  id: string; shipment_number: string; origin: string; destination: string;
+  distance_km: number | null; status: Status;
+  order_id: string | null; vehicle_id: string | null; driver_id: string | null;
   vehicles?: { plate_number: string } | null;
   drivers?: { full_name: string } | null;
+  transport_orders?: { order_number: string } | null;
 };
 
-const STATUS_LABEL: Record<Shipment["status"], string> = {
+const STATUS_LABEL: Record<Status, string> = {
   planned: "مبرمجة", loading: "قيد التحميل", in_transit: "في الطريق",
   delivered: "مُسلَّمة", cancelled: "ملغاة",
 };
-const STATUS_COLOR: Record<Shipment["status"], string> = {
+const STATUS_COLOR: Record<Status, string> = {
   planned: "bg-muted text-muted-foreground",
   loading: "bg-primary/10 text-primary",
   in_transit: "bg-warning/10 text-warning-foreground",
@@ -43,24 +41,26 @@ const STATUS_COLOR: Record<Shipment["status"], string> = {
 };
 
 function ShipmentsPage() {
+  const nav = useNavigate();
   const [rows, setRows] = useState<Shipment[]>([]);
   const [orders, setOrders] = useState<{ id: string; order_number: string }[]>([]);
   const [vehicles, setVehicles] = useState<{ id: string; plate_number: string }[]>([]);
   const [drivers, setDrivers] = useState<{ id: string; full_name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | Status>("all");
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     shipment_number: "", order_id: "none", vehicle_id: "none", driver_id: "none",
-    origin: "", destination: "", distance_km: "", status: "planned",
+    origin: "", destination: "", distance_km: "", status: "planned" as Status,
   });
 
   const load = async () => {
     setLoading(true);
     const [{ data, error }, { data: o }, { data: v }, { data: d }] = await Promise.all([
       supabase.from("shipments")
-        .select("id,shipment_number,origin,destination,distance_km,status,order_id,vehicle_id,driver_id,vehicles(plate_number),drivers(full_name)")
+        .select("id,shipment_number,origin,destination,distance_km,status,order_id,vehicle_id,driver_id,vehicles(plate_number),drivers(full_name),transport_orders(order_number)")
         .order("created_at", { ascending: false }),
       supabase.from("transport_orders").select("id,order_number").order("created_at", { ascending: false }),
       supabase.from("vehicles").select("id,plate_number"),
@@ -77,17 +77,15 @@ function ShipmentsPage() {
     e.preventDefault();
     setSaving(true);
     const { data: profile } = await supabase.from("profiles").select("tenant_id").maybeSingle();
-    if (!profile?.tenant_id) { toast.error("لا توجد شركة مرتبطة بحسابك"); setSaving(false); return; }
+    if (!profile?.tenant_id) { toast.error("لا توجد شركة"); setSaving(false); return; }
     const { error } = await supabase.from("shipments").insert({
-      tenant_id: profile.tenant_id,
-      shipment_number: form.shipment_number,
+      tenant_id: profile.tenant_id, shipment_number: form.shipment_number,
       order_id: form.order_id !== "none" ? form.order_id : null,
       vehicle_id: form.vehicle_id !== "none" ? form.vehicle_id : null,
       driver_id: form.driver_id !== "none" ? form.driver_id : null,
-      origin: form.origin,
-      destination: form.destination,
+      origin: form.origin, destination: form.destination,
       distance_km: form.distance_km ? Number(form.distance_km) : null,
-      status: form.status as Shipment["status"],
+      status: form.status,
     });
     setSaving(false);
     if (error) return toast.error(error.message);
@@ -97,91 +95,143 @@ function ShipmentsPage() {
     load();
   };
 
+  const onQuickStatus = async (id: string, status: Status) => {
+    const { error } = await supabase.from("shipments").update({ status }).eq("id", id);
+    if (error) toast.error(error.message); else { toast.success("تم تحديث الحالة"); load(); }
+  };
+
   const onDelete = async (id: string) => {
     if (!confirm("حذف هذه الشحنة؟")) return;
     const { error } = await supabase.from("shipments").delete().eq("id", id);
     if (error) toast.error(error.message); else { toast.success("تم الحذف"); load(); }
   };
 
-  const filtered = rows.filter((r) => q ? (r.shipment_number + r.origin + r.destination).toLowerCase().includes(q.toLowerCase()) : true);
+  const onTrack = () => nav({ to: "/app/tracking" });
+
+  const onPrint = (s: Shipment) => {
+    printHTML(`بوليصة شحن ${s.shipment_number}`, `
+      <h1>بوليصة شحن ${esc(s.shipment_number)}</h1>
+      <h2>${esc(s.origin)} → ${esc(s.destination)}</h2>
+      <dl class="kv">
+        <dt>رقم الشحنة</dt><dd dir="ltr">${esc(s.shipment_number)}</dd>
+        <dt>أمر النقل</dt><dd dir="ltr">${esc(s.transport_orders?.order_number)}</dd>
+        <dt>المركبة</dt><dd dir="ltr">${esc(s.vehicles?.plate_number)}</dd>
+        <dt>السائق</dt><dd>${esc(s.drivers?.full_name)}</dd>
+        <dt>نقطة التحميل</dt><dd>${esc(s.origin)}</dd>
+        <dt>نقطة التسليم</dt><dd>${esc(s.destination)}</dd>
+        <dt>المسافة</dt><dd>${s.distance_km ? `${s.distance_km} كم` : "—"}</dd>
+        <dt>الحالة</dt><dd>${esc(STATUS_LABEL[s.status])}</dd>
+      </dl>
+      <div style="margin-top:60px;display:flex;justify-content:space-between;font-size:13px">
+        <div>توقيع المرسِل: ______________________</div>
+        <div>توقيع المستلِم: ______________________</div>
+      </div>`);
+  };
+
+  const onExport = () => {
+    if (filtered.length === 0) return toast.error("لا توجد بيانات");
+    exportToCSV(filtered, [
+      { key: "shipment_number", label: "الرقم" },
+      { key: "origin", label: "من" },
+      { key: "destination", label: "إلى" },
+      { key: "vehicle", label: "المركبة", get: (r) => r.vehicles?.plate_number ?? "" },
+      { key: "driver", label: "السائق", get: (r) => r.drivers?.full_name ?? "" },
+      { key: "distance_km", label: "المسافة (كم)" },
+      { key: "status", label: "الحالة", get: (r) => STATUS_LABEL[r.status] },
+    ], `shipments-${new Date().toISOString().slice(0, 10)}`);
+    toast.success("تم التصدير");
+  };
+
+  const filtered = rows.filter((r) => {
+    if (statusFilter !== "all" && r.status !== statusFilter) return false;
+    if (!q) return true;
+    return (r.shipment_number + " " + r.origin + " " + r.destination).toLowerCase().includes(q.toLowerCase());
+  });
 
   return (
     <>
-      <PageHeader
-        title="الشحنات"
-        subtitle="متابعة الشحنات المعيَّنة، المركبة، السائق، والمسافة"
+      <PageHeader title="الشحنات" subtitle="متابعة الشحنات المعيَّنة، المركبة، السائق، والمسافة"
         action={
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
-                <Plus className="h-4 w-4" /> شحنة جديدة
-              </Button>
-            </DialogTrigger>
-            <DialogContent dir="rtl" className="max-w-2xl">
-              <DialogHeader><DialogTitle>إضافة شحنة</DialogTitle></DialogHeader>
-              <form onSubmit={onCreate} className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <div><Label>رقم الشحنة *</Label>
-                    <Input required dir="ltr" value={form.shipment_number} onChange={(e) => setForm({ ...form, shipment_number: e.target.value })} /></div>
-                  <div><Label>أمر النقل</Label>
-                    <Select value={form.order_id} onValueChange={(v) => setForm({ ...form, order_id: v })}>
-                      <SelectTrigger><SelectValue placeholder="اختياري" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">— بدون —</SelectItem>
-                        {orders.map((o) => <SelectItem key={o.id} value={o.id}>{o.order_number}</SelectItem>)}
-                      </SelectContent>
-                    </Select></div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div><Label>المركبة</Label>
-                    <Select value={form.vehicle_id} onValueChange={(v) => setForm({ ...form, vehicle_id: v })}>
-                      <SelectTrigger><SelectValue placeholder="اختياري" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">— بدون —</SelectItem>
-                        {vehicles.map((v) => <SelectItem key={v.id} value={v.id}>{v.plate_number}</SelectItem>)}
-                      </SelectContent>
-                    </Select></div>
-                  <div><Label>السائق</Label>
-                    <Select value={form.driver_id} onValueChange={(v) => setForm({ ...form, driver_id: v })}>
-                      <SelectTrigger><SelectValue placeholder="اختياري" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">— بدون —</SelectItem>
-                        {drivers.map((d) => <SelectItem key={d.id} value={d.id}>{d.full_name}</SelectItem>)}
-                      </SelectContent>
-                    </Select></div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div><Label>من *</Label>
-                    <Input required value={form.origin} onChange={(e) => setForm({ ...form, origin: e.target.value })} /></div>
-                  <div><Label>إلى *</Label>
-                    <Input required value={form.destination} onChange={(e) => setForm({ ...form, destination: e.target.value })} /></div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div><Label>المسافة (كم)</Label>
-                    <Input type="number" step="0.1" value={form.distance_km} onChange={(e) => setForm({ ...form, distance_km: e.target.value })} /></div>
-                  <div>
-                    <Label>الحالة</Label>
-                    <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>{Object.entries(STATUS_LABEL).map(([k, l]) => <SelectItem key={k} value={k}>{l}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button type="submit" disabled={saving} className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
-                    {saving && <Loader2 className="h-4 w-4 animate-spin" />} حفظ
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={onExport} className="gap-2"><Download className="h-4 w-4" /> CSV</Button>
+            <Button onClick={() => setOpen(true)} className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
+              <Plus className="h-4 w-4" /> شحنة جديدة
+            </Button>
+          </div>
         }
       />
 
-      <div className="mb-4 relative max-w-md">
-        <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="بحث..."
-          className="h-10 w-full rounded-lg border border-border bg-card pr-10 pl-4 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20" />
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent dir="rtl" className="max-w-2xl">
+          <DialogHeader><DialogTitle>إضافة شحنة</DialogTitle></DialogHeader>
+          <form onSubmit={onCreate} className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>رقم الشحنة *</Label>
+                <Input required dir="ltr" value={form.shipment_number} onChange={(e) => setForm({ ...form, shipment_number: e.target.value })} /></div>
+              <div><Label>أمر النقل</Label>
+                <Select value={form.order_id} onValueChange={(v) => setForm({ ...form, order_id: v })}>
+                  <SelectTrigger><SelectValue placeholder="اختياري" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">— بدون —</SelectItem>
+                    {orders.map((o) => <SelectItem key={o.id} value={o.id}>{o.order_number}</SelectItem>)}
+                  </SelectContent>
+                </Select></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>المركبة</Label>
+                <Select value={form.vehicle_id} onValueChange={(v) => setForm({ ...form, vehicle_id: v })}>
+                  <SelectTrigger><SelectValue placeholder="اختياري" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">— بدون —</SelectItem>
+                    {vehicles.map((v) => <SelectItem key={v.id} value={v.id}>{v.plate_number}</SelectItem>)}
+                  </SelectContent>
+                </Select></div>
+              <div><Label>السائق</Label>
+                <Select value={form.driver_id} onValueChange={(v) => setForm({ ...form, driver_id: v })}>
+                  <SelectTrigger><SelectValue placeholder="اختياري" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">— بدون —</SelectItem>
+                    {drivers.map((d) => <SelectItem key={d.id} value={d.id}>{d.full_name}</SelectItem>)}
+                  </SelectContent>
+                </Select></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>من *</Label>
+                <Input required value={form.origin} onChange={(e) => setForm({ ...form, origin: e.target.value })} /></div>
+              <div><Label>إلى *</Label>
+                <Input required value={form.destination} onChange={(e) => setForm({ ...form, destination: e.target.value })} /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>المسافة (كم)</Label>
+                <Input type="number" step="0.1" value={form.distance_km} onChange={(e) => setForm({ ...form, distance_km: e.target.value })} /></div>
+              <div><Label>الحالة</Label>
+                <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as Status })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{Object.entries(STATUS_LABEL).map(([k, l]) => <SelectItem key={k} value={k}>{l}</SelectItem>)}</SelectContent>
+                </Select></div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" disabled={saving} className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
+                {saving && <Loader2 className="h-4 w-4 animate-spin" />} حفظ
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <div className="relative flex-1 min-w-64 max-w-md">
+          <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="بحث..."
+            className="h-10 w-full rounded-lg border border-border bg-card pr-10 pl-4 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20" />
+        </div>
+        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as "all" | Status)}>
+          <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">كل الحالات</SelectItem>
+            {Object.entries(STATUS_LABEL).map(([k, l]) => <SelectItem key={k} value={k}>{l}</SelectItem>)}
+          </SelectContent>
+        </Select>
       </div>
 
       {loading ? (
@@ -200,7 +250,7 @@ function ShipmentsPage() {
                 <th className="p-4 text-right font-semibold">السائق</th>
                 <th className="p-4 text-right font-semibold">المسافة</th>
                 <th className="p-4 text-right font-semibold">الحالة</th>
-                <th className="p-4 text-right font-semibold"></th>
+                <th className="p-4 text-right font-semibold">إجراءات</th>
               </tr>
             </thead>
             <tbody>
@@ -213,15 +263,18 @@ function ShipmentsPage() {
                   <td className="p-4">{s.drivers?.full_name ?? "—"}</td>
                   <td className="p-4">{s.distance_km ? `${s.distance_km} كم` : "—"}</td>
                   <td className="p-4">
-                    <span className={`inline-flex rounded-md px-2 py-1 text-xs font-semibold ${STATUS_COLOR[s.status]}`}>
-                      {STATUS_LABEL[s.status]}
-                    </span>
+                    <Select value={s.status} onValueChange={(v) => onQuickStatus(s.id, v as Status)}>
+                      <SelectTrigger className={`h-8 w-32 text-xs font-semibold border-0 ${STATUS_COLOR[s.status]}`}><SelectValue /></SelectTrigger>
+                      <SelectContent>{Object.entries(STATUS_LABEL).map(([k, l]) => <SelectItem key={k} value={k}>{l}</SelectItem>)}</SelectContent>
+                    </Select>
                   </td>
                   <td className="p-4">
-                    <Button variant="ghost" size="sm" onClick={() => onDelete(s.id)}
-                      className="text-destructive hover:bg-destructive/10 hover:text-destructive">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="sm" onClick={onTrack} title="تتبع" className="text-accent"><MapPin className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="sm" onClick={() => onPrint(s)} title="طباعة"><Printer className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="sm" onClick={() => onDelete(s.id)} title="حذف"
+                        className="text-destructive hover:bg-destructive/10 hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                    </div>
                   </td>
                 </tr>
               ))}
