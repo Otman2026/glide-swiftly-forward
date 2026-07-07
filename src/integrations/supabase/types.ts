@@ -783,8 +783,10 @@ export type Database = {
           id: string
           logo_url: string | null
           name: string
+          registration_number: string | null
           slug: string
           status: Database["public"]["Enums"]["tenant_status"]
+          tax_id: string | null
           updated_at: string
         }
         Insert: {
@@ -797,8 +799,10 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name: string
+          registration_number?: string | null
           slug: string
           status?: Database["public"]["Enums"]["tenant_status"]
+          tax_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -811,8 +815,10 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name?: string
+          registration_number?: string | null
           slug?: string
           status?: Database["public"]["Enums"]["tenant_status"]
+          tax_id?: string | null
           updated_at?: string
         }
         Relationships: []
