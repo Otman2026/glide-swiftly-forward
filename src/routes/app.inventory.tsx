@@ -136,10 +136,12 @@ function ItemsTab({
 }) {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [q, setQ] = useState("");
   const [form, setForm] = useState({
     warehouse_id: "", location_id: "", sku: "", name: "",
     unit: "pcs", quantity: "0", min_quantity: "0", unit_cost: "0",
   });
+  const filtered = useMemo(() => matchQuery(items, q, ["sku", "name"]), [items, q]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
