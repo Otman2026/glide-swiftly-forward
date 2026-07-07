@@ -19,19 +19,28 @@ electron/
 من Lovable: **GitHub → Connect** ثم Push.
 
 ### 2) شغّل البناء
-طريقتان:
+ثلاث طرق:
 
-**أ) بإصدار tag (يُنشئ Release مع المثبّت):**
+**أ) تلقائياً مع أي رفع للكود:**
+بمجرد أن يتزامن المشروع مع GitHub أو يتم عمل Push لأي فرع، سيبدأ بناء المثبّت تلقائياً.
+
+بعد انتهاء البناء ستجد آخر نسخة دائماً في:
+**GitHub → Releases → SAIFO Windows Setup - Latest → Assets → ملف Setup.exe**
+
+**ب) بإصدار tag (يُنشئ Release مع المثبّت):**
 ```bash
 git tag v1.0.0
 git push origin v1.0.0
 ```
 
-**ب) يدوياً:** من GitHub → **Actions → Build Windows Setup → Run workflow**.
+**ج) يدوياً:** من GitHub → **Actions → Build Windows Setup → Run workflow**.
 
 ### 3) نزّل الملف
-- من صفحة **Actions** → آخر تشغيل → قسم **Artifacts** → `SAIFO-TRANSPORT-ERP-Windows-Setup`.
-- أو من صفحة **Releases** إذا استخدمت tag.
+- الأفضل: من صفحة **Releases** → **SAIFO Windows Setup - Latest** → قسم **Assets**.
+- أو من صفحة **Actions** → آخر تشغيل → قسم **Artifacts** → `SAIFO-TRANSPORT-ERP-Windows-Setup`.
+- أو من صفحة **Releases** الخاصة بالـ tag إذا استخدمت إصداراً مثل `v1.0.0`.
+
+إذا لم يظهر تبويب **Actions** في GitHub، فهذا لا يمنع التحميل: استخدم صفحة **Releases** لأن الملف يُنشر هناك تلقائياً بعد كل Push.
 
 الملف الناتج:
 ```
