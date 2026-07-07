@@ -2,10 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/dashboard-layout";
 import { supabase } from "@/integrations/supabase/client";
-import { FileDown, FileText, FileSpreadsheet, Loader2, TrendingUp, TrendingDown, Wallet } from "lucide-react";
+import { FileDown, FileText, FileSpreadsheet, Loader2, TrendingUp, TrendingDown, Wallet, Printer } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
+import { printHTML, esc } from "@/lib/print";
 
 export const Route = createFileRoute("/app/reports")({
   component: ReportsPage,
