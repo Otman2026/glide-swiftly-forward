@@ -23,7 +23,7 @@ function Customer360Page() {
       setLoading(true);
       const [c, ct, inv, tr, or, dc] = await Promise.all([
         supabase.from("customers").select("*").eq("id", id).maybeSingle(),
-        supabase.from("contracts").select("id,start_date,end_date,total_amount,status,archived_at").eq("customer_id", id).order("created_at", { ascending: false }),
+        supabase.from("contracts").select("id,contract_number,start_date,end_date,value,status,archived_at").eq("customer_id", id).order("created_at", { ascending: false }),
         supabase.from("invoices").select("id,invoice_number,total_amount,status,issue_date,due_date").eq("customer_id", id).order("issue_date", { ascending: false }),
         supabase.from("trips").select("id,trip_number,status,revenue,start_date,end_date").eq("customer_id", id).order("created_at", { ascending: false }).limit(20),
         supabase.from("transport_orders").select("id,order_number,status,origin,destination,created_at").eq("customer_id", id).order("created_at", { ascending: false }).limit(20),
@@ -88,7 +88,7 @@ function Customer360Page() {
         <>
           <td className="p-3 font-mono text-xs">{c.id.slice(0, 8)}</td>
           <td className="p-3">{c.start_date} → {c.end_date}</td>
-          <td className="p-3">{Number(c.total_amount || 0).toLocaleString()}</td>
+          <td className="p-3">{Number(c.value || 0).toLocaleString()}</td>
           <td className="p-3">{c.status}</td>
         </>
       )} headers={["المرجع", "الفترة", "المبلغ", "الحالة"]} />
