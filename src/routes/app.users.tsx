@@ -31,6 +31,8 @@ type Member = {
   email: string | null;
   customer_id: string | null;
   driver_id: string | null;
+  disabled_at: string | null;
+  disabled_reason: string | null;
   roles: string[];
 };
 
