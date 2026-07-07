@@ -86,7 +86,7 @@ function Customer360Page() {
 
       <Section title="العقود" icon={FileText} items={contracts} render={(c) => (
         <>
-          <td className="p-3 font-mono text-xs">{c.id.slice(0, 8)}</td>
+          <td className="p-3 font-mono text-xs">{c.contract_number ?? c.id.slice(0, 8)}</td>
           <td className="p-3">{c.start_date} → {c.end_date}</td>
           <td className="p-3">{Number(c.value || 0).toLocaleString()}</td>
           <td className="p-3">{c.status}</td>
