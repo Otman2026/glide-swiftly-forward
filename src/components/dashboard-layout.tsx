@@ -78,6 +78,7 @@ const NAV: NavGroup[] = [
     title: "اللوجستيك والمالية",
     items: [
       { to: "/app/warehouses", label: "المستودعات", icon: Warehouse },
+      { to: "/app/inventory", label: "المخزون والحركات", icon: Package },
       { to: "/app/documents", label: "الوثائق", icon: FolderArchive },
       { to: "/app/invoices", label: "الفواتير", icon: FileText },
       { to: "/app/finance", label: "المالية", icon: Wallet },

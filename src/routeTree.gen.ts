@@ -30,6 +30,7 @@ import { Route as AppNotificationsRouteImport } from './routes/app.notifications
 import { Route as AppMaintenanceRouteImport } from './routes/app.maintenance'
 import { Route as AppKpiRouteImport } from './routes/app.kpi'
 import { Route as AppInvoicesRouteImport } from './routes/app.invoices'
+import { Route as AppInventoryRouteImport } from './routes/app.inventory'
 import { Route as AppInsightsRouteImport } from './routes/app.insights'
 import { Route as AppHrRouteImport } from './routes/app.hr'
 import { Route as AppFuelRouteImport } from './routes/app.fuel'
@@ -148,6 +149,11 @@ const AppInvoicesRoute = AppInvoicesRouteImport.update({
   path: '/invoices',
   getParentRoute: () => AppRoute,
 } as any)
+const AppInventoryRoute = AppInventoryRouteImport.update({
+  id: '/inventory',
+  path: '/inventory',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppInsightsRoute = AppInsightsRouteImport.update({
   id: '/insights',
   path: '/insights',
@@ -226,6 +232,7 @@ export interface FileRoutesByFullPath {
   '/app/fuel': typeof AppFuelRoute
   '/app/hr': typeof AppHrRoute
   '/app/insights': typeof AppInsightsRoute
+  '/app/inventory': typeof AppInventoryRoute
   '/app/invoices': typeof AppInvoicesRoute
   '/app/kpi': typeof AppKpiRoute
   '/app/maintenance': typeof AppMaintenanceRoute
@@ -260,6 +267,7 @@ export interface FileRoutesByTo {
   '/app/fuel': typeof AppFuelRoute
   '/app/hr': typeof AppHrRoute
   '/app/insights': typeof AppInsightsRoute
+  '/app/inventory': typeof AppInventoryRoute
   '/app/invoices': typeof AppInvoicesRoute
   '/app/kpi': typeof AppKpiRoute
   '/app/maintenance': typeof AppMaintenanceRoute
@@ -296,6 +304,7 @@ export interface FileRoutesById {
   '/app/fuel': typeof AppFuelRoute
   '/app/hr': typeof AppHrRoute
   '/app/insights': typeof AppInsightsRoute
+  '/app/inventory': typeof AppInventoryRoute
   '/app/invoices': typeof AppInvoicesRoute
   '/app/kpi': typeof AppKpiRoute
   '/app/maintenance': typeof AppMaintenanceRoute
@@ -333,6 +342,7 @@ export interface FileRouteTypes {
     | '/app/fuel'
     | '/app/hr'
     | '/app/insights'
+    | '/app/inventory'
     | '/app/invoices'
     | '/app/kpi'
     | '/app/maintenance'
@@ -367,6 +377,7 @@ export interface FileRouteTypes {
     | '/app/fuel'
     | '/app/hr'
     | '/app/insights'
+    | '/app/inventory'
     | '/app/invoices'
     | '/app/kpi'
     | '/app/maintenance'
@@ -402,6 +413,7 @@ export interface FileRouteTypes {
     | '/app/fuel'
     | '/app/hr'
     | '/app/insights'
+    | '/app/inventory'
     | '/app/invoices'
     | '/app/kpi'
     | '/app/maintenance'
@@ -581,6 +593,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppInvoicesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/inventory': {
+      id: '/app/inventory'
+      path: '/inventory'
+      fullPath: '/app/inventory'
+      preLoaderRoute: typeof AppInventoryRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/insights': {
       id: '/app/insights'
       path: '/insights'
@@ -679,6 +698,7 @@ interface AppRouteChildren {
   AppFuelRoute: typeof AppFuelRoute
   AppHrRoute: typeof AppHrRoute
   AppInsightsRoute: typeof AppInsightsRoute
+  AppInventoryRoute: typeof AppInventoryRoute
   AppInvoicesRoute: typeof AppInvoicesRoute
   AppKpiRoute: typeof AppKpiRoute
   AppMaintenanceRoute: typeof AppMaintenanceRoute
@@ -708,6 +728,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppFuelRoute: AppFuelRoute,
   AppHrRoute: AppHrRoute,
   AppInsightsRoute: AppInsightsRoute,
+  AppInventoryRoute: AppInventoryRoute,
   AppInvoicesRoute: AppInvoicesRoute,
   AppKpiRoute: AppKpiRoute,
   AppMaintenanceRoute: AppMaintenanceRoute,
