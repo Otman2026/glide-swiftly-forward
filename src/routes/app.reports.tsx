@@ -183,15 +183,29 @@ function ReportsPage() {
       <PageHeader
         title="مركز التقارير"
         subtitle="تقارير مالية وتشغيلية قابلة للتصدير"
-        action={
-          <button
-            onClick={() => toCsv(rows.length ? rows : pnlRows(pnl), `saifo-report-${tab}-${from}_${to}.csv`)}
-            disabled={loading || !data}
-            className="flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-semibold text-accent-foreground hover:bg-accent/90 disabled:opacity-50"
-          >
-            <FileDown className="h-4 w-4" /> تصدير CSV
-          </button>
-        }
+        action={(() => {
+          const exportRows = rows.length ? rows : pnlRows(pnl);
+          const base = `saifo-report-${tab}-${from}_${to}`;
+          const title = `تقرير SAIFO — ${tab} — ${from} → ${to}`;
+          const disabled = loading || !data;
+          const btn = "flex h-10 items-center gap-2 rounded-lg px-3 text-sm font-semibold disabled:opacity-50";
+          return (
+            <div className="flex flex-wrap gap-2">
+              <button onClick={() => toCsv(exportRows, `${base}.csv`)} disabled={disabled}
+                className={`${btn} bg-secondary hover:bg-secondary/80`}>
+                <FileDown className="h-4 w-4" /> CSV
+              </button>
+              <button onClick={() => toXlsx(exportRows, `${base}.xlsx`, tab)} disabled={disabled}
+                className={`${btn} bg-success/10 text-success hover:bg-success/20`}>
+                <FileSpreadsheet className="h-4 w-4" /> Excel
+              </button>
+              <button onClick={() => toPdf(exportRows, `${base}.pdf`, title)} disabled={disabled}
+                className={`${btn} bg-destructive/10 text-destructive hover:bg-destructive/20`}>
+                <FileText className="h-4 w-4" /> PDF
+              </button>
+            </div>
+          );
+        })()}
       />
 
       <div className="mb-4 flex flex-wrap items-end gap-3 rounded-2xl border border-border bg-card p-4">
