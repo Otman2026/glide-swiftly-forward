@@ -165,7 +165,7 @@ function BillingPage() {
     if (subError) toast.error(subError.message);
     if (reqError) toast.error(reqError.message);
     setSubscription((sub as Subscription | null) ?? null);
-    setRequests(((reqs ?? []) as unknown as BillingRequest[]) ?? []);
+    setRequests((reqs ?? []) as unknown as BillingRequest[]);
     setLoading(false);
   };
 
