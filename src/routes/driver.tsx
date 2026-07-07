@@ -44,8 +44,8 @@ function DriverPage() {
 
   useEffect(() => { load(); }, []);
 
-  async function updateStatus(id: string, status: string) {
-    const patch: Record<string, string> = { status };
+  async function updateStatus(id: string, status: "planned" | "in_progress" | "completed" | "cancelled") {
+    const patch: { status: typeof status; start_date?: string; end_date?: string } = { status };
     if (status === "in_progress") patch.start_date = new Date().toISOString().slice(0, 10);
     if (status === "completed") patch.end_date = new Date().toISOString().slice(0, 10);
     const { error } = await supabase.from("trips").update(patch).eq("id", id);
