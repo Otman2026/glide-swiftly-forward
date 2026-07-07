@@ -184,35 +184,80 @@ function UsersPage() {
                 <th className="p-4 text-right font-semibold">الاسم</th>
                 <th className="p-4 text-right font-semibold">البريد</th>
                 <th className="p-4 text-right font-semibold">الأدوار</th>
+                <th className="p-4 text-right font-semibold">الربط</th>
               </tr>
             </thead>
             <tbody>
-              {rows.map(m => (
-                <tr key={m.user_id} className="border-t border-border hover:bg-secondary/30">
-                  <td className="p-4 font-semibold">{m.full_name ?? "—"}</td>
-                  <td className="p-4 text-muted-foreground" dir="ltr">{m.email ?? "—"}</td>
-                  <td className="p-4">
-                    <div className="flex flex-wrap gap-2">
-                      {m.roles.length === 0 && <span className="text-xs text-muted-foreground">لا توجد أدوار</span>}
-                      {m.roles.map(r => {
-                        const meta = ROLES.find(x => x.key === r);
-                        return (
-                          <span key={r} className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${meta?.color ?? "bg-muted"}`}>
-                            <Shield className="h-3 w-3" /> {meta?.label ?? r}
-                            <button onClick={() => removeRole(m.user_id, r)} className="mr-1 hover:text-destructive">
-                              <Trash2 className="h-3 w-3" />
-                            </button>
-                          </span>
-                        );
-                      })}
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {rows.map(m => {
+                const cust = m.customer_id ? customers.find(c => c.id === m.customer_id)?.name : null;
+                const drv = m.driver_id ? drivers.find(d => d.id === m.driver_id)?.full_name : null;
+                return (
+                  <tr key={m.user_id} className="border-t border-border hover:bg-secondary/30">
+                    <td className="p-4 font-semibold">{m.full_name ?? "—"}</td>
+                    <td className="p-4 text-muted-foreground" dir="ltr">{m.email ?? "—"}</td>
+                    <td className="p-4">
+                      <div className="flex flex-wrap gap-2">
+                        {m.roles.length === 0 && <span className="text-xs text-muted-foreground">لا توجد أدوار</span>}
+                        {m.roles.map(r => {
+                          const meta = ROLES.find(x => x.key === r);
+                          return (
+                            <span key={r} className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${meta?.color ?? "bg-muted"}`}>
+                              <Shield className="h-3 w-3" /> {meta?.label ?? r}
+                              <button onClick={() => removeRole(m.user_id, r)} className="mr-1 hover:text-destructive">
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </td>
+                    <td className="p-4 text-xs">
+                      <div className="space-y-1 mb-2">
+                        {cust && <div className="text-primary">عميل: {cust}</div>}
+                        {drv && <div className="text-accent">سائق: {drv}</div>}
+                        {!cust && !drv && <div className="text-muted-foreground">—</div>}
+                      </div>
+                      <Button size="sm" variant="outline" onClick={() => openLink(m)}>ربط</Button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
       )}
+
+      <Dialog open={!!linking} onOpenChange={(v) => !v && setLinking(null)}>
+        <DialogContent dir="rtl">
+          <DialogHeader><DialogTitle>ربط المستخدم بعميل أو سائق</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div className="rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
+              اربط المستخدم بسجل عميل ليصل إلى بوابة العملاء، أو بسجل سائق ليصل إلى تطبيق السائق.
+            </div>
+            <div>
+              <Label>العميل</Label>
+              <select value={linkForm.customer_id} onChange={(e) => setLinkForm({ ...linkForm, customer_id: e.target.value })} className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm">
+                <option value="">— بلا —</option>
+                {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <Label>السائق</Label>
+              <select value={linkForm.driver_id} onChange={(e) => setLinkForm({ ...linkForm, driver_id: e.target.value })} className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm">
+                <option value="">— بلا —</option>
+                {drivers.map(d => <option key={d.id} value={d.id}>{d.full_name}</option>)}
+              </select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setLinking(null)}>إلغاء</Button>
+            <Button onClick={saveLink}>حفظ</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
     </>
   );
 }
