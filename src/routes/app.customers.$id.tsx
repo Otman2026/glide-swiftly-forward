@@ -25,7 +25,7 @@ function Customer360Page() {
         supabase.from("customers").select("*").eq("id", id).maybeSingle(),
         supabase.from("contracts").select("id,start_date,end_date,total_amount,status,archived_at").eq("customer_id", id).order("created_at", { ascending: false }),
         supabase.from("invoices").select("id,invoice_number,total_amount,status,issue_date,due_date").eq("customer_id", id).order("issue_date", { ascending: false }),
-        supabase.from("trips").select("id,trip_number,status,revenue,started_at,completed_at").eq("customer_id", id).order("created_at", { ascending: false }).limit(20),
+        supabase.from("trips").select("id,trip_number,status,revenue,start_date,end_date").eq("customer_id", id).order("created_at", { ascending: false }).limit(20),
         supabase.from("transport_orders").select("id,order_number,status,origin,destination,created_at").eq("customer_id", id).order("created_at", { ascending: false }).limit(20),
         supabase.from("documents").select("id,title,category,created_at").eq("customer_id", id).order("created_at", { ascending: false }).limit(20),
       ]);
