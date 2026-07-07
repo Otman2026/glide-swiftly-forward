@@ -32,7 +32,9 @@ const SEVERITY: Record<string, { icon: any; tint: string; bg: string }> = {
 function NotificationsPage() {
   const [items, setItems] = useState<Notif[]>([]);
   const [loading, setLoading] = useState(true);
+  const [scanning, setScanning] = useState(false);
   const [filter, setFilter] = useState<"all" | "unread">("all");
+  const scanAlerts = useServerFn(generateAlerts);
 
   const load = async () => {
     setLoading(true);
@@ -48,6 +50,19 @@ function NotificationsPage() {
   useEffect(() => {
     load();
   }, []);
+
+  const runScan = async () => {
+    setScanning(true);
+    try {
+      const res = await scanAlerts({ data: undefined as any });
+      toast.success(res.created ? `تم إنشاء ${res.created} إشعار جديد` : "لا توجد تنبيهات جديدة");
+      await load();
+    } catch (e: any) {
+      toast.error(e?.message ?? "فشل الفحص");
+    } finally {
+      setScanning(false);
+    }
+  };
 
   const markRead = async (id: string) => {
     await supabase.from("notifications").update({ is_read: true }).eq("id", id);
@@ -76,15 +91,26 @@ function NotificationsPage() {
         title="الإشعارات"
         subtitle={`${unreadCount} إشعار غير مقروء`}
         action={
-          <button
-            onClick={markAllRead}
-            disabled={!unreadCount}
-            className="flex h-10 items-center gap-2 rounded-lg border border-border bg-background px-4 text-sm font-semibold hover:bg-secondary disabled:opacity-50"
-          >
-            <Check className="h-4 w-4" /> تعليم الكل كمقروء
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={runScan}
+              disabled={scanning}
+              className="flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-semibold text-accent-foreground hover:bg-accent/90 disabled:opacity-50"
+            >
+              {scanning ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+              فحص التنبيهات الآن
+            </button>
+            <button
+              onClick={markAllRead}
+              disabled={!unreadCount}
+              className="flex h-10 items-center gap-2 rounded-lg border border-border bg-background px-4 text-sm font-semibold hover:bg-secondary disabled:opacity-50"
+            >
+              <Check className="h-4 w-4" /> تعليم الكل كمقروء
+            </button>
+          </div>
         }
       />
+
 
       <div className="mb-4 flex gap-2">
         {(["all", "unread"] as const).map((f) => (
