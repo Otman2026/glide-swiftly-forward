@@ -148,7 +148,7 @@ function UsersPage() {
     const { error } = await supabase.from("profiles").update({
       disabled_at: isDisabled ? null : new Date().toISOString(),
       disabled_reason: isDisabled ? null : (reason || null),
-    }).eq("user_id" as any, m.user_id).eq("id", m.user_id);
+    }).eq("id", m.user_id);
     if (error) return toast.error(error.message);
     toast.success(isDisabled ? "تم التفعيل" : "تم التعطيل");
     load();
