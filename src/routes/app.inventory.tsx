@@ -176,7 +176,6 @@ function ItemsTab({
 
   return (
     <>
-      <div className="mb-3 flex flex-wrap gap-2 justify-end">
       <div className="mb-3 flex flex-wrap items-center gap-2 justify-between">
         <SearchInput value={q} onChange={setQ} placeholder="ابحث بالرمز أو الاسم…" />
         <div className="flex flex-wrap gap-2">
