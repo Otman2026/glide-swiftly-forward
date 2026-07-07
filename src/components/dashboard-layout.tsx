@@ -85,6 +85,12 @@ const NAV: NavGroup[] = [
     ],
   },
   {
+    title: "الموارد البشرية",
+    items: [
+      { to: "/app/hr", label: "الموظفون والرواتب", icon: UserCog },
+    ],
+  },
+  {
     title: "الإعدادات",
     items: [
       { to: "/app/settings", label: "الإعدادات", icon: Settings },
