@@ -1,7 +1,7 @@
 {
   "name": "saifo-transport-erp-desktop",
   "productName": "SAIFO TRANSPORT ERP",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "SAIFO TRANSPORT ERP — Desktop",
   "author": "SAIFO Transport",
   "main": "main.cjs",
