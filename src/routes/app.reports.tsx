@@ -72,7 +72,8 @@ function ReportsPage() {
   const monthAgo = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10);
   const [from, setFrom] = useState(monthAgo);
   const [to, setTo] = useState(today);
-  const [tab, setTab] = useState<"pnl" | "vehicle" | "customer" | "driver">("pnl");
+  const [tab, setTab] = useState<"pnl" | "vehicle" | "customer" | "driver" | "statement">("pnl");
+  const [invoices, setInvoices] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<{
     orders: any[];
