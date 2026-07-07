@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ExportBar } from "@/components/export-bar";
+import { SearchInput } from "@/components/search-input";
 
 export const Route = createFileRoute("/app/fuel")({ component: FuelPage });
 
