@@ -186,6 +186,105 @@ export type Database = {
           },
         ]
       }
+      documents: {
+        Row: {
+          created_at: string
+          customer_id: string | null
+          doc_type: string
+          driver_id: string | null
+          expiry_date: string | null
+          file_path: string
+          file_size: number | null
+          id: string
+          issue_date: string | null
+          mime_type: string | null
+          notes: string | null
+          reference_number: string | null
+          tenant_id: string
+          title: string
+          trip_id: string | null
+          updated_at: string
+          uploaded_by: string | null
+          vehicle_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          customer_id?: string | null
+          doc_type: string
+          driver_id?: string | null
+          expiry_date?: string | null
+          file_path: string
+          file_size?: number | null
+          id?: string
+          issue_date?: string | null
+          mime_type?: string | null
+          notes?: string | null
+          reference_number?: string | null
+          tenant_id: string
+          title: string
+          trip_id?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+          vehicle_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string | null
+          doc_type?: string
+          driver_id?: string | null
+          expiry_date?: string | null
+          file_path?: string
+          file_size?: number | null
+          id?: string
+          issue_date?: string | null
+          mime_type?: string | null
+          notes?: string | null
+          reference_number?: string | null
+          tenant_id?: string
+          title?: string
+          trip_id?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+          vehicle_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       drivers: {
         Row: {
           created_at: string
@@ -684,8 +783,10 @@ export type Database = {
           id: string
           logo_url: string | null
           name: string
+          registration_number: string | null
           slug: string
           status: Database["public"]["Enums"]["tenant_status"]
+          tax_id: string | null
           updated_at: string
         }
         Insert: {
@@ -698,8 +799,10 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name: string
+          registration_number?: string | null
           slug: string
           status?: Database["public"]["Enums"]["tenant_status"]
+          tax_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -712,8 +815,10 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name?: string
+          registration_number?: string | null
           slug?: string
           status?: Database["public"]["Enums"]["tenant_status"]
+          tax_id?: string | null
           updated_at?: string
         }
         Relationships: []
