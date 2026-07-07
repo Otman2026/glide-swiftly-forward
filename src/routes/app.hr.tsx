@@ -195,7 +195,7 @@ function EmployeesTab({ employees, tenantId, onChange }: { employees: Employee[]
               </tr>
             </thead>
             <tbody>
-              {employees.map((e) => (
+              {filtered.map((e) => (
                 <tr key={e.id} className="border-t border-border hover:bg-secondary/30">
                   <td className="p-3 font-mono text-xs">{e.employee_code ?? "—"}</td>
                   <td className="p-3 font-semibold">{e.full_name}</td>
