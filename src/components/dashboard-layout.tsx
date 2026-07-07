@@ -19,6 +19,8 @@ import {
   Wallet,
   BarChart3,
   Crown,
+  Settings,
+  Shield,
   LogOut,
   Search,
   Bell,
@@ -70,6 +72,13 @@ const NAV: NavGroup[] = [
       { to: "/app/warehouses", label: "المستودعات", icon: Warehouse },
       { to: "/app/documents", label: "الوثائق", icon: FolderArchive },
       { to: "/app/finance", label: "المالية", icon: Wallet },
+    ],
+  },
+  {
+    title: "الإعدادات",
+    items: [
+      { to: "/app/settings", label: "الإعدادات", icon: Settings },
+      { to: "/app/users", label: "المستخدمون والصلاحيات", icon: Shield },
     ],
   },
   {
