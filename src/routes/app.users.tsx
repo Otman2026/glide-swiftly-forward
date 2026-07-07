@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PageHeader, EmptyState } from "@/components/dashboard-layout";
 import { Shield, Loader2, Trash2, Plus, Users as UsersIcon, Ban, CheckCircle2, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,8 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { sendPasswordReset } from "@/lib/admin.functions";
+import { ExportBar } from "@/components/export-bar";
+import { SearchInput } from "@/components/search-input";
 
 export const Route = createFileRoute("/app/users")({
   component: UsersPage,
@@ -48,6 +50,15 @@ function UsersPage() {
   const [drivers, setDrivers] = useState<{ id: string; full_name: string }[]>([]);
   const [linking, setLinking] = useState<Member | null>(null);
   const [linkForm, setLinkForm] = useState({ customer_id: "", driver_id: "" });
+  const [q, setQ] = useState("");
+
+  const filtered = useMemo(() => {
+    const s = q.trim().toLowerCase();
+    if (!s) return rows;
+    return rows.filter((m) =>
+      [m.full_name, m.email, ...m.roles].some((v) => String(v ?? "").toLowerCase().includes(s)),
+    );
+  }, [rows, q]);
 
   const load = async () => {
     setLoading(true);
@@ -162,40 +173,54 @@ function UsersPage() {
         title="المستخدمون والصلاحيات"
         subtitle="إدارة الفريق وإسناد الأدوار"
         action={
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
-                <Plus className="h-4 w-4" /> إسناد دور
-              </Button>
-            </DialogTrigger>
-            <DialogContent dir="rtl">
-              <DialogHeader><DialogTitle>إسناد دور لمستخدم</DialogTitle></DialogHeader>
-              <form onSubmit={assignRole} className="space-y-4">
-                <div className="rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
-                  يجب على المستخدم إنشاء حساب في المنصة أولاً، ثم أدخل بريده هنا لإسناد الدور.
-                </div>
-                <div><Label>البريد الإلكتروني *</Label><Input type="email" required dir="ltr" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
-                <div>
-                  <Label>الدور *</Label>
-                  <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm">
-                    {ROLES.map(r => <option key={r.key} value={r.key}>{r.label}</option>)}
-                  </select>
-                </div>
-                <DialogFooter>
-                  <Button type="submit" disabled={saving} className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
-                    {saving && <Loader2 className="h-4 w-4 animate-spin" />} إسناد
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <div className="flex flex-wrap gap-2 items-center">
+            <SearchInput value={q} onChange={setQ} placeholder="بحث بالاسم/البريد/الدور…" />
+            <ExportBar
+              filename="users"
+              title="المستخدمون"
+              rows={filtered.map((m) => ({ ...m, roles_text: m.roles.join(", "), status: m.disabled_at ? "معطّل" : "نشط" }))}
+              columns={[
+                { key: "full_name", label: "الاسم" },
+                { key: "email", label: "البريد" },
+                { key: "status", label: "الحالة" },
+                { key: "roles_text", label: "الأدوار" },
+              ]}
+            />
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
+                  <Plus className="h-4 w-4" /> إسناد دور
+                </Button>
+              </DialogTrigger>
+              <DialogContent dir="rtl">
+                <DialogHeader><DialogTitle>إسناد دور لمستخدم</DialogTitle></DialogHeader>
+                <form onSubmit={assignRole} className="space-y-4">
+                  <div className="rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
+                    يجب على المستخدم إنشاء حساب في المنصة أولاً، ثم أدخل بريده هنا لإسناد الدور.
+                  </div>
+                  <div><Label>البريد الإلكتروني *</Label><Input type="email" required dir="ltr" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
+                  <div>
+                    <Label>الدور *</Label>
+                    <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm">
+                      {ROLES.map(r => <option key={r.key} value={r.key}>{r.label}</option>)}
+                    </select>
+                  </div>
+                  <DialogFooter>
+                    <Button type="submit" disabled={saving} className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
+                      {saving && <Loader2 className="h-4 w-4 animate-spin" />} إسناد
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
         }
       />
 
       {loading ? (
         <div className="flex items-center justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-accent" /></div>
-      ) : rows.length === 0 ? (
-        <EmptyState icon={UsersIcon} title="لا يوجد أعضاء" description="ابدأ بإسناد دور لأحد أعضاء فريقك." />
+      ) : filtered.length === 0 ? (
+        <EmptyState icon={UsersIcon} title="لا يوجد أعضاء" description={q ? "لا نتائج للبحث" : "ابدأ بإسناد دور لأحد أعضاء فريقك."} />
       ) : (
         <div className="rounded-2xl border border-border bg-card overflow-x-auto">
           <table className="w-full text-sm">
@@ -210,7 +235,7 @@ function UsersPage() {
               </tr>
             </thead>
             <tbody>
-              {rows.map(m => {
+              {filtered.map(m => {
                 const cust = m.customer_id ? customers.find(c => c.id === m.customer_id)?.name : null;
                 const drv = m.driver_id ? drivers.find(d => d.id === m.driver_id)?.full_name : null;
                 const disabled = !!m.disabled_at;

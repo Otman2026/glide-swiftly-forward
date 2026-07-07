@@ -25,6 +25,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ExportBar } from "@/components/export-bar";
+import { SearchInput, matchQuery } from "@/components/search-input";
 
 export const Route = createFileRoute("/app/invoices")({
   component: InvoicesPage,
@@ -76,6 +77,7 @@ function InvoicesPage() {
     notes: "",
   });
   const [items, setItems] = useState<Item[]>([{ description: "", quantity: 1, unit_price: 0 }]);
+  const [q, setQ] = useState("");
 
   const [viewing, setViewing] = useState<Invoice | null>(null);
   const [viewItems, setViewItems] = useState<Array<Item & { id: string; amount: number }>>([]);
@@ -199,11 +201,20 @@ function InvoicesPage() {
   }
 
   const customerMap = useMemo(() => Object.fromEntries(customers.map((c) => [c.id, c.name])), [customers]);
+  const filtered = useMemo(
+    () =>
+      matchQuery(
+        rows.map((r) => ({ ...r, _customer: r.customer_id ? customerMap[r.customer_id] ?? "" : "" })),
+        q,
+        ["invoice_number", "status", "_customer", "issue_date"] as const,
+      ),
+    [rows, q, customerMap],
+  );
   const kpi = useMemo(() => {
-    const total = rows.reduce((s, r) => s + Number(r.total), 0);
-    const paid = rows.reduce((s, r) => s + Number(r.paid_amount), 0);
-    return { count: rows.length, total, paid, due: total - paid };
-  }, [rows]);
+    const total = filtered.reduce((s, r) => s + Number(r.total), 0);
+    const paid = filtered.reduce((s, r) => s + Number(r.paid_amount), 0);
+    return { count: filtered.length, total, paid, due: total - paid };
+  }, [filtered]);
 
   return (
     <>
@@ -212,10 +223,11 @@ function InvoicesPage() {
         subtitle="إصدار وإدارة فواتير النقل — TVA، طباعة، تصدير"
         action={
           <div className="flex flex-wrap gap-2 items-center">
+            <SearchInput value={q} onChange={setQ} placeholder="بحث برقم/عميل/حالة…" />
             <ExportBar
               filename="invoices"
               title="الفواتير"
-              rows={rows}
+              rows={filtered}
               columns={[
                 { key: "invoice_number", label: "رقم الفاتورة" },
                 { key: "issue_date", label: "تاريخ الإصدار" },
@@ -354,8 +366,8 @@ function InvoicesPage() {
 
       {loading ? (
         <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
-      ) : rows.length === 0 ? (
-        <EmptyState icon={FileText} title="لا توجد فواتير" description="ابدأ بإصدار أول فاتورة نقل" />
+      ) : filtered.length === 0 ? (
+        <EmptyState icon={FileText} title="لا توجد فواتير" description={q ? "لا نتائج مطابقة للبحث" : "ابدأ بإصدار أول فاتورة نقل"} />
       ) : (
         <div className="rounded-lg border bg-card overflow-hidden">
           <table className="w-full text-sm">
@@ -371,7 +383,7 @@ function InvoicesPage() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((r) => (
+              {filtered.map((r) => (
                 <tr key={r.id} className="border-t hover:bg-secondary/30 cursor-pointer" onClick={() => openView(r)}>
                   <td className="p-3 font-medium">{r.invoice_number}</td>
                   <td className="p-3">{r.customer_id ? customerMap[r.customer_id] ?? "—" : "—"}</td>

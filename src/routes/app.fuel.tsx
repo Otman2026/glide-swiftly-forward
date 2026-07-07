@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ExportBar } from "@/components/export-bar";
+import { SearchInput } from "@/components/search-input";
 
 export const Route = createFileRoute("/app/fuel")({ component: FuelPage });
 
@@ -41,6 +42,7 @@ function FuelPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [vehicleFilter, setVehicleFilter] = useState("all");
+  const [q, setQ] = useState("");
 
   const load = async () => {
     setLoading(true);
@@ -96,7 +98,15 @@ function FuelPage() {
     if (error) toast.error(error.message); else { toast.success("تم الحذف"); load(); }
   };
 
-  const filtered = useMemo(() => rows.filter((r) => vehicleFilter === "all" || r.vehicle_id === vehicleFilter), [rows, vehicleFilter]);
+  const filtered = useMemo(() => {
+    const s = q.trim().toLowerCase();
+    return rows.filter((r) => {
+      if (vehicleFilter !== "all" && r.vehicle_id !== vehicleFilter) return false;
+      if (!s) return true;
+      return [r.vehicles?.plate_number, r.drivers?.full_name, r.station, r.fuel_date]
+        .some((v) => String(v ?? "").toLowerCase().includes(s));
+    });
+  }, [rows, vehicleFilter, q]);
   const totalLiters = filtered.reduce((s, r) => s + Number(r.liters), 0);
   const totalCost = filtered.reduce((s, r) => s + Number(r.cost), 0);
 
@@ -126,7 +136,8 @@ function FuelPage() {
         }
       />
 
-      <div className="mb-4 flex flex-wrap gap-3">
+      <div className="mb-4 flex flex-wrap gap-3 items-center">
+        <SearchInput value={q} onChange={setQ} placeholder="بحث بلوحة/سائق/محطة…" />
         <Select value={vehicleFilter} onValueChange={setVehicleFilter}>
           <SelectTrigger className="w-64"><SelectValue placeholder="فلترة حسب الشاحنة" /></SelectTrigger>
           <SelectContent>
