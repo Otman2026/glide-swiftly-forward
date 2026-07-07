@@ -234,9 +234,10 @@ function ItemsTab({
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
-      {items.length === 0 ? (
+      {filtered.length === 0 ? (
         <EmptyState icon={Package} title="لا توجد أصناف بعد" description="أضف صنفاً جديداً للبدء." />
       ) : (
         <div className="rounded-2xl border border-border bg-card overflow-x-auto">
