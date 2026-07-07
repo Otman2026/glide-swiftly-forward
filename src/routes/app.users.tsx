@@ -41,6 +41,10 @@ function UsersPage() {
   const [saving, setSaving] = useState(false);
   const [tenantId, setTenantId] = useState<string | null>(null);
   const [form, setForm] = useState({ email: "", role: "receptionist" });
+  const [customers, setCustomers] = useState<{ id: string; name: string }[]>([]);
+  const [drivers, setDrivers] = useState<{ id: string; full_name: string }[]>([]);
+  const [linking, setLinking] = useState<Member | null>(null);
+  const [linkForm, setLinkForm] = useState({ customer_id: "", driver_id: "" });
 
   const load = async () => {
     setLoading(true);
