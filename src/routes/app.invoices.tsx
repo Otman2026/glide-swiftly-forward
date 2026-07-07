@@ -340,6 +340,7 @@ function InvoicesPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          </div>
         }
       />
 
