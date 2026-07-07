@@ -235,7 +235,7 @@ function UsersPage() {
               </tr>
             </thead>
             <tbody>
-              {rows.map(m => {
+              {filtered.map(m => {
                 const cust = m.customer_id ? customers.find(c => c.id === m.customer_id)?.name : null;
                 const drv = m.driver_id ? drivers.find(d => d.id === m.driver_id)?.full_name : null;
                 const disabled = !!m.disabled_at;
