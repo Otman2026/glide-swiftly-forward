@@ -34,10 +34,10 @@ function DriverPage() {
     setProfile(p);
     if (!p?.driver_id) { setLoading(false); return; }
     const [{ data: d }, { data: ts }] = await Promise.all([
-      supabase.from("drivers").select("first_name, last_name").eq("id", p.driver_id).maybeSingle(),
+      supabase.from("drivers").select("full_name").eq("id", p.driver_id).maybeSingle(),
       supabase.from("trips").select("id, trip_number, origin, destination, status, start_date, end_date, distance_km, revenue").order("start_date", { ascending: false }),
     ]);
-    setDriverName(d ? `${d.first_name ?? ""} ${d.last_name ?? ""}`.trim() : null);
+    setDriverName(d?.full_name ?? null);
     setTrips((ts ?? []) as Trip[]);
     setLoading(false);
   }
