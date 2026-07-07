@@ -113,7 +113,8 @@ function DocumentsPage() {
     else { toast.success("تم الحذف"); load(); }
   };
 
-  const filtered = filter === "ALL" || !filter ? rows : rows.filter(r => r.doc_type === filter);
+  const byType = filter === "ALL" || !filter ? rows : rows.filter(r => r.doc_type === filter);
+  const filtered = matchQuery(byType, q, ["title", "reference_number"]);
   const now = new Date();
   const expiringSoon = rows.filter(r => r.expiry_date && new Date(r.expiry_date) < new Date(now.getTime() + 30 * 86400000));
 
