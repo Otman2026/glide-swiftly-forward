@@ -155,7 +155,8 @@ function EmployeesTab({ employees, tenantId, onChange }: { employees: Employee[]
   return (
     <>
       <div className="mb-3 flex justify-between gap-2">
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <SearchInput value={q} onChange={setQ} placeholder="ابحث بالاسم أو الرقم أو القسم…" />
           <Button variant="outline" onClick={onExport} className="gap-2"><Download className="h-4 w-4" /> CSV</Button>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
