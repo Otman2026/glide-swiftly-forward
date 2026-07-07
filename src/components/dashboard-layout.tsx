@@ -19,6 +19,7 @@ import {
   Wallet,
   BarChart3,
   Crown,
+  Sparkles,
   Settings,
   Shield,
   LogOut,
