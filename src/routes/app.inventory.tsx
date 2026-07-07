@@ -169,27 +169,24 @@ function ItemsTab({
     else { toast.success("تم الحذف"); onChange(); }
   };
 
-  const doExport = () => {
-    exportToCSV(items, [
-      { key: "sku", label: "SKU" }, { key: "name", label: "الاسم" },
-      { key: "warehouse_id", label: "المستودع", get: (r) => whById.get(r.warehouse_id) ?? "" },
-      { key: "quantity", label: "الكمية" }, { key: "unit", label: "الوحدة" },
-      { key: "unit_cost", label: "التكلفة" },
-    ], "inventory-items");
-  };
-
-  const doPrint = () => {
-    const rows = items.map((i) => `<tr><td>${esc(i.sku)}</td><td>${esc(i.name)}</td><td>${esc(whById.get(i.warehouse_id))}</td><td>${esc(i.quantity)} ${esc(i.unit)}</td><td>${esc(i.unit_cost)}</td></tr>`).join("");
-    printHTML("جرد المخزون", `<h1>تقرير جرد المخزون</h1><table><thead><tr><th>SKU</th><th>الاسم</th><th>المستودع</th><th>الكمية</th><th>التكلفة</th></tr></thead><tbody>${rows}</tbody></table>`);
-  };
-
   const availLocations = locations.filter((l) => l.warehouse_id === form.warehouse_id);
 
   return (
     <>
       <div className="mb-3 flex flex-wrap gap-2 justify-end">
-        <Button variant="outline" onClick={doPrint} className="gap-2"><Printer className="h-4 w-4" />طباعة</Button>
-        <Button variant="outline" onClick={doExport} className="gap-2"><Download className="h-4 w-4" />تصدير</Button>
+        <ExportBar
+          filename="inventory-items"
+          title="جرد المخزون"
+          rows={items}
+          columns={[
+            { key: "sku", label: "SKU" },
+            { key: "name", label: "الاسم" },
+            { key: "warehouse", label: "المستودع", format: (r) => whById.get(r.warehouse_id) ?? "" },
+            { key: "quantity", label: "الكمية" },
+            { key: "unit", label: "الوحدة" },
+            { key: "unit_cost", label: "التكلفة" },
+          ]}
+        />
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90"><Plus className="h-4 w-4" />صنف جديد</Button>
