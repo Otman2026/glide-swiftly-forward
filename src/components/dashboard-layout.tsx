@@ -62,6 +62,7 @@ const NAV: NavGroup[] = [
       { to: "/app/shipments", label: "الشحنات", icon: Package },
       { to: "/app/trips", label: "الرحلات", icon: RouteIcon },
       { to: "/app/tracking", label: "التتبع الحي (GPS)", icon: MapPin },
+      { to: "/app/gps", label: "أجهزة GPS", icon: MapPin },
     ],
   },
   {
