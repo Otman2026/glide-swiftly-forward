@@ -121,6 +121,19 @@ export function DashboardLayout() {
     setMobileOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    const load = async () => {
+      const { count } = await supabase
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("is_read", false);
+      setUnread(count ?? 0);
+    };
+    load();
+    const t = setInterval(load, 30000);
+    return () => clearInterval(t);
+  }, [pathname]);
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     toast.success("تم تسجيل الخروج");
