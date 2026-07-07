@@ -181,7 +181,7 @@ function EmployeesTab({ employees, tenantId, onChange }: { employees: Employee[]
           </DialogContent>
         </Dialog>
       </div>
-      {employees.length === 0 ? (
+      {filtered.length === 0 ? (
         <EmptyState icon={UserCog} title="لا يوجد موظفون" description="ابدأ بإضافة أول موظف." />
       ) : (
         <div className="rounded-2xl border border-border bg-card overflow-x-auto">
