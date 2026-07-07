@@ -84,7 +84,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "منصة SAIFO TRANSPORT ERP الاحترافية لإدارة شركات النقل واللوجستيك: TMS + FMS + CRM + KPI + إدارة الأسطول والسائقين والرحلات والفوترة.",
       },
       { name: "author", content: "SAIFO TRANSPORT" },
-      { property: "og:title", content: "SAIFO TRANSPORT ERP" },
+      { property: "og:title", content: "SAIFO TRANSPORT ERP — منصة إدارة شركات النقل واللوجستيك" },
       {
         property: "og:description",
         content: "منصة احترافية متكاملة لإدارة شركات النقل واللوجستيك المحلية والدولية.",
@@ -97,6 +97,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-title", content: "SAIFO ERP" },
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "format-detection", content: "telephone=no" },
+      { name: "twitter:title", content: "SAIFO TRANSPORT ERP — منصة إدارة شركات النقل واللوجستيك" },
+      { name: "description", content: "منصة SAIFO TRANSPORT ERP الاحترافية لإدارة شركات النقل واللوجستيك: TMS + FMS + CRM + KPI + إدارة الأسطول والسائقين والرحلات والفوترة." },
+      { property: "og:description", content: "منصة SAIFO TRANSPORT ERP الاحترافية لإدارة شركات النقل واللوجستيك: TMS + FMS + CRM + KPI + إدارة الأسطول والسائقين والرحلات والفوترة." },
+      { name: "twitter:description", content: "منصة SAIFO TRANSPORT ERP الاحترافية لإدارة شركات النقل واللوجستيك: TMS + FMS + CRM + KPI + إدارة الأسطول والسائقين والرحلات والفوترة." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f17f7f57-5d50-4f2f-9018-709befc74455/id-preview-1e4b23db--6022ace2-8024-4a28-8eaa-13f2d183b5ee.lovable.app-1783437610346.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f17f7f57-5d50-4f2f-9018-709befc74455/id-preview-1e4b23db--6022ace2-8024-4a28-8eaa-13f2d183b5ee.lovable.app-1783437610346.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
