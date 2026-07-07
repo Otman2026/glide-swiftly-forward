@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader, EmptyState } from "@/components/dashboard-layout";
 import { supabase } from "@/integrations/supabase/client";
+import { createStripeCheckoutSession } from "@/lib/stripe-billing.functions";
 import {
   AlertCircle,
   Check,
@@ -110,6 +112,7 @@ const STATUS_LABEL: Record<string, string> = {
 const getStatusLabel = (status: string) => STATUS_LABEL[status] || status;
 
 function BillingPage() {
+  const createCheckout = useServerFn(createStripeCheckoutSession);
   const [loading, setLoading] = useState(true);
   const [tenantId, setTenantId] = useState<string | null>(null);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
@@ -172,6 +175,11 @@ function BillingPage() {
   };
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const checkout = params.get("checkout");
+    if (checkout === "success") toast.success("تم الدفع بنجاح، يتم تحديث الاشتراك تلقائياً.");
+    if (checkout === "cancelled") toast.info("تم إلغاء عملية الدفع.");
+    if (checkout) window.history.replaceState({}, "", window.location.pathname);
     load();
   }, []);
 
@@ -202,6 +210,23 @@ function BillingPage() {
     }
     toast.success("تم إرسال طلب الاشتراك");
     await load();
+  };
+
+  const startCheckout = async (plan: PlanKey) => {
+    if (plan === "enterprise") {
+      await requestPlan(plan);
+      return;
+    }
+    if (plan !== "starter" && plan !== "professional") return;
+
+    setRequesting(plan);
+    try {
+      const result = await createCheckout({ data: { plan, billingCycle: cycle } });
+      window.location.assign(result.url);
+    } catch (error: any) {
+      toast.error(error?.message ?? "تعذر بدء الدفع عبر Stripe");
+      setRequesting(null);
+    }
   };
 
   if (loading) {
@@ -361,8 +386,8 @@ function BillingPage() {
               </ul>
 
               <button
-                onClick={() => requestPlan(plan.key)}
-                disabled={isCurrent || Boolean(pendingRequest) || requesting === plan.key}
+                onClick={() => startCheckout(plan.key)}
+                disabled={isCurrent || requesting === plan.key || (plan.key === "enterprise" && Boolean(pendingRequest))}
                 className={`flex h-10 w-full items-center justify-center gap-2 rounded-lg text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
                   isCurrent
                     ? "border border-border bg-secondary text-muted-foreground"
@@ -375,10 +400,12 @@ function BillingPage() {
                   <Clock className="h-4 w-4" />
                 ) : isCurrent ? (
                   <Check className="h-4 w-4" />
-                ) : (
+                ) : plan.key === "enterprise" ? (
                   <Send className="h-4 w-4" />
+                ) : (
+                  <CreditCard className="h-4 w-4" />
                 )}
-                {isCurrent ? "الخطة الحالية" : isPending ? "قيد المراجعة" : "طلب الاشتراك"}
+                {isCurrent ? "الخطة الحالية" : isPending ? "قيد المراجعة" : plan.key === "enterprise" ? "طلب مخصص" : "الدفع عبر Stripe"}
               </button>
             </section>
           );

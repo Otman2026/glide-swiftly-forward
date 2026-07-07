@@ -38,6 +38,7 @@ import { Route as AppCustomersRouteImport } from './routes/app.customers'
 import { Route as AppContractsRouteImport } from './routes/app.contracts'
 import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppAccidentsRouteImport } from './routes/app.accidents'
+import { Route as ApiPublicWebhooksStripeRouteImport } from './routes/api.public.webhooks.stripe'
 import { Route as ApiPublicHooksScanAlertsRouteImport } from './routes/api.public.hooks.scan-alerts'
 
 const PortalRoute = PortalRouteImport.update({
@@ -185,6 +186,11 @@ const AppAccidentsRoute = AppAccidentsRouteImport.update({
   path: '/accidents',
   getParentRoute: () => AppRoute,
 } as any)
+const ApiPublicWebhooksStripeRoute = ApiPublicWebhooksStripeRouteImport.update({
+  id: '/api/public/webhooks/stripe',
+  path: '/api/public/webhooks/stripe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksScanAlertsRoute =
   ApiPublicHooksScanAlertsRouteImport.update({
     id: '/api/public/hooks/scan-alerts',
@@ -223,6 +229,7 @@ export interface FileRoutesByFullPath {
   '/app/warehouses': typeof AppWarehousesRoute
   '/app/': typeof AppIndexRoute
   '/api/public/hooks/scan-alerts': typeof ApiPublicHooksScanAlertsRoute
+  '/api/public/webhooks/stripe': typeof ApiPublicWebhooksStripeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -254,6 +261,7 @@ export interface FileRoutesByTo {
   '/app/warehouses': typeof AppWarehousesRoute
   '/app': typeof AppIndexRoute
   '/api/public/hooks/scan-alerts': typeof ApiPublicHooksScanAlertsRoute
+  '/api/public/webhooks/stripe': typeof ApiPublicWebhooksStripeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -287,6 +295,7 @@ export interface FileRoutesById {
   '/app/warehouses': typeof AppWarehousesRoute
   '/app/': typeof AppIndexRoute
   '/api/public/hooks/scan-alerts': typeof ApiPublicHooksScanAlertsRoute
+  '/api/public/webhooks/stripe': typeof ApiPublicWebhooksStripeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -321,6 +330,7 @@ export interface FileRouteTypes {
     | '/app/warehouses'
     | '/app/'
     | '/api/public/hooks/scan-alerts'
+    | '/api/public/webhooks/stripe'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -352,6 +362,7 @@ export interface FileRouteTypes {
     | '/app/warehouses'
     | '/app'
     | '/api/public/hooks/scan-alerts'
+    | '/api/public/webhooks/stripe'
   id:
     | '__root__'
     | '/'
@@ -384,6 +395,7 @@ export interface FileRouteTypes {
     | '/app/warehouses'
     | '/app/'
     | '/api/public/hooks/scan-alerts'
+    | '/api/public/webhooks/stripe'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -393,6 +405,7 @@ export interface RootRouteChildren {
   DriverRoute: typeof DriverRoute
   PortalRoute: typeof PortalRoute
   ApiPublicHooksScanAlertsRoute: typeof ApiPublicHooksScanAlertsRoute
+  ApiPublicWebhooksStripeRoute: typeof ApiPublicWebhooksStripeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -600,6 +613,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAccidentsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/api/public/webhooks/stripe': {
+      id: '/api/public/webhooks/stripe'
+      path: '/api/public/webhooks/stripe'
+      fullPath: '/api/public/webhooks/stripe'
+      preLoaderRoute: typeof ApiPublicWebhooksStripeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/scan-alerts': {
       id: '/api/public/hooks/scan-alerts'
       path: '/api/public/hooks/scan-alerts'
@@ -673,17 +693,8 @@ const rootRouteChildren: RootRouteChildren = {
   DriverRoute: DriverRoute,
   PortalRoute: PortalRoute,
   ApiPublicHooksScanAlertsRoute: ApiPublicHooksScanAlertsRoute,
+  ApiPublicWebhooksStripeRoute: ApiPublicWebhooksStripeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

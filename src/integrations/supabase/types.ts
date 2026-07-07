@@ -956,9 +956,89 @@ export type Database = {
           },
         ]
       }
+      stripe_checkout_sessions: {
+        Row: {
+          amount_total: number | null
+          billing_cycle: string
+          created_at: string
+          currency: string
+          id: string
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          requested_by: string | null
+          status: string
+          stripe_checkout_session_id: string | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount_total?: number | null
+          billing_cycle: string
+          created_at?: string
+          currency?: string
+          id?: string
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          requested_by?: string | null
+          status?: string
+          stripe_checkout_session_id?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount_total?: number | null
+          billing_cycle?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          requested_by?: string | null
+          status?: string
+          stripe_checkout_session_id?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stripe_checkout_sessions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stripe_webhook_events: {
+        Row: {
+          event_type: string
+          id: string
+          payload: Json
+          processed_at: string
+        }
+        Insert: {
+          event_type: string
+          id: string
+          payload?: Json
+          processed_at?: string
+        }
+        Update: {
+          event_type?: string
+          id?: string
+          payload?: Json
+          processed_at?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
+          billing_cycle: string | null
+          cancel_at_period_end: boolean
           created_at: string
+          current_period_end: string | null
           ends_at: string | null
           id: string
           max_users: number | null
@@ -967,11 +1047,17 @@ export type Database = {
           price_monthly: number | null
           starts_at: string
           status: string
+          stripe_customer_id: string | null
+          stripe_price_id: string | null
+          stripe_subscription_id: string | null
           tenant_id: string
           updated_at: string
         }
         Insert: {
+          billing_cycle?: string | null
+          cancel_at_period_end?: boolean
           created_at?: string
+          current_period_end?: string | null
           ends_at?: string | null
           id?: string
           max_users?: number | null
@@ -980,11 +1066,17 @@ export type Database = {
           price_monthly?: number | null
           starts_at?: string
           status?: string
+          stripe_customer_id?: string | null
+          stripe_price_id?: string | null
+          stripe_subscription_id?: string | null
           tenant_id: string
           updated_at?: string
         }
         Update: {
+          billing_cycle?: string | null
+          cancel_at_period_end?: boolean
           created_at?: string
+          current_period_end?: string | null
           ends_at?: string | null
           id?: string
           max_users?: number | null
@@ -993,6 +1085,9 @@ export type Database = {
           price_monthly?: number | null
           starts_at?: string
           status?: string
+          stripe_customer_id?: string | null
+          stripe_price_id?: string | null
+          stripe_subscription_id?: string | null
           tenant_id?: string
           updated_at?: string
         }
