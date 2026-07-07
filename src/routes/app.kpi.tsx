@@ -3,6 +3,21 @@ import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/dashboard-layout";
 import { BarChart3, Truck, Users, Fuel, TrendingUp, Loader2, Package, AlertTriangle, Wrench } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  Legend,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
 
 export const Route = createFileRoute("/app/kpi")({
   component: KpiPage,
@@ -24,13 +39,21 @@ type Stats = {
   incidentsCost: number;
 };
 
+type MonthPoint = { month: string; revenue: number; expenses: number };
+type StatusSlice = { name: string; value: number };
+
+const PIE_COLORS = ["hsl(var(--primary))", "hsl(var(--accent))", "hsl(var(--success))", "hsl(var(--warning))", "hsl(var(--destructive))"];
+
 function KpiPage() {
   const [s, setS] = useState<Stats | null>(null);
+  const [trend, setTrend] = useState<MonthPoint[]>([]);
+  const [orderStatus, setOrderStatus] = useState<StatusSlice[]>([]);
+  const [topCustomers, setTopCustomers] = useState<{ name: string; total: number }[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
-      const [v, vu, d, c, o, od, rev, exp, fuel, maint, inc] = await Promise.all([
+      const [v, vu, d, c, o, od, rev, exp, fuel, maint, inc, allOrders, ordersWithDate, expensesWithDate] = await Promise.all([
         supabase.from("vehicles").select("id", { count: "exact", head: true }),
         supabase.from("vehicles").select("id", { count: "exact", head: true }).eq("status", "in_use"),
         supabase.from("drivers").select("id", { count: "exact", head: true }),
@@ -42,6 +65,9 @@ function KpiPage() {
         supabase.from("fuel_logs").select("liters,cost"),
         supabase.from("maintenance_records").select("cost"),
         supabase.from("incidents").select("repair_cost"),
+        supabase.from("transport_orders").select("status,total_amount,customer_id,created_at"),
+        supabase.from("transport_orders").select("total_amount,created_at").eq("status", "delivered"),
+        supabase.from("expenses").select("amount,expense_date,created_at"),
       ]);
       const sum = (arr: any[] | null, k: string) => (arr ?? []).reduce((a, b) => a + Number(b[k] ?? 0), 0);
       setS({
@@ -59,6 +85,44 @@ function KpiPage() {
         incidents: (inc.data ?? []).length,
         incidentsCost: sum(inc.data, "repair_cost"),
       });
+
+      // Build 6-month trend
+      const months: MonthPoint[] = [];
+      const now = new Date();
+      for (let i = 5; i >= 0; i--) {
+        const dt = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const key = `${dt.getFullYear()}-${dt.getMonth()}`;
+        const label = dt.toLocaleDateString("ar", { month: "short" });
+        months.push({ month: label, revenue: 0, expenses: 0 });
+        (ordersWithDate.data ?? []).forEach((r: any) => {
+          const d = new Date(r.created_at);
+          if (`${d.getFullYear()}-${d.getMonth()}` === key) months[months.length - 1].revenue += Number(r.total_amount ?? 0);
+        });
+        (expensesWithDate.data ?? []).forEach((r: any) => {
+          const d = new Date(r.expense_date ?? r.created_at);
+          if (`${d.getFullYear()}-${d.getMonth()}` === key) months[months.length - 1].expenses += Number(r.amount ?? 0);
+        });
+      }
+      setTrend(months);
+
+      // Order status distribution
+      const statusMap: Record<string, number> = {};
+      (allOrders.data ?? []).forEach((r: any) => {
+        statusMap[r.status] = (statusMap[r.status] ?? 0) + 1;
+      });
+      setOrderStatus(Object.entries(statusMap).map(([name, value]) => ({ name, value })));
+
+      // Top customers by revenue
+      const custMap: Record<string, number> = {};
+      (allOrders.data ?? []).forEach((r: any) => {
+        if (r.customer_id) custMap[r.customer_id] = (custMap[r.customer_id] ?? 0) + Number(r.total_amount ?? 0);
+      });
+      const topIds = Object.entries(custMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      if (topIds.length) {
+        const { data: custs } = await supabase.from("customers").select("id,name").in("id", topIds.map((x) => x[0]));
+        setTopCustomers(topIds.map(([id, total]) => ({ name: custs?.find((c) => c.id === id)?.name ?? "—", total })));
+      }
+
       setLoading(false);
     })();
   }, []);
@@ -109,6 +173,59 @@ function KpiPage() {
         </div>
       </div>
 
+      <div className="mb-6 grid gap-4 lg:grid-cols-3">
+        <div className="rounded-2xl border border-border bg-card p-5 lg:col-span-2">
+          <div className="mb-4 text-sm font-bold">الاتجاه الشهري — إيرادات مقابل تكاليف (6 أشهر)</div>
+          <div className="h-64" dir="ltr">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={trend}>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                <XAxis dataKey="month" fontSize={12} />
+                <YAxis fontSize={12} />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="revenue" name="إيرادات" stroke="hsl(var(--success))" strokeWidth={2} />
+                <Line type="monotone" dataKey="expenses" name="مصاريف" stroke="hsl(var(--destructive))" strokeWidth={2} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-5">
+          <div className="mb-4 text-sm font-bold">توزيع حالات الطلبات</div>
+          <div className="h-64" dir="ltr">
+            {orderStatus.length === 0 ? (
+              <div className="flex h-full items-center justify-center text-sm text-muted-foreground">لا توجد بيانات</div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={orderStatus} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                    {orderStatus.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {topCustomers.length > 0 && (
+        <div className="mb-6 rounded-2xl border border-border bg-card p-5">
+          <div className="mb-4 text-sm font-bold">أفضل 5 عملاء بالإيرادات</div>
+          <div className="h-64" dir="ltr">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={topCustomers}>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                <XAxis dataKey="name" fontSize={12} />
+                <YAxis fontSize={12} />
+                <Tooltip />
+                <Bar dataKey="total" name="إيرادات (MAD)" fill="hsl(var(--accent))" radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {cards.map((c) => (
           <div key={c.label} className="rounded-2xl border border-border bg-card p-5">
@@ -124,3 +241,4 @@ function KpiPage() {
     </>
   );
 }
+

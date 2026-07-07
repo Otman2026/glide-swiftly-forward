@@ -23,6 +23,7 @@ import { Route as AppSystemOwnerRouteImport } from './routes/app.system-owner'
 import { Route as AppShipmentsRouteImport } from './routes/app.shipments'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppOrdersRouteImport } from './routes/app.orders'
+import { Route as AppNotificationsRouteImport } from './routes/app.notifications'
 import { Route as AppMaintenanceRouteImport } from './routes/app.maintenance'
 import { Route as AppKpiRouteImport } from './routes/app.kpi'
 import { Route as AppInvoicesRouteImport } from './routes/app.invoices'
@@ -104,6 +105,11 @@ const AppOrdersRoute = AppOrdersRouteImport.update({
   path: '/orders',
   getParentRoute: () => AppRoute,
 } as any)
+const AppNotificationsRoute = AppNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppMaintenanceRoute = AppMaintenanceRouteImport.update({
   id: '/maintenance',
   path: '/maintenance',
@@ -171,6 +177,7 @@ export interface FileRoutesByFullPath {
   '/app/invoices': typeof AppInvoicesRoute
   '/app/kpi': typeof AppKpiRoute
   '/app/maintenance': typeof AppMaintenanceRoute
+  '/app/notifications': typeof AppNotificationsRoute
   '/app/orders': typeof AppOrdersRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/shipments': typeof AppShipmentsRoute
@@ -196,6 +203,7 @@ export interface FileRoutesByTo {
   '/app/invoices': typeof AppInvoicesRoute
   '/app/kpi': typeof AppKpiRoute
   '/app/maintenance': typeof AppMaintenanceRoute
+  '/app/notifications': typeof AppNotificationsRoute
   '/app/orders': typeof AppOrdersRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/shipments': typeof AppShipmentsRoute
@@ -223,6 +231,7 @@ export interface FileRoutesById {
   '/app/invoices': typeof AppInvoicesRoute
   '/app/kpi': typeof AppKpiRoute
   '/app/maintenance': typeof AppMaintenanceRoute
+  '/app/notifications': typeof AppNotificationsRoute
   '/app/orders': typeof AppOrdersRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/shipments': typeof AppShipmentsRoute
@@ -251,6 +260,7 @@ export interface FileRouteTypes {
     | '/app/invoices'
     | '/app/kpi'
     | '/app/maintenance'
+    | '/app/notifications'
     | '/app/orders'
     | '/app/settings'
     | '/app/shipments'
@@ -276,6 +286,7 @@ export interface FileRouteTypes {
     | '/app/invoices'
     | '/app/kpi'
     | '/app/maintenance'
+    | '/app/notifications'
     | '/app/orders'
     | '/app/settings'
     | '/app/shipments'
@@ -302,6 +313,7 @@ export interface FileRouteTypes {
     | '/app/invoices'
     | '/app/kpi'
     | '/app/maintenance'
+    | '/app/notifications'
     | '/app/orders'
     | '/app/settings'
     | '/app/shipments'
@@ -421,6 +433,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppOrdersRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/notifications': {
+      id: '/app/notifications'
+      path: '/notifications'
+      fullPath: '/app/notifications'
+      preLoaderRoute: typeof AppNotificationsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/maintenance': {
       id: '/app/maintenance'
       path: '/maintenance'
@@ -505,6 +524,7 @@ interface AppRouteChildren {
   AppInvoicesRoute: typeof AppInvoicesRoute
   AppKpiRoute: typeof AppKpiRoute
   AppMaintenanceRoute: typeof AppMaintenanceRoute
+  AppNotificationsRoute: typeof AppNotificationsRoute
   AppOrdersRoute: typeof AppOrdersRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppShipmentsRoute: typeof AppShipmentsRoute
@@ -527,6 +547,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppInvoicesRoute: AppInvoicesRoute,
   AppKpiRoute: AppKpiRoute,
   AppMaintenanceRoute: AppMaintenanceRoute,
+  AppNotificationsRoute: AppNotificationsRoute,
   AppOrdersRoute: AppOrdersRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppShipmentsRoute: AppShipmentsRoute,

@@ -39,6 +39,7 @@ const NAV: NavGroup[] = [
     items: [
       { to: "/app", label: "الرئيسية", icon: LayoutDashboard },
       { to: "/app/kpi", label: "مؤشرات KPI", icon: BarChart3 },
+      { to: "/app/notifications", label: "الإشعارات", icon: Bell },
     ],
   },
   {
@@ -92,6 +93,7 @@ export function DashboardLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [unread, setUnread] = useState(0);
   const [me, setMe] = useState<{ full_name: string | null; tenant_name: string | null }>({
     full_name: null,
     tenant_name: null,
@@ -118,6 +120,19 @@ export function DashboardLayout() {
 
   useEffect(() => {
     setMobileOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    const load = async () => {
+      const { count } = await supabase
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("is_read", false);
+      setUnread(count ?? 0);
+    };
+    load();
+    const t = setInterval(load, 30000);
+    return () => clearInterval(t);
   }, [pathname]);
 
   const handleSignOut = async () => {
@@ -250,10 +265,18 @@ export function DashboardLayout() {
               <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
               <span className="text-xs font-semibold text-success">تجربة — 13 يوم متبقي</span>
             </div>
-            <button className="relative flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-background hover:bg-secondary">
+            <Link
+              to="/app/notifications"
+              className="relative flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-background hover:bg-secondary"
+              title="الإشعارات"
+            >
               <Bell className="h-4 w-4" />
-              <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-accent" />
-            </button>
+              {unread > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
+                  {unread > 99 ? "99+" : unread}
+                </span>
+              )}
+            </Link>
             <button
               onClick={handleSignOut}
               title="تسجيل الخروج"
