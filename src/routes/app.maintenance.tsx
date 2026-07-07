@@ -121,7 +121,15 @@ function MaintPage() {
     if (error) toast.error(error.message); else { toast.success("تم الحذف"); load(); }
   };
 
-  const filtered = useMemo(() => rows.filter((r) => statusFilter === "all" || r.status === statusFilter), [rows, statusFilter]);
+  const filtered = useMemo(() => {
+    const s = q.trim().toLowerCase();
+    return rows.filter((r) => {
+      if (statusFilter !== "all" && r.status !== statusFilter) return false;
+      if (!s) return true;
+      return [r.maintenance_type, r.workshop, r.vehicles?.plate_number, r.notes]
+        .some((v) => String(v ?? "").toLowerCase().includes(s));
+    });
+  }, [rows, statusFilter, q]);
 
   const counts = {
     scheduled: rows.filter((r) => r.status === "scheduled").length,
