@@ -164,6 +164,8 @@ export type Database = {
       }
       contracts: {
         Row: {
+          archived_at: string | null
+          archived_reason: string | null
           contract_number: string
           created_at: string
           created_by: string | null
@@ -180,6 +182,8 @@ export type Database = {
           value: number | null
         }
         Insert: {
+          archived_at?: string | null
+          archived_reason?: string | null
           contract_number: string
           created_at?: string
           created_by?: string | null
@@ -196,6 +200,8 @@ export type Database = {
           value?: number | null
         }
         Update: {
+          archived_at?: string | null
+          archived_reason?: string | null
           contract_number?: string
           created_at?: string
           created_by?: string | null
@@ -231,6 +237,8 @@ export type Database = {
       customers: {
         Row: {
           address: string | null
+          archived_at: string | null
+          archived_reason: string | null
           city: string | null
           country: string | null
           created_at: string
@@ -247,6 +255,8 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          archived_at?: string | null
+          archived_reason?: string | null
           city?: string | null
           country?: string | null
           created_at?: string
@@ -263,6 +273,8 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          archived_at?: string | null
+          archived_reason?: string | null
           city?: string | null
           country?: string | null
           created_at?: string
@@ -399,6 +411,7 @@ export type Database = {
       drivers: {
         Row: {
           archived_at: string | null
+          archived_reason: string | null
           created_at: string
           email: string | null
           full_name: string
@@ -416,6 +429,7 @@ export type Database = {
         }
         Insert: {
           archived_at?: string | null
+          archived_reason?: string | null
           created_at?: string
           email?: string | null
           full_name: string
@@ -433,6 +447,7 @@ export type Database = {
         }
         Update: {
           archived_at?: string | null
+          archived_reason?: string | null
           created_at?: string
           email?: string | null
           full_name?: string
@@ -461,6 +476,7 @@ export type Database = {
       employees: {
         Row: {
           archived_at: string | null
+          archived_reason: string | null
           base_salary: number | null
           created_at: string
           department: string | null
@@ -478,6 +494,7 @@ export type Database = {
         }
         Insert: {
           archived_at?: string | null
+          archived_reason?: string | null
           base_salary?: number | null
           created_at?: string
           department?: string | null
@@ -495,6 +512,7 @@ export type Database = {
         }
         Update: {
           archived_at?: string | null
+          archived_reason?: string | null
           base_salary?: number | null
           created_at?: string
           department?: string | null
@@ -631,6 +649,72 @@ export type Database = {
           },
           {
             foreignKeyName: "fuel_logs_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gps_devices: {
+        Row: {
+          archived_at: string | null
+          created_at: string
+          device_model: string | null
+          device_serial: string
+          id: string
+          last_latitude: number | null
+          last_longitude: number | null
+          last_seen_at: string | null
+          notes: string | null
+          sim_number: string | null
+          status: string
+          tenant_id: string
+          updated_at: string
+          vehicle_id: string | null
+        }
+        Insert: {
+          archived_at?: string | null
+          created_at?: string
+          device_model?: string | null
+          device_serial: string
+          id?: string
+          last_latitude?: number | null
+          last_longitude?: number | null
+          last_seen_at?: string | null
+          notes?: string | null
+          sim_number?: string | null
+          status?: string
+          tenant_id: string
+          updated_at?: string
+          vehicle_id?: string | null
+        }
+        Update: {
+          archived_at?: string | null
+          created_at?: string
+          device_model?: string | null
+          device_serial?: string
+          id?: string
+          last_latitude?: number | null
+          last_longitude?: number | null
+          last_seen_at?: string | null
+          notes?: string | null
+          sim_number?: string | null
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+          vehicle_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gps_devices_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gps_devices_vehicle_id_fkey"
             columns: ["vehicle_id"]
             isOneToOne: false
             referencedRelation: "vehicles"
@@ -821,6 +905,8 @@ export type Database = {
       }
       invoices: {
         Row: {
+          archived_at: string | null
+          archived_reason: string | null
           created_at: string
           created_by: string | null
           customer_id: string | null
@@ -840,6 +926,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          archived_at?: string | null
+          archived_reason?: string | null
           created_at?: string
           created_by?: string | null
           customer_id?: string | null
@@ -859,6 +947,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          archived_at?: string | null
+          archived_reason?: string | null
           created_at?: string
           created_by?: string | null
           customer_id?: string | null
@@ -957,6 +1047,8 @@ export type Database = {
       }
       maintenance_records: {
         Row: {
+          archived_at: string | null
+          archived_reason: string | null
           completed_date: string | null
           cost: number
           created_at: string
@@ -972,6 +1064,8 @@ export type Database = {
           workshop: string | null
         }
         Insert: {
+          archived_at?: string | null
+          archived_reason?: string | null
           completed_date?: string | null
           cost?: number
           created_at?: string
@@ -987,6 +1081,8 @@ export type Database = {
           workshop?: string | null
         }
         Update: {
+          archived_at?: string | null
+          archived_reason?: string | null
           completed_date?: string | null
           cost?: number
           created_at?: string
@@ -1203,6 +1299,8 @@ export type Database = {
       }
       shipments: {
         Row: {
+          archived_at: string | null
+          archived_reason: string | null
           created_at: string
           delivered_at: string | null
           destination: string
@@ -1220,6 +1318,8 @@ export type Database = {
           vehicle_id: string | null
         }
         Insert: {
+          archived_at?: string | null
+          archived_reason?: string | null
           created_at?: string
           delivered_at?: string | null
           destination: string
@@ -1237,6 +1337,8 @@ export type Database = {
           vehicle_id?: string | null
         }
         Update: {
+          archived_at?: string | null
+          archived_reason?: string | null
           created_at?: string
           delivered_at?: string | null
           destination?: string
@@ -1553,6 +1655,8 @@ export type Database = {
       }
       transport_orders: {
         Row: {
+          archived_at: string | null
+          archived_reason: string | null
           contract_id: string | null
           created_at: string
           created_by: string | null
@@ -1574,6 +1678,8 @@ export type Database = {
           weight_tons: number | null
         }
         Insert: {
+          archived_at?: string | null
+          archived_reason?: string | null
           contract_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -1595,6 +1701,8 @@ export type Database = {
           weight_tons?: number | null
         }
         Update: {
+          archived_at?: string | null
+          archived_reason?: string | null
           contract_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -1689,6 +1797,8 @@ export type Database = {
       }
       trips: {
         Row: {
+          archived_at: string | null
+          archived_reason: string | null
           cost: number | null
           created_at: string
           customer_id: string | null
@@ -1708,6 +1818,8 @@ export type Database = {
           vehicle_id: string | null
         }
         Insert: {
+          archived_at?: string | null
+          archived_reason?: string | null
           cost?: number | null
           created_at?: string
           customer_id?: string | null
@@ -1727,6 +1839,8 @@ export type Database = {
           vehicle_id?: string | null
         }
         Update: {
+          archived_at?: string | null
+          archived_reason?: string | null
           cost?: number | null
           created_at?: string
           customer_id?: string | null
@@ -1811,6 +1925,7 @@ export type Database = {
       vehicles: {
         Row: {
           archived_at: string | null
+          archived_reason: string | null
           brand: string | null
           capacity_tons: number | null
           created_at: string
@@ -1829,6 +1944,7 @@ export type Database = {
         }
         Insert: {
           archived_at?: string | null
+          archived_reason?: string | null
           brand?: string | null
           capacity_tons?: number | null
           created_at?: string
@@ -1847,6 +1963,7 @@ export type Database = {
         }
         Update: {
           archived_at?: string | null
+          archived_reason?: string | null
           brand?: string | null
           capacity_tons?: number | null
           created_at?: string
@@ -2061,6 +2178,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_expiry_notifications: { Args: never; Returns: number }
       get_user_customer: { Args: { _user_id: string }; Returns: string }
       get_user_driver: { Args: { _user_id: string }; Returns: string }
       get_user_tenant: { Args: { _user_id: string }; Returns: string }
