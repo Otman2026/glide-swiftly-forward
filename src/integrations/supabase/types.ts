@@ -806,6 +806,95 @@ export type Database = {
           },
         ]
       }
+      trips: {
+        Row: {
+          cost: number | null
+          created_at: string
+          customer_id: string | null
+          destination: string | null
+          distance_km: number | null
+          driver_id: string | null
+          end_date: string | null
+          id: string
+          notes: string | null
+          origin: string | null
+          revenue: number | null
+          start_date: string | null
+          status: string
+          tenant_id: string
+          trip_number: string
+          updated_at: string
+          vehicle_id: string | null
+        }
+        Insert: {
+          cost?: number | null
+          created_at?: string
+          customer_id?: string | null
+          destination?: string | null
+          distance_km?: number | null
+          driver_id?: string | null
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          origin?: string | null
+          revenue?: number | null
+          start_date?: string | null
+          status?: string
+          tenant_id: string
+          trip_number: string
+          updated_at?: string
+          vehicle_id?: string | null
+        }
+        Update: {
+          cost?: number | null
+          created_at?: string
+          customer_id?: string | null
+          destination?: string | null
+          distance_km?: number | null
+          driver_id?: string | null
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          origin?: string | null
+          revenue?: number | null
+          start_date?: string | null
+          status?: string
+          tenant_id?: string
+          trip_number?: string
+          updated_at?: string
+          vehicle_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trips_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trips_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trips_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trips_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -893,6 +982,65 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "vehicles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      warehouses: {
+        Row: {
+          address: string | null
+          capacity_m3: number | null
+          city: string | null
+          code: string | null
+          country: string | null
+          created_at: string
+          id: string
+          manager_name: string | null
+          name: string
+          notes: string | null
+          phone: string | null
+          status: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          capacity_m3?: number | null
+          city?: string | null
+          code?: string | null
+          country?: string | null
+          created_at?: string
+          id?: string
+          manager_name?: string | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          status?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          capacity_m3?: number | null
+          city?: string | null
+          code?: string | null
+          country?: string | null
+          created_at?: string
+          id?: string
+          manager_name?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "warehouses_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
