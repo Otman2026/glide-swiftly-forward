@@ -16,6 +16,7 @@ import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppWarehousesRouteImport } from './routes/app.warehouses'
+import { Route as AppViolationsRouteImport } from './routes/app.violations'
 import { Route as AppVehiclesRouteImport } from './routes/app.vehicles'
 import { Route as AppUsersRouteImport } from './routes/app.users'
 import { Route as AppTripsRouteImport } from './routes/app.trips'
@@ -74,6 +75,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const AppWarehousesRoute = AppWarehousesRouteImport.update({
   id: '/warehouses',
   path: '/warehouses',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppViolationsRoute = AppViolationsRouteImport.update({
+  id: '/violations',
+  path: '/violations',
   getParentRoute: () => AppRoute,
 } as any)
 const AppVehiclesRoute = AppVehiclesRouteImport.update({
@@ -226,6 +232,7 @@ export interface FileRoutesByFullPath {
   '/app/trips': typeof AppTripsRoute
   '/app/users': typeof AppUsersRoute
   '/app/vehicles': typeof AppVehiclesRoute
+  '/app/violations': typeof AppViolationsRoute
   '/app/warehouses': typeof AppWarehousesRoute
   '/app/': typeof AppIndexRoute
   '/api/public/hooks/scan-alerts': typeof ApiPublicHooksScanAlertsRoute
@@ -258,6 +265,7 @@ export interface FileRoutesByTo {
   '/app/trips': typeof AppTripsRoute
   '/app/users': typeof AppUsersRoute
   '/app/vehicles': typeof AppVehiclesRoute
+  '/app/violations': typeof AppViolationsRoute
   '/app/warehouses': typeof AppWarehousesRoute
   '/app': typeof AppIndexRoute
   '/api/public/hooks/scan-alerts': typeof ApiPublicHooksScanAlertsRoute
@@ -292,6 +300,7 @@ export interface FileRoutesById {
   '/app/trips': typeof AppTripsRoute
   '/app/users': typeof AppUsersRoute
   '/app/vehicles': typeof AppVehiclesRoute
+  '/app/violations': typeof AppViolationsRoute
   '/app/warehouses': typeof AppWarehousesRoute
   '/app/': typeof AppIndexRoute
   '/api/public/hooks/scan-alerts': typeof ApiPublicHooksScanAlertsRoute
@@ -327,6 +336,7 @@ export interface FileRouteTypes {
     | '/app/trips'
     | '/app/users'
     | '/app/vehicles'
+    | '/app/violations'
     | '/app/warehouses'
     | '/app/'
     | '/api/public/hooks/scan-alerts'
@@ -359,6 +369,7 @@ export interface FileRouteTypes {
     | '/app/trips'
     | '/app/users'
     | '/app/vehicles'
+    | '/app/violations'
     | '/app/warehouses'
     | '/app'
     | '/api/public/hooks/scan-alerts'
@@ -392,6 +403,7 @@ export interface FileRouteTypes {
     | '/app/trips'
     | '/app/users'
     | '/app/vehicles'
+    | '/app/violations'
     | '/app/warehouses'
     | '/app/'
     | '/api/public/hooks/scan-alerts'
@@ -457,6 +469,13 @@ declare module '@tanstack/react-router' {
       path: '/warehouses'
       fullPath: '/app/warehouses'
       preLoaderRoute: typeof AppWarehousesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/violations': {
+      id: '/app/violations'
+      path: '/violations'
+      fullPath: '/app/violations'
+      preLoaderRoute: typeof AppViolationsRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/vehicles': {
@@ -653,6 +672,7 @@ interface AppRouteChildren {
   AppTripsRoute: typeof AppTripsRoute
   AppUsersRoute: typeof AppUsersRoute
   AppVehiclesRoute: typeof AppVehiclesRoute
+  AppViolationsRoute: typeof AppViolationsRoute
   AppWarehousesRoute: typeof AppWarehousesRoute
   AppIndexRoute: typeof AppIndexRoute
 }
@@ -680,6 +700,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppTripsRoute: AppTripsRoute,
   AppUsersRoute: AppUsersRoute,
   AppVehiclesRoute: AppVehiclesRoute,
+  AppViolationsRoute: AppViolationsRoute,
   AppWarehousesRoute: AppWarehousesRoute,
   AppIndexRoute: AppIndexRoute,
 }
