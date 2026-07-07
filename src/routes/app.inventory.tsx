@@ -447,22 +447,23 @@ function MovementsTab({
   const typeLabel = (t: string) =>
     ({ receive: "استلام", deliver: "تسليم", transfer: "تحويل", adjust: "تسوية" })[t] ?? t;
 
-  const doExport = () => {
-    exportToCSV(movements, [
-      { key: "created_at", label: "التاريخ", get: (r) => new Date(r.created_at).toLocaleString("ar-MA") },
-      { key: "movement_type", label: "النوع", get: (r) => typeLabel(r.movement_type) },
-      { key: "item_id", label: "الصنف", get: (r) => itemById.get(r.item_id)?.name ?? "" },
-      { key: "quantity", label: "الكمية" },
-      { key: "from_warehouse_id", label: "من", get: (r) => (r.from_warehouse_id ? whById.get(r.from_warehouse_id) : "") },
-      { key: "to_warehouse_id", label: "إلى", get: (r) => (r.to_warehouse_id ? whById.get(r.to_warehouse_id) : "") },
-      { key: "reference", label: "المرجع" },
-    ], "stock-movements");
-  };
-
   return (
     <>
       <div className="mb-3 flex flex-wrap gap-2 justify-end">
-        <Button variant="outline" onClick={doExport} className="gap-2"><Download className="h-4 w-4" />تصدير</Button>
+        <ExportBar
+          filename="stock-movements"
+          title="حركات المخزون"
+          rows={movements}
+          columns={[
+            { key: "created_at", label: "التاريخ", format: (r) => new Date(r.created_at).toLocaleString("ar-MA") },
+            { key: "movement_type", label: "النوع", format: (r) => typeLabel(r.movement_type) },
+            { key: "item", label: "الصنف", format: (r) => itemById.get(r.item_id)?.name ?? "" },
+            { key: "quantity", label: "الكمية" },
+            { key: "from", label: "من", format: (r) => (r.from_warehouse_id ? (whById.get(r.from_warehouse_id) ?? "") : "") },
+            { key: "to", label: "إلى", format: (r) => (r.to_warehouse_id ? (whById.get(r.to_warehouse_id) ?? "") : "") },
+            { key: "reference", label: "المرجع" },
+          ]}
+        />
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90"><ArrowLeftRight className="h-4 w-4" />حركة جديدة</Button>
