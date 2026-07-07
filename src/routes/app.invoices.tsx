@@ -223,11 +223,6 @@ function InvoicesPage() {
         subtitle="إصدار وإدارة فواتير النقل — TVA، طباعة، تصدير"
         action={
           <div className="flex flex-wrap gap-2 items-center">
-            <ExportBar
-              filename="invoices"
-              title="الفواتير"
-              rows={rows}
-              columns={[
             <SearchInput value={q} onChange={setQ} placeholder="بحث برقم/عميل/حالة…" />
             <ExportBar
               filename="invoices"
