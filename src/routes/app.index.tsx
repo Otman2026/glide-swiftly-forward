@@ -21,15 +21,14 @@ function DashboardHome() {
 
   useEffect(() => {
     (async () => {
-      const count = (t: string) =>
-        supabase.from(t).select("*", { count: "exact", head: true });
+      const opts = { count: "exact" as const, head: true };
       const [c, ct, v, d, o, sh, rev] = await Promise.all([
-        count("customers"),
-        count("contracts"),
-        count("vehicles"),
-        count("drivers"),
-        count("transport_orders"),
-        count("shipments"),
+        supabase.from("customers").select("*", opts),
+        supabase.from("contracts").select("*", opts),
+        supabase.from("vehicles").select("*", opts),
+        supabase.from("drivers").select("*", opts),
+        supabase.from("transport_orders").select("*", opts),
+        supabase.from("shipments").select("*", opts),
         supabase.from("transport_orders").select("price").eq("status", "delivered"),
       ]);
       setStats({
