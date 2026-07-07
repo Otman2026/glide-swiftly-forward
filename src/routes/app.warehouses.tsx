@@ -90,12 +90,27 @@ function WarehousesPage() {
         title="إدارة المستودعات"
         subtitle="مواقع تخزين، سعات، مسؤولون، وإحصائيات إشغال"
         action={
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
-                <Plus className="h-4 w-4" /> مستودع جديد
-              </Button>
-            </DialogTrigger>
+          <div className="flex flex-wrap gap-2 items-center">
+            <ExportBar
+              filename="warehouses"
+              title="المستودعات"
+              rows={filtered}
+              columns={[
+                { key: "name", label: "الاسم" },
+                { key: "code", label: "الرمز" },
+                { key: "city", label: "المدينة" },
+                { key: "capacity_m3", label: "السعة (m³)" },
+                { key: "manager_name", label: "المسؤول" },
+                { key: "phone", label: "الهاتف" },
+                { key: "status", label: "الحالة" },
+              ]}
+            />
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
+                  <Plus className="h-4 w-4" /> مستودع جديد
+                </Button>
+              </DialogTrigger>
             <DialogContent dir="rtl">
               <DialogHeader><DialogTitle>إضافة مستودع</DialogTitle></DialogHeader>
               <form onSubmit={onCreate} className="space-y-4">
