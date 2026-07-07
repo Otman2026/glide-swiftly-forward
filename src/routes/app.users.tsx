@@ -75,7 +75,34 @@ function UsersPage() {
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    (async () => {
+      const [{ data: c }, { data: d }] = await Promise.all([
+        supabase.from("customers").select("id, name").order("name"),
+        supabase.from("drivers").select("id, full_name").order("full_name"),
+      ]);
+      setCustomers((c ?? []) as { id: string; name: string }[]);
+      setDrivers((d ?? []) as { id: string; full_name: string }[]);
+    })();
+  }, []);
+
+  function openLink(m: Member) {
+    setLinking(m);
+    setLinkForm({ customer_id: m.customer_id ?? "", driver_id: m.driver_id ?? "" });
+  }
+
+  async function saveLink() {
+    if (!linking) return;
+    const { error } = await supabase.from("profiles").update({
+      customer_id: linkForm.customer_id || null,
+      driver_id: linkForm.driver_id || null,
+    }).eq("id", linking.user_id);
+    if (error) return toast.error(error.message);
+    toast.success("تم الحفظ");
+    setLinking(null);
+    load();
+  }
 
   const assignRole = async (e: React.FormEvent) => {
     e.preventDefault();
