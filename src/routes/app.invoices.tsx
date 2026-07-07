@@ -209,7 +209,6 @@ function InvoicesPage() {
       <PageHeader
         title="الفواتير"
         subtitle="إصدار وإدارة فواتير النقل — TVA، طباعة، تصدير"
-        icon={FileText}
         action={
           <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger asChild>
