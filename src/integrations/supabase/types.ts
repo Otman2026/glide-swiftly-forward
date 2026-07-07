@@ -1098,6 +1098,54 @@ export type Database = {
           },
         ]
       }
+      trip_locations: {
+        Row: {
+          heading: number | null
+          id: string
+          latitude: number
+          longitude: number
+          recorded_at: string
+          speed_kmh: number | null
+          tenant_id: string
+          trip_id: string
+        }
+        Insert: {
+          heading?: number | null
+          id?: string
+          latitude: number
+          longitude: number
+          recorded_at?: string
+          speed_kmh?: number | null
+          tenant_id: string
+          trip_id: string
+        }
+        Update: {
+          heading?: number | null
+          id?: string
+          latitude?: number
+          longitude?: number
+          recorded_at?: string
+          speed_kmh?: number | null
+          tenant_id?: string
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_locations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_locations_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trips: {
         Row: {
           cost: number | null
