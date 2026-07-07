@@ -36,6 +36,7 @@ import { Route as AppDocumentsRouteImport } from './routes/app.documents'
 import { Route as AppCustomersRouteImport } from './routes/app.customers'
 import { Route as AppContractsRouteImport } from './routes/app.contracts'
 import { Route as AppAccidentsRouteImport } from './routes/app.accidents'
+import { Route as ApiPublicHooksScanAlertsRouteImport } from './routes/api.public.hooks.scan-alerts'
 
 const PortalRoute = PortalRouteImport.update({
   id: '/portal',
@@ -172,6 +173,12 @@ const AppAccidentsRoute = AppAccidentsRouteImport.update({
   path: '/accidents',
   getParentRoute: () => AppRoute,
 } as any)
+const ApiPublicHooksScanAlertsRoute =
+  ApiPublicHooksScanAlertsRouteImport.update({
+    id: '/api/public/hooks/scan-alerts',
+    path: '/api/public/hooks/scan-alerts',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -201,6 +208,7 @@ export interface FileRoutesByFullPath {
   '/app/vehicles': typeof AppVehiclesRoute
   '/app/warehouses': typeof AppWarehousesRoute
   '/app/': typeof AppIndexRoute
+  '/api/public/hooks/scan-alerts': typeof ApiPublicHooksScanAlertsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -229,6 +237,7 @@ export interface FileRoutesByTo {
   '/app/vehicles': typeof AppVehiclesRoute
   '/app/warehouses': typeof AppWarehousesRoute
   '/app': typeof AppIndexRoute
+  '/api/public/hooks/scan-alerts': typeof ApiPublicHooksScanAlertsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -259,6 +268,7 @@ export interface FileRoutesById {
   '/app/vehicles': typeof AppVehiclesRoute
   '/app/warehouses': typeof AppWarehousesRoute
   '/app/': typeof AppIndexRoute
+  '/api/public/hooks/scan-alerts': typeof ApiPublicHooksScanAlertsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -290,6 +300,7 @@ export interface FileRouteTypes {
     | '/app/vehicles'
     | '/app/warehouses'
     | '/app/'
+    | '/api/public/hooks/scan-alerts'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -318,6 +329,7 @@ export interface FileRouteTypes {
     | '/app/vehicles'
     | '/app/warehouses'
     | '/app'
+    | '/api/public/hooks/scan-alerts'
   id:
     | '__root__'
     | '/'
@@ -347,6 +359,7 @@ export interface FileRouteTypes {
     | '/app/vehicles'
     | '/app/warehouses'
     | '/app/'
+    | '/api/public/hooks/scan-alerts'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -355,6 +368,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   DriverRoute: typeof DriverRoute
   PortalRoute: typeof PortalRoute
+  ApiPublicHooksScanAlertsRoute: typeof ApiPublicHooksScanAlertsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -548,6 +562,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAccidentsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/api/public/hooks/scan-alerts': {
+      id: '/api/public/hooks/scan-alerts'
+      path: '/api/public/hooks/scan-alerts'
+      fullPath: '/api/public/hooks/scan-alerts'
+      preLoaderRoute: typeof ApiPublicHooksScanAlertsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -609,6 +630,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   DriverRoute: DriverRoute,
   PortalRoute: PortalRoute,
+  ApiPublicHooksScanAlertsRoute: ApiPublicHooksScanAlertsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
