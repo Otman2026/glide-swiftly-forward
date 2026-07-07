@@ -128,19 +128,8 @@ function ShipmentsPage() {
       </div>`);
   };
 
-  const onExport = () => {
-    if (filtered.length === 0) return toast.error("لا توجد بيانات");
-    exportToCSV(filtered, [
-      { key: "shipment_number", label: "الرقم" },
-      { key: "origin", label: "من" },
-      { key: "destination", label: "إلى" },
-      { key: "vehicle", label: "المركبة", get: (r) => r.vehicles?.plate_number ?? "" },
-      { key: "driver", label: "السائق", get: (r) => r.drivers?.full_name ?? "" },
-      { key: "distance_km", label: "المسافة (كم)" },
-      { key: "status", label: "الحالة", get: (r) => STATUS_LABEL[r.status] },
-    ], `shipments-${new Date().toISOString().slice(0, 10)}`);
-    toast.success("تم التصدير");
-  };
+
+
 
   const filtered = rows.filter((r) => {
     if (statusFilter !== "all" && r.status !== statusFilter) return false;
