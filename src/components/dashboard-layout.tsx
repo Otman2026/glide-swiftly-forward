@@ -59,6 +59,7 @@ const NAV: NavGroup[] = [
     title: "TMS — النقل",
     items: [
       { to: "/app/orders", label: "أوامر النقل", icon: ClipboardList },
+      { to: "/app/pipeline", label: "دورة الطلب", icon: LayoutDashboard },
       { to: "/app/shipments", label: "الشحنات", icon: Package },
       { to: "/app/trips", label: "الرحلات", icon: RouteIcon },
       { to: "/app/tracking", label: "التتبع الحي (GPS)", icon: MapPin },
