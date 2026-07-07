@@ -115,7 +115,7 @@ function KpiPage() {
       // Top customers by revenue
       const custMap: Record<string, number> = {};
       (allOrders.data ?? []).forEach((r: any) => {
-        if (r.customer_id) custMap[r.customer_id] = (custMap[r.customer_id] ?? 0) + Number(r.total_amount ?? 0);
+        if (r.customer_id) custMap[r.customer_id] = (custMap[r.customer_id] ?? 0) + Number(r.price ?? 0);
       });
       const topIds = Object.entries(custMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
       if (topIds.length) {
