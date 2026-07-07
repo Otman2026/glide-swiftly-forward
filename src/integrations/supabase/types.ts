@@ -1605,50 +1605,77 @@ export type Database = {
       tenants: {
         Row: {
           address: string | null
+          bank_details: string | null
           city: string | null
           contact_email: string | null
           contact_phone: string | null
           country: string | null
           created_at: string
+          currency: string
           id: string
+          invoice_footer: string | null
+          invoice_header: string | null
+          invoice_next_number: number
+          invoice_number_format: string
+          invoice_prefix: string
           logo_url: string | null
           name: string
           registration_number: string | null
           slug: string
+          stamp_url: string | null
           status: Database["public"]["Enums"]["tenant_status"]
           tax_id: string | null
+          tax_rate: number
           updated_at: string
         }
         Insert: {
           address?: string | null
+          bank_details?: string | null
           city?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           country?: string | null
           created_at?: string
+          currency?: string
           id?: string
+          invoice_footer?: string | null
+          invoice_header?: string | null
+          invoice_next_number?: number
+          invoice_number_format?: string
+          invoice_prefix?: string
           logo_url?: string | null
           name: string
           registration_number?: string | null
           slug: string
+          stamp_url?: string | null
           status?: Database["public"]["Enums"]["tenant_status"]
           tax_id?: string | null
+          tax_rate?: number
           updated_at?: string
         }
         Update: {
           address?: string | null
+          bank_details?: string | null
           city?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           country?: string | null
           created_at?: string
+          currency?: string
           id?: string
+          invoice_footer?: string | null
+          invoice_header?: string | null
+          invoice_next_number?: number
+          invoice_number_format?: string
+          invoice_prefix?: string
           logo_url?: string | null
           name?: string
           registration_number?: string | null
           slug?: string
+          stamp_url?: string | null
           status?: Database["public"]["Enums"]["tenant_status"]
           tax_id?: string | null
+          tax_rate?: number
           updated_at?: string
         }
         Relationships: []
@@ -2199,6 +2226,7 @@ export type Database = {
       }
       is_system_owner: { Args: { _user_id: string }; Returns: boolean }
       is_user_active: { Args: { _user_id: string }; Returns: boolean }
+      next_invoice_number: { Args: { _tenant_id: string }; Returns: string }
     }
     Enums: {
       app_role:
