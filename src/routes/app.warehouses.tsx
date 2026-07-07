@@ -134,7 +134,8 @@ function WarehousesPage() {
                 </DialogFooter>
               </form>
             </DialogContent>
-          </Dialog>
+            </Dialog>
+          </div>
         }
       />
 
