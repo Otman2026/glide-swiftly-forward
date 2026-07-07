@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
 import { z } from "zod";
-import Stripe from "stripe";
+import type StripeType from "stripe";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 type PlanKey = "starter" | "professional";
@@ -20,6 +20,11 @@ const checkoutInput = z.object({
 const getAmount = (plan: PlanKey, cycle: BillingCycle) => {
   const monthly = PLAN_CONFIG[plan].monthly;
   return cycle === "yearly" ? monthly * 10 : monthly;
+};
+
+const mapCheckoutStatus = (status: StripeType.Checkout.Session.Status | null) => {
+  if (status === "complete") return "completed";
+  return status ?? "open";
 };
 
 const getOrigin = () => {
@@ -95,6 +100,7 @@ export const createStripeCheckoutSession = createServerFn({ method: "POST" })
 
     if (checkoutRecord.error) throw new Error(checkoutRecord.error.message);
 
+    const { default: Stripe } = await import("stripe");
     const stripe = new Stripe(stripeSecretKey, {
       httpClient: Stripe.createFetchHttpClient(),
     });
@@ -109,7 +115,7 @@ export const createStripeCheckoutSession = createServerFn({ method: "POST" })
       billing_cycle: billingCycle,
     };
 
-    const sessionParams: Stripe.Checkout.SessionCreateParams = {
+    const sessionParams: StripeType.Checkout.SessionCreateParams = {
       mode: "subscription",
       success_url: `${origin}/app/billing?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/app/billing?checkout=cancelled`,
@@ -149,7 +155,7 @@ export const createStripeCheckoutSession = createServerFn({ method: "POST" })
         stripe_customer_id: typeof session.customer === "string" ? session.customer : null,
         amount_total: session.amount_total ?? amount * 100,
         currency: session.currency ?? "mad",
-        status: session.status ?? "open",
+        status: mapCheckoutStatus(session.status),
       })
       .eq("id", checkoutRecord.data.id);
 
