@@ -263,6 +263,7 @@ function ReportsPage() {
           { k: "vehicle", l: "حسب المركبة" },
           { k: "customer", l: "حسب العميل" },
           { k: "driver", l: "حسب السائق" },
+          { k: "statement", l: "كشف حساب العملاء" },
         ] as const).map((t) => (
           <button
             key={t.k}
