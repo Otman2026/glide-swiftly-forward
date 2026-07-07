@@ -1,118 +1,126 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/dashboard-layout";
-import { BarChart3, Truck, Users, Star, Fuel, TrendingUp } from "lucide-react";
+import { BarChart3, Truck, Users, Fuel, TrendingUp, Loader2, Package, AlertTriangle, Wrench } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/app/kpi")({
   component: KpiPage,
 });
 
+type Stats = {
+  vehicles: number;
+  vehiclesInUse: number;
+  drivers: number;
+  customers: number;
+  orders: number;
+  ordersDelivered: number;
+  revenue: number;
+  expenses: number;
+  fuelLiters: number;
+  fuelCost: number;
+  maintenanceCost: number;
+  incidents: number;
+  incidentsCost: number;
+};
+
 function KpiPage() {
+  const [s, setS] = useState<Stats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      const [v, vu, d, c, o, od, rev, exp, fuel, maint, inc] = await Promise.all([
+        supabase.from("vehicles").select("id", { count: "exact", head: true }),
+        supabase.from("vehicles").select("id", { count: "exact", head: true }).eq("status", "in_use"),
+        supabase.from("drivers").select("id", { count: "exact", head: true }),
+        supabase.from("customers").select("id", { count: "exact", head: true }),
+        supabase.from("transport_orders").select("id", { count: "exact", head: true }),
+        supabase.from("transport_orders").select("total_amount").eq("status", "delivered"),
+        supabase.from("transport_orders").select("total_amount").eq("status", "delivered"),
+        supabase.from("expenses").select("amount"),
+        supabase.from("fuel_logs").select("liters,cost"),
+        supabase.from("maintenance_records").select("cost"),
+        supabase.from("incidents").select("repair_cost"),
+      ]);
+      const sum = (arr: any[] | null, k: string) => (arr ?? []).reduce((a, b) => a + Number(b[k] ?? 0), 0);
+      setS({
+        vehicles: v.count ?? 0,
+        vehiclesInUse: vu.count ?? 0,
+        drivers: d.count ?? 0,
+        customers: c.count ?? 0,
+        orders: o.count ?? 0,
+        ordersDelivered: (od.data ?? []).length,
+        revenue: sum(rev.data, "total_amount"),
+        expenses: sum(exp.data, "amount"),
+        fuelLiters: sum(fuel.data, "liters"),
+        fuelCost: sum(fuel.data, "cost"),
+        maintenanceCost: sum(maint.data, "cost"),
+        incidents: (inc.data ?? []).length,
+        incidentsCost: sum(inc.data, "repair_cost"),
+      });
+      setLoading(false);
+    })();
+  }, []);
+
+  if (loading || !s) {
+    return (
+      <>
+        <PageHeader title="مؤشرات الأداء (KPIs)" subtitle="نظرة عامة مباشرة على أداء شركتك" />
+        <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-accent" /></div>
+      </>
+    );
+  }
+
+  const net = s.revenue - s.expenses - s.fuelCost - s.maintenanceCost - s.incidentsCost;
+  const utilization = s.vehicles > 0 ? (s.vehiclesInUse / s.vehicles) * 100 : 0;
+  const revenuePerVehicle = s.vehicles > 0 ? s.revenue / s.vehicles : 0;
+
+  const cards = [
+    { label: "الشاحنات", value: s.vehicles, sub: `${s.vehiclesInUse} في الخدمة`, icon: Truck, tint: "text-accent" },
+    { label: "السائقون", value: s.drivers, sub: "نشط", icon: Users, tint: "text-primary" },
+    { label: "العملاء", value: s.customers, sub: "في CRM", icon: Users, tint: "text-success" },
+    { label: "الطلبات", value: s.orders, sub: `${s.ordersDelivered} مسلّم`, icon: Package, tint: "text-accent" },
+    { label: "استهلاك الوقود", value: `${s.fuelLiters.toFixed(0)}L`, sub: `${s.fuelCost.toFixed(0)} MAD`, icon: Fuel, tint: "text-warning-foreground" },
+    { label: "الحوادث", value: s.incidents, sub: `${s.incidentsCost.toFixed(0)} MAD`, icon: AlertTriangle, tint: "text-destructive" },
+    { label: "الصيانة", value: `${s.maintenanceCost.toFixed(0)}`, sub: "MAD", icon: Wrench, tint: "text-warning-foreground" },
+    { label: "معدل استغلال الأسطول", value: `${utilization.toFixed(0)}%`, sub: "", icon: BarChart3, tint: "text-primary" },
+  ];
+
   return (
     <>
-      <PageHeader
-        title="لوحة KPI الاحترافية"
-        subtitle="مؤشرات الأداء الفورية لكل عمليات الشركة"
-      />
+      <PageHeader title="مؤشرات الأداء (KPIs)" subtitle="نظرة عامة مباشرة على أداء شركتك من قاعدة البيانات" />
 
-      <div className="grid gap-4 md:grid-cols-3">
-        {[
-          { title: "نسبة استغلال الأسطول", value: "87%", target: 90, icon: Truck, color: "text-primary" },
-          { title: "الالتزام بالمواعيد", value: "94%", target: 95, icon: TrendingUp, color: "text-success" },
-          { title: "متوسط تقييم السائقين", value: "4.7/5", target: 4.5, icon: Star, color: "text-accent" },
-        ].map((k) => (
-          <div key={k.title} className="rounded-2xl border border-border bg-card p-6">
-            <div className="mb-3 flex items-center justify-between">
-              <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-secondary ${k.color}`}>
-                <k.icon className="h-5 w-5" />
-              </div>
-              <span className="text-xs text-muted-foreground">الهدف: {k.target}</span>
-            </div>
-            <div className="text-4xl font-black text-foreground">{k.value}</div>
-            <div className="mt-1 text-sm font-semibold text-muted-foreground">{k.title}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <RankCard
-          title="أفضل العملاء (إيرادات)"
-          icon={Users}
-          rows={[
-            { name: "مجموعة الأطلس اللوجستية", value: "412K" },
-            { name: "شركة النقل الوطنية", value: "245K" },
-            { name: "المؤسسة المغربية للتوزيع", value: "156K" },
-            { name: "شركة الصحراء للنقل", value: "89K" },
-          ]}
-        />
-        <RankCard
-          title="أفضل السائقين (رحلات + تقييم)"
-          icon={Star}
-          rows={[
-            { name: "خالد العلوي", value: "421 رحلة" },
-            { name: "أحمد بن علي", value: "342 رحلة" },
-            { name: "محمد الأمين", value: "298 رحلة" },
-            { name: "يوسف الإدريسي", value: "187 رحلة" },
-          ]}
-        />
-        <RankCard
-          title="أكثر الشاحنات ربحية"
-          icon={Truck}
-          rows={[
-            { name: "12345-أ-6 · Volvo FH16", value: "+84K" },
-            { name: "23456-ب-6 · Mercedes Actros", value: "+72K" },
-            { name: "45678-د-6 · Schmitz", value: "+51K" },
-          ]}
-        />
-        <RankCard
-          title="أعلى استهلاك وقود"
-          icon={Fuel}
-          rows={[
-            { name: "34567-ج-6 · Renault T", value: "14.8L/100" },
-            { name: "56789-هـ-6 · Iveco Stralis", value: "13.9L/100" },
-            { name: "67890-و-6 · MAN TGX", value: "13.2L/100" },
-          ]}
-        />
-      </div>
-
-      <div className="mt-6 rounded-2xl border-2 border-dashed border-border bg-card p-8 text-center">
-        <BarChart3 className="mx-auto h-10 w-10 text-muted-foreground" />
-        <div className="mt-2 font-bold">تقارير متقدمة قادمة</div>
-        <div className="text-sm text-muted-foreground">
-          تحليلات AI، توقع الصيانة، اقتراح أفضل شاحنة وسائق لكل رحلة.
+      <div className="mb-6 grid gap-4 md:grid-cols-3">
+        <div className="rounded-2xl border border-border bg-card p-6">
+          <div className="text-xs text-muted-foreground">إجمالي الإيرادات</div>
+          <div className="mt-2 text-3xl font-black text-success">{(s.revenue / 1000).toFixed(1)}K MAD</div>
+          <div className="mt-2 flex items-center gap-1 text-xs font-semibold text-success"><TrendingUp className="h-3 w-3" /> من الطلبات المسلّمة</div>
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-6">
+          <div className="text-xs text-muted-foreground">إجمالي التكاليف</div>
+          <div className="mt-2 text-3xl font-black text-destructive">{((s.expenses + s.fuelCost + s.maintenanceCost + s.incidentsCost) / 1000).toFixed(1)}K MAD</div>
+          <div className="mt-2 text-xs text-muted-foreground">مصاريف + وقود + صيانة + حوادث</div>
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-6">
+          <div className="text-xs text-muted-foreground">صافي الربح</div>
+          <div className={`mt-2 text-3xl font-black ${net >= 0 ? "text-primary" : "text-destructive"}`}>{(net / 1000).toFixed(1)}K MAD</div>
+          <div className="mt-2 text-xs text-muted-foreground">إيراد/شاحنة: {revenuePerVehicle.toFixed(0)} MAD</div>
         </div>
       </div>
-    </>
-  );
-}
 
-function RankCard({
-  title,
-  icon: Icon,
-  rows,
-}: {
-  title: string;
-  icon: typeof Star;
-  rows: { name: string; value: string }[];
-}) {
-  return (
-    <div className="rounded-2xl border border-border bg-card p-6">
-      <div className="mb-4 flex items-center gap-2">
-        <Icon className="h-5 w-5 text-accent" />
-        <h3 className="font-bold text-foreground">{title}</h3>
-      </div>
-      <div className="space-y-2">
-        {rows.map((r, i) => (
-          <div key={r.name} className="flex items-center justify-between rounded-lg bg-secondary/50 p-3">
-            <div className="flex items-center gap-3">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                {i + 1}
-              </div>
-              <span className="text-sm font-semibold">{r.name}</span>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {cards.map((c) => (
+          <div key={c.label} className="rounded-2xl border border-border bg-card p-5">
+            <div className="mb-3 flex items-center justify-between">
+              <c.icon className={`h-5 w-5 ${c.tint}`} />
+              <span className="text-xs text-muted-foreground">{c.sub}</span>
             </div>
-            <span className="text-sm font-bold text-accent">{r.value}</span>
+            <div className="text-2xl font-black">{c.value}</div>
+            <div className="mt-1 text-xs text-muted-foreground">{c.label}</div>
           </div>
         ))}
       </div>
-    </div>
+    </>
   );
 }
