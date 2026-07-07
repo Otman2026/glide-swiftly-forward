@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { exportToCSV } from "@/lib/csv";
 import { printHTML, esc } from "@/lib/print";
+import { SearchInput, matchQuery } from "@/components/search-input";
 
 export const Route = createFileRoute("/app/violations")({ component: ViolationsPage });
 
