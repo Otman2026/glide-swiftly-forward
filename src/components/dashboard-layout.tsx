@@ -81,6 +81,7 @@ const NAV: NavGroup[] = [
 export function DashboardLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [me, setMe] = useState<{ full_name: string | null; tenant_name: string | null }>({
     full_name: null,
     tenant_name: null,
@@ -105,6 +106,10 @@ export function DashboardLayout() {
     })();
   }, []);
 
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     toast.success("تم تسجيل الخروج");
@@ -114,18 +119,39 @@ export function DashboardLayout() {
 
   return (
     <div className="flex min-h-screen bg-secondary/40" dir="rtl">
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="hidden w-72 flex-shrink-0 flex-col border-l border-sidebar-border bg-sidebar text-sidebar-foreground lg:flex">
-        <div className="flex items-center gap-3 border-b border-sidebar-border px-6 py-5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl gradient-accent">
-            <Truck className="h-5 w-5 text-white" strokeWidth={2.5} />
-          </div>
-          <div>
-            <div className="text-sm font-black leading-tight">SAIFO</div>
-            <div className="-mt-0.5 text-[10px] font-bold tracking-widest text-accent">
-              TRANSPORT ERP
+      <aside
+        className={`${
+          mobileOpen ? "flex" : "hidden"
+        } fixed inset-y-0 right-0 z-50 w-72 flex-col border-l border-sidebar-border bg-sidebar text-sidebar-foreground lg:static lg:z-auto lg:flex`}
+      >
+        <div className="flex items-center justify-between gap-3 border-b border-sidebar-border px-6 py-5">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl gradient-accent">
+              <Truck className="h-5 w-5 text-white" strokeWidth={2.5} />
+            </div>
+            <div>
+              <div className="text-sm font-black leading-tight">SAIFO</div>
+              <div className="-mt-0.5 text-[10px] font-bold tracking-widest text-accent">
+                TRANSPORT ERP
+              </div>
             </div>
           </div>
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="rounded-lg p-1 text-sidebar-foreground/70 hover:bg-sidebar-accent lg:hidden"
+            aria-label="إغلاق القائمة"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
 
         <nav className="flex-1 overflow-y-auto px-3 py-4">
