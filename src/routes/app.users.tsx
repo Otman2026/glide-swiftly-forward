@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { PageHeader, EmptyState } from "@/components/dashboard-layout";
-import { Shield, Loader2, Trash2, Plus, Users as UsersIcon, Ban, CheckCircle2 } from "lucide-react";
+import { Shield, Loader2, Trash2, Plus, Users as UsersIcon, Ban, CheckCircle2, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { sendPasswordReset } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/app/users")({
   component: UsersPage,
