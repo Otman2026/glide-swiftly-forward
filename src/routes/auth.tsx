@@ -24,11 +24,19 @@ function AuthPage() {
   const [companyName, setCompanyName] = useState("");
   const [loading, setLoading] = useState(false);
 
+  async function routeByProfile() {
+    const { data: p } = await supabase.from("profiles").select("customer_id, driver_id").maybeSingle();
+    if (p?.customer_id) navigate({ to: "/portal" });
+    else if (p?.driver_id) navigate({ to: "/driver" });
+    else navigate({ to: "/app" });
+  }
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/app" });
+      if (data.session) routeByProfile();
     });
-  }, [navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +59,7 @@ function AuthPage() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("مرحباً بك");
-        navigate({ to: "/app" });
+        await routeByProfile();
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "حدث خطأ";

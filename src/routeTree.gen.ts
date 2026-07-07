@@ -9,6 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PortalRouteImport } from './routes/portal'
+import { Route as DriverRouteImport } from './routes/driver'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
@@ -32,6 +34,16 @@ import { Route as AppCustomersRouteImport } from './routes/app.customers'
 import { Route as AppContractsRouteImport } from './routes/app.contracts'
 import { Route as AppAccidentsRouteImport } from './routes/app.accidents'
 
+const PortalRoute = PortalRouteImport.update({
+  id: '/portal',
+  path: '/portal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DriverRoute = DriverRouteImport.update({
+  id: '/driver',
+  path: '/driver',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -147,6 +159,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
+  '/driver': typeof DriverRoute
+  '/portal': typeof PortalRoute
   '/app/accidents': typeof AppAccidentsRoute
   '/app/contracts': typeof AppContractsRoute
   '/app/customers': typeof AppCustomersRoute
@@ -170,6 +184,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/driver': typeof DriverRoute
+  '/portal': typeof PortalRoute
   '/app/accidents': typeof AppAccidentsRoute
   '/app/contracts': typeof AppContractsRoute
   '/app/customers': typeof AppCustomersRoute
@@ -195,6 +211,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
+  '/driver': typeof DriverRoute
+  '/portal': typeof PortalRoute
   '/app/accidents': typeof AppAccidentsRoute
   '/app/contracts': typeof AppContractsRoute
   '/app/customers': typeof AppCustomersRoute
@@ -221,6 +239,8 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/auth'
+    | '/driver'
+    | '/portal'
     | '/app/accidents'
     | '/app/contracts'
     | '/app/customers'
@@ -244,6 +264,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/driver'
+    | '/portal'
     | '/app/accidents'
     | '/app/contracts'
     | '/app/customers'
@@ -268,6 +290,8 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/auth'
+    | '/driver'
+    | '/portal'
     | '/app/accidents'
     | '/app/contracts'
     | '/app/customers'
@@ -293,10 +317,26 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
+  DriverRoute: typeof DriverRoute
+  PortalRoute: typeof PortalRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/portal': {
+      id: '/portal'
+      path: '/portal'
+      fullPath: '/portal'
+      preLoaderRoute: typeof PortalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/driver': {
+      id: '/driver'
+      path: '/driver'
+      fullPath: '/driver'
+      preLoaderRoute: typeof DriverRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -504,6 +544,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
+  DriverRoute: DriverRoute,
+  PortalRoute: PortalRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
