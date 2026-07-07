@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { setPrintBrand } from "@/lib/print";
 
 export type CompanySettings = {
   id: string;
@@ -50,4 +51,25 @@ export async function allocateInvoiceNumber(tenantId: string): Promise<string> {
 export function formatMoney(value: number | string | null | undefined, currency = "MAD"): string {
   const n = Number(value ?? 0);
   return `${n.toLocaleString("fr-MA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`;
+}
+
+/** Fetch company settings and install them as the global print brand. */
+export async function applyPrintBrand(): Promise<CompanySettings | null> {
+  const c = await fetchCompany();
+  if (!c) { setPrintBrand(null); return null; }
+  const [logoUrl, stampUrl] = await Promise.all([resolveAssetUrl(c.logo_url), resolveAssetUrl(c.stamp_url)]);
+  setPrintBrand({
+    companyName: c.name,
+    logoUrl, stampUrl,
+    headerNote: c.invoice_header,
+    footerNote: c.invoice_footer,
+    bankDetails: c.bank_details,
+    address: c.address,
+    city: c.city,
+    contactEmail: c.contact_email,
+    contactPhone: c.contact_phone,
+    taxId: c.tax_id,
+    registrationNumber: c.registration_number,
+  });
+  return c;
 }

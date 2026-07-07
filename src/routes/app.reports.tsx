@@ -2,10 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/dashboard-layout";
 import { supabase } from "@/integrations/supabase/client";
-import { FileDown, FileText, FileSpreadsheet, Loader2, TrendingUp, TrendingDown, Wallet } from "lucide-react";
+import { FileDown, FileText, FileSpreadsheet, Loader2, TrendingUp, TrendingDown, Wallet, Printer } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
+import { printHTML, esc } from "@/lib/print";
 
 export const Route = createFileRoute("/app/reports")({
   component: ReportsPage,
@@ -55,13 +56,24 @@ const toPdf = (rows: Row[], filename: string, title: string) => {
   doc.save(filename);
 };
 
+const toPrint = (rows: Row[], title: string, subtitle: string) => {
+  const headers = rows.length ? Object.keys(rows[0]) : [];
+  const body = `<h1>${esc(title)}</h1><h2>${esc(subtitle)}</h2>` + (rows.length ? `
+    <table><thead><tr>${headers.map((h) => `<th>${esc(h)}</th>`).join("")}</tr></thead>
+    <tbody>${rows.map((r) => `<tr>${headers.map((h) => `<td>${esc(r[h])}</td>`).join("")}</tr>`).join("")}</tbody></table>
+  ` : `<p style="text-align:center;color:#64748b;padding:40px">لا توجد بيانات في الفترة المحددة.</p>`);
+  printHTML(title, body);
+};
+
+
 
 function ReportsPage() {
   const today = new Date().toISOString().slice(0, 10);
   const monthAgo = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10);
   const [from, setFrom] = useState(monthAgo);
   const [to, setTo] = useState(today);
-  const [tab, setTab] = useState<"pnl" | "vehicle" | "customer" | "driver">("pnl");
+  const [tab, setTab] = useState<"pnl" | "vehicle" | "customer" | "driver" | "statement">("pnl");
+  const [invoices, setInvoices] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<{
     orders: any[];
@@ -79,17 +91,19 @@ function ReportsPage() {
     setLoading(true);
     const fromIso = `${from}T00:00:00Z`;
     const toIso = `${to}T23:59:59Z`;
-    const [orders, expenses, fuel, maintenance, incidents, vehicles, customers, drivers, trips] = await Promise.all([
+    const [orders, expenses, fuel, maintenance, incidents, vehicles, customers, drivers, trips, invs] = await Promise.all([
       supabase.from("transport_orders").select("id,price,status,customer_id,created_at").gte("created_at", fromIso).lte("created_at", toIso),
       supabase.from("expenses").select("amount,expense_date,category").gte("expense_date", from).lte("expense_date", to),
       supabase.from("fuel_logs").select("liters,cost,vehicle_id,fuel_date").gte("fuel_date", from).lte("fuel_date", to),
-      supabase.from("maintenance_records").select("cost,vehicle_id,service_date").gte("service_date", from).lte("service_date", to),
+      supabase.from("maintenance_records").select("cost,vehicle_id,completed_date").gte("completed_date", from).lte("completed_date", to),
       supabase.from("incidents").select("repair_cost,vehicle_id,driver_id,incident_date").gte("incident_date", from).lte("incident_date", to),
       supabase.from("vehicles").select("id,plate_number,brand,model"),
       supabase.from("customers").select("id,name"),
       supabase.from("drivers").select("id,full_name"),
       supabase.from("trips").select("id,vehicle_id,driver_id,distance_km,created_at").gte("created_at", fromIso).lte("created_at", toIso),
+      supabase.from("invoices").select("id,invoice_number,customer_id,issue_date,total_amount,status").gte("issue_date", from).lte("issue_date", to),
     ]);
+    setInvoices(invs.data ?? []);
     setData({
       orders: orders.data ?? [],
       expenses: expenses.data ?? [],
@@ -176,7 +190,24 @@ function ReportsPage() {
       .filter((r) => Number(r["عدد الرحلات"]) > 0 || Number(r["الحوادث"]) > 0);
   }, [data]);
 
-  const rows = tab === "vehicle" ? byVehicle : tab === "customer" ? byCustomer : tab === "driver" ? byDriver : [];
+  const statement = useMemo<Row[]>(() => {
+    if (!data) return [];
+    return data.customers.map((c) => {
+      const inv = invoices.filter((i) => i.customer_id === c.id);
+      const invoiced = sum(inv, "total_amount");
+      const paid = sum(inv.filter((i) => i.status === "paid"), "total_amount");
+      return {
+        "العميل": c.name,
+        "عدد الفواتير": inv.length,
+        "إجمالي (MAD)": invoiced.toFixed(2),
+        "مدفوع (MAD)": paid.toFixed(2),
+        "مستحق (MAD)": (invoiced - paid).toFixed(2),
+      };
+    }).filter((r) => Number(r["عدد الفواتير"]) > 0)
+      .sort((a, b) => Number(b["مستحق (MAD)"]) - Number(a["مستحق (MAD)"]));
+  }, [data, invoices]);
+
+  const rows = tab === "vehicle" ? byVehicle : tab === "customer" ? byCustomer : tab === "driver" ? byDriver : tab === "statement" ? statement : [];
 
   return (
     <>
@@ -203,6 +234,10 @@ function ReportsPage() {
                 className={`${btn} bg-destructive/10 text-destructive hover:bg-destructive/20`}>
                 <FileText className="h-4 w-4" /> PDF
               </button>
+              <button onClick={() => toPrint(exportRows, title, `${from} → ${to}`)} disabled={disabled}
+                className={`${btn} bg-primary/10 text-primary hover:bg-primary/20`}>
+                <Printer className="h-4 w-4" /> طباعة بالشعار
+              </button>
             </div>
           );
         })()}
@@ -228,6 +263,7 @@ function ReportsPage() {
           { k: "vehicle", l: "حسب المركبة" },
           { k: "customer", l: "حسب العميل" },
           { k: "driver", l: "حسب السائق" },
+          { k: "statement", l: "كشف حساب العملاء" },
         ] as const).map((t) => (
           <button
             key={t.k}
