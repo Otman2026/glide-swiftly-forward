@@ -1,21 +1,245 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ModulePage } from "@/components/module-page";
-import { AlertTriangle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { PageHeader, EmptyState } from "@/components/dashboard-layout";
+import { AlertTriangle, Plus, Loader2, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/app/accidents")({
-  component: () => (
-    <ModulePage
-      title="إدارة الحوادث"
-      subtitle="تاريخ الحادث، المركبة، السائق، الصور، التقارير، شركة التأمين، تكلفة الإصلاح"
-      icon={AlertTriangle}
-      emptyTitle="سجل الحوادث"
-      emptyDesc="نظام تتبع كامل للحوادث مع رفع الصور والتقارير وربطها بشركة التأمين لتسريع التعويضات."
-      stats={[
-        { label: "حوادث الشهر", value: "0", tint: "bg-success/10 text-success" },
-        { label: "قيد المعالجة", value: "0" },
-        { label: "منتظرة تأمين", value: "0" },
-        { label: "معدل السلامة", value: "99.8%", tint: "bg-success/10 text-success" },
-      ]}
-    />
-  ),
+  component: AccidentsPage,
 });
+
+type Row = {
+  id: string;
+  incident_date: string;
+  location: string | null;
+  description: string | null;
+  severity: string;
+  status: string;
+  insurance_company: string | null;
+  claim_number: string | null;
+  repair_cost: number;
+  vehicle_id: string | null;
+  driver_id: string | null;
+  vehicles?: { plate_number: string } | null;
+  drivers?: { full_name: string } | null;
+};
+
+const SEV: Record<string, { label: string; cls: string }> = {
+  minor: { label: "بسيط", cls: "bg-success/10 text-success" },
+  moderate: { label: "متوسط", cls: "bg-warning/10 text-warning-foreground" },
+  major: { label: "كبير", cls: "bg-destructive/10 text-destructive" },
+};
+const STAT: Record<string, { label: string; cls: string }> = {
+  open: { label: "مفتوح", cls: "bg-accent/10 text-accent" },
+  processing: { label: "قيد المعالجة", cls: "bg-warning/10 text-warning-foreground" },
+  closed: { label: "مغلق", cls: "bg-success/10 text-success" },
+};
+
+function AccidentsPage() {
+  const [rows, setRows] = useState<Row[]>([]);
+  const [vehicles, setVehicles] = useState<{ id: string; plate_number: string }[]>([]);
+  const [drivers, setDrivers] = useState<{ id: string; full_name: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    incident_date: new Date().toISOString().slice(0, 10),
+    location: "",
+    description: "",
+    severity: "minor",
+    status: "open",
+    insurance_company: "",
+    claim_number: "",
+    repair_cost: "",
+    vehicle_id: "",
+    driver_id: "",
+  });
+
+  const load = async () => {
+    setLoading(true);
+    const [{ data }, v, d] = await Promise.all([
+      supabase.from("incidents").select("id,incident_date,location,description,severity,status,insurance_company,claim_number,repair_cost,vehicle_id,driver_id,vehicles(plate_number),drivers(full_name)").order("incident_date", { ascending: false }),
+      supabase.from("vehicles").select("id,plate_number"),
+      supabase.from("drivers").select("id,full_name"),
+    ]);
+    setRows((data as any) ?? []);
+    setVehicles(v.data ?? []);
+    setDrivers(d.data ?? []);
+    setLoading(false);
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const onCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    const { data: profile } = await supabase.from("profiles").select("tenant_id").maybeSingle();
+    if (!profile?.tenant_id) { toast.error("لا توجد شركة"); setSaving(false); return; }
+    const { error } = await supabase.from("incidents").insert({
+      tenant_id: profile.tenant_id,
+      incident_date: form.incident_date,
+      location: form.location || null,
+      description: form.description || null,
+      severity: form.severity,
+      status: form.status,
+      insurance_company: form.insurance_company || null,
+      claim_number: form.claim_number || null,
+      repair_cost: Number(form.repair_cost || 0),
+      vehicle_id: form.vehicle_id || null,
+      driver_id: form.driver_id || null,
+    });
+    setSaving(false);
+    if (error) return toast.error(error.message);
+    toast.success("تم التسجيل");
+    setOpen(false);
+    setForm({ incident_date: new Date().toISOString().slice(0, 10), location: "", description: "", severity: "minor", status: "open", insurance_company: "", claim_number: "", repair_cost: "", vehicle_id: "", driver_id: "" });
+    load();
+  };
+
+  const onDelete = async (id: string) => {
+    if (!confirm("حذف؟")) return;
+    const { error } = await supabase.from("incidents").delete().eq("id", id);
+    if (error) toast.error(error.message); else { toast.success("تم الحذف"); load(); }
+  };
+
+  const counts = {
+    total: rows.length,
+    open: rows.filter((r) => r.status === "open").length,
+    processing: rows.filter((r) => r.status === "processing").length,
+    cost: rows.reduce((s, r) => s + Number(r.repair_cost), 0),
+  };
+
+  return (
+    <>
+      <PageHeader
+        title="إدارة الحوادث"
+        subtitle="تاريخ الحادث، المركبة، السائق، شركة التأمين، تكلفة الإصلاح"
+        action={
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90"><Plus className="h-4 w-4" /> تسجيل حادث</Button>
+            </DialogTrigger>
+            <DialogContent dir="rtl" className="max-h-[90vh] overflow-y-auto">
+              <DialogHeader><DialogTitle>تسجيل حادث جديد</DialogTitle></DialogHeader>
+              <form onSubmit={onCreate} className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div><Label>التاريخ *</Label><Input type="date" required value={form.incident_date} onChange={(e) => setForm({ ...form, incident_date: e.target.value })} /></div>
+                  <div><Label>المكان</Label><Input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} /></div>
+                </div>
+                <div><Label>وصف الحادث</Label><Textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>الشاحنة</Label>
+                    <Select value={form.vehicle_id} onValueChange={(v) => setForm({ ...form, vehicle_id: v })}>
+                      <SelectTrigger><SelectValue placeholder="اختر..." /></SelectTrigger>
+                      <SelectContent>{vehicles.map((v) => <SelectItem key={v.id} value={v.id}>{v.plate_number}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>السائق</Label>
+                    <Select value={form.driver_id} onValueChange={(v) => setForm({ ...form, driver_id: v })}>
+                      <SelectTrigger><SelectValue placeholder="اختر..." /></SelectTrigger>
+                      <SelectContent>{drivers.map((d) => <SelectItem key={d.id} value={d.id}>{d.full_name}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>الخطورة</Label>
+                    <Select value={form.severity} onValueChange={(v) => setForm({ ...form, severity: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>{Object.entries(SEV).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>الحالة</Label>
+                    <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>{Object.entries(STAT).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div><Label>شركة التأمين</Label><Input value={form.insurance_company} onChange={(e) => setForm({ ...form, insurance_company: e.target.value })} /></div>
+                  <div><Label>رقم الملف</Label><Input value={form.claim_number} onChange={(e) => setForm({ ...form, claim_number: e.target.value })} /></div>
+                </div>
+                <div><Label>تكلفة الإصلاح (MAD)</Label><Input type="number" step="0.01" value={form.repair_cost} onChange={(e) => setForm({ ...form, repair_cost: e.target.value })} /></div>
+                <DialogFooter><Button type="submit" disabled={saving} className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">{saving && <Loader2 className="h-4 w-4 animate-spin" />} حفظ</Button></DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        }
+      />
+
+      <div className="mb-4 grid gap-3 md:grid-cols-4">
+        <div className="rounded-xl border border-border bg-card p-4"><div className="text-xs text-muted-foreground">إجمالي الحوادث</div><div className="mt-1 text-2xl font-black">{counts.total}</div></div>
+        <div className="rounded-xl border border-border bg-card p-4"><div className="text-xs text-muted-foreground">مفتوحة</div><div className="mt-1 text-2xl font-black text-accent">{counts.open}</div></div>
+        <div className="rounded-xl border border-border bg-card p-4"><div className="text-xs text-muted-foreground">قيد المعالجة</div><div className="mt-1 text-2xl font-black text-warning-foreground">{counts.processing}</div></div>
+        <div className="rounded-xl border border-border bg-card p-4"><div className="text-xs text-muted-foreground">تكلفة الإصلاح</div><div className="mt-1 text-2xl font-black text-destructive">{counts.cost.toFixed(0)} MAD</div></div>
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-accent" /></div>
+      ) : rows.length === 0 ? (
+        <EmptyState icon={AlertTriangle} title="لا توجد حوادث مسجلة" description="نأمل ألا يحدث ذلك أبدًا. سجل الحوادث هنا لتتبعها مع شركة التأمين." />
+      ) : (
+        <div className="rounded-2xl border border-border bg-card overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-secondary/50 text-xs uppercase text-muted-foreground">
+              <tr>
+                <th className="p-4 text-right">التاريخ</th>
+                <th className="p-4 text-right">الشاحنة</th>
+                <th className="p-4 text-right">السائق</th>
+                <th className="p-4 text-right">المكان</th>
+                <th className="p-4 text-right">الخطورة</th>
+                <th className="p-4 text-right">التأمين</th>
+                <th className="p-4 text-right">التكلفة</th>
+                <th className="p-4 text-right">الحالة</th>
+                <th className="p-4 text-right"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => {
+                const s = STAT[r.status] ?? { label: r.status, cls: "bg-secondary" };
+                const sv = SEV[r.severity] ?? { label: r.severity, cls: "bg-secondary" };
+                return (
+                  <tr key={r.id} className="border-t border-border hover:bg-secondary/30">
+                    <td className="p-4" dir="ltr">{r.incident_date}</td>
+                    <td className="p-4 font-semibold" dir="ltr">{r.vehicles?.plate_number ?? "—"}</td>
+                    <td className="p-4">{r.drivers?.full_name ?? "—"}</td>
+                    <td className="p-4">{r.location ?? "—"}</td>
+                    <td className="p-4"><span className={`rounded-full px-2 py-1 text-xs font-semibold ${sv.cls}`}>{sv.label}</span></td>
+                    <td className="p-4 text-xs">{r.insurance_company ?? "—"}</td>
+                    <td className="p-4 font-semibold">{Number(r.repair_cost).toFixed(0)}</td>
+                    <td className="p-4"><span className={`rounded-full px-2 py-1 text-xs font-semibold ${s.cls}`}>{s.label}</span></td>
+                    <td className="p-4"><Button variant="ghost" size="sm" onClick={() => onDelete(r.id)} className="text-destructive hover:bg-destructive/10 hover:text-destructive"><Trash2 className="h-4 w-4" /></Button></td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </>
+  );
+}
