@@ -26,6 +26,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ExportBar } from "@/components/export-bar";
 import { SearchInput, matchQuery } from "@/components/search-input";
+import { allocateInvoiceNumber, resolveAssetUrl, formatMoney, type CompanySettings } from "@/lib/company";
+import { setPrintBrand } from "@/lib/print";
 
 export const Route = createFileRoute("/app/invoices")({
   component: InvoicesPage,
