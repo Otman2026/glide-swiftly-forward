@@ -1,0 +1,44 @@
+{
+  "name": "saifo-transport-erp-desktop",
+  "productName": "SAIFO TRANSPORT ERP",
+  "version": "1.0.0",
+  "description": "SAIFO TRANSPORT ERP — Desktop",
+  "author": "SAIFO Transport",
+  "main": "main.cjs",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.saifo.transport.erp",
+    "productName": "SAIFO TRANSPORT ERP",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.cjs",
+      "icon.png",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] }
+      ],
+      "icon": "icon.png",
+      "artifactName": "SAIFO-TRANSPORT-ERP-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "SAIFO TRANSPORT ERP"
+    }
+  }
+}
