@@ -243,6 +243,7 @@ export type Database = {
           file_path: string
           file_size: number | null
           id: string
+          incident_id: string | null
           issue_date: string | null
           mime_type: string | null
           notes: string | null
@@ -263,6 +264,7 @@ export type Database = {
           file_path: string
           file_size?: number | null
           id?: string
+          incident_id?: string | null
           issue_date?: string | null
           mime_type?: string | null
           notes?: string | null
@@ -283,6 +285,7 @@ export type Database = {
           file_path?: string
           file_size?: number | null
           id?: string
+          incident_id?: string | null
           issue_date?: string | null
           mime_type?: string | null
           notes?: string | null
@@ -310,6 +313,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "documents_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "documents_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
@@ -334,6 +344,7 @@ export type Database = {
       }
       drivers: {
         Row: {
+          archived_at: string | null
           created_at: string
           email: string | null
           full_name: string
@@ -350,6 +361,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          archived_at?: string | null
           created_at?: string
           email?: string | null
           full_name: string
@@ -366,6 +378,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          archived_at?: string | null
           created_at?: string
           email?: string | null
           full_name?: string
@@ -1411,6 +1424,7 @@ export type Database = {
       }
       vehicles: {
         Row: {
+          archived_at: string | null
           brand: string | null
           capacity_tons: number | null
           created_at: string
@@ -1428,6 +1442,7 @@ export type Database = {
           year: number | null
         }
         Insert: {
+          archived_at?: string | null
           brand?: string | null
           capacity_tons?: number | null
           created_at?: string
@@ -1445,6 +1460,7 @@ export type Database = {
           year?: number | null
         }
         Update: {
+          archived_at?: string | null
           brand?: string | null
           capacity_tons?: number | null
           created_at?: string
@@ -1467,6 +1483,76 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      violations: {
+        Row: {
+          created_at: string
+          driver_id: string | null
+          fine_amount: number
+          id: string
+          location: string | null
+          notes: string | null
+          reference_number: string | null
+          status: string
+          tenant_id: string
+          updated_at: string
+          vehicle_id: string | null
+          violation_date: string
+          violation_type: string
+        }
+        Insert: {
+          created_at?: string
+          driver_id?: string | null
+          fine_amount?: number
+          id?: string
+          location?: string | null
+          notes?: string | null
+          reference_number?: string | null
+          status?: string
+          tenant_id: string
+          updated_at?: string
+          vehicle_id?: string | null
+          violation_date?: string
+          violation_type: string
+        }
+        Update: {
+          created_at?: string
+          driver_id?: string | null
+          fine_amount?: number
+          id?: string
+          location?: string | null
+          notes?: string | null
+          reference_number?: string | null
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+          vehicle_id?: string | null
+          violation_date?: string
+          violation_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "violations_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "violations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "violations_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
             referencedColumns: ["id"]
           },
         ]

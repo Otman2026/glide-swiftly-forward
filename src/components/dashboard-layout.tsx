@@ -71,6 +71,7 @@ const NAV: NavGroup[] = [
       { to: "/app/fuel", label: "الوقود", icon: Fuel },
       { to: "/app/maintenance", label: "الصيانة", icon: Wrench },
       { to: "/app/accidents", label: "الحوادث", icon: AlertTriangle },
+      { to: "/app/violations", label: "المخالفات", icon: Shield },
     ],
   },
   {

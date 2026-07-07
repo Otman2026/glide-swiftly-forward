@@ -1,31 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PageHeader, EmptyState } from "@/components/dashboard-layout";
-import { Wrench, Plus, Loader2, Trash2 } from "lucide-react";
+import { Wrench, Plus, Loader2, Trash2, Pencil, CheckCircle2, Printer, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { exportToCSV } from "@/lib/csv";
+import { printHTML, esc } from "@/lib/print";
 
-export const Route = createFileRoute("/app/maintenance")({
-  component: MaintPage,
-});
+export const Route = createFileRoute("/app/maintenance")({ component: MaintPage });
 
 type Row = {
   id: string;
@@ -35,6 +23,8 @@ type Row = {
   cost: number;
   status: string;
   workshop: string | null;
+  odometer: number | null;
+  notes: string | null;
   vehicle_id: string | null;
   vehicles?: { plate_number: string } | null;
 };
@@ -46,54 +36,82 @@ const STATUS: Record<string, { label: string; cls: string }> = {
   overdue: { label: "متأخرة", cls: "bg-destructive/10 text-destructive" },
 };
 
+const emptyForm = {
+  maintenance_type: "",
+  scheduled_date: new Date().toISOString().slice(0, 10),
+  cost: "", status: "scheduled", workshop: "", odometer: "", notes: "", vehicle_id: "",
+};
+
 function MaintPage() {
   const [rows, setRows] = useState<Row[]>([]);
   const [vehicles, setVehicles] = useState<{ id: string; plate_number: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({
-    maintenance_type: "",
-    scheduled_date: new Date().toISOString().slice(0, 10),
-    cost: "",
-    status: "scheduled",
-    workshop: "",
-    vehicle_id: "",
-  });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState(emptyForm);
+  const [statusFilter, setStatusFilter] = useState("all");
 
   const load = async () => {
     setLoading(true);
     const [{ data }, v] = await Promise.all([
-      supabase.from("maintenance_records").select("id,maintenance_type,scheduled_date,completed_date,cost,status,workshop,vehicle_id,vehicles(plate_number)").order("scheduled_date", { ascending: false }),
+      supabase.from("maintenance_records").select("id,maintenance_type,scheduled_date,completed_date,cost,status,workshop,odometer,notes,vehicle_id,vehicles(plate_number)").order("scheduled_date", { ascending: false }),
       supabase.from("vehicles").select("id,plate_number").order("plate_number"),
     ]);
     setRows((data as any) ?? []);
     setVehicles(v.data ?? []);
     setLoading(false);
   };
-
   useEffect(() => { load(); }, []);
 
-  const onCreate = async (e: React.FormEvent) => {
+  const openCreate = () => { setEditingId(null); setForm(emptyForm); setOpen(true); };
+  const openEdit = (r: Row) => {
+    setEditingId(r.id);
+    setForm({
+      maintenance_type: r.maintenance_type, scheduled_date: r.scheduled_date ?? "",
+      cost: String(r.cost), status: r.status, workshop: r.workshop ?? "",
+      odometer: r.odometer?.toString() ?? "", notes: r.notes ?? "", vehicle_id: r.vehicle_id ?? "",
+    });
+    setOpen(true);
+  };
+
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    const { data: profile } = await supabase.from("profiles").select("tenant_id").maybeSingle();
-    if (!profile?.tenant_id) { toast.error("لا توجد شركة"); setSaving(false); return; }
-    const { error } = await supabase.from("maintenance_records").insert({
-      tenant_id: profile.tenant_id,
+    const payload = {
       maintenance_type: form.maintenance_type,
       scheduled_date: form.scheduled_date || null,
-      cost: Number(form.cost || 0),
-      status: form.status,
+      cost: Number(form.cost || 0), status: form.status,
       workshop: form.workshop || null,
+      odometer: form.odometer ? Number(form.odometer) : null,
+      notes: form.notes || null,
       vehicle_id: form.vehicle_id || null,
-    });
-    setSaving(false);
-    if (error) return toast.error(error.message);
-    toast.success("تمت الإضافة");
-    setOpen(false);
-    setForm({ maintenance_type: "", scheduled_date: new Date().toISOString().slice(0, 10), cost: "", status: "scheduled", workshop: "", vehicle_id: "" });
-    load();
+    };
+    if (editingId) {
+      const { error } = await supabase.from("maintenance_records").update(payload).eq("id", editingId);
+      setSaving(false);
+      if (error) return toast.error(error.message);
+      toast.success("تم التحديث");
+    } else {
+      const { data: profile } = await supabase.from("profiles").select("tenant_id").maybeSingle();
+      if (!profile?.tenant_id) { toast.error("لا توجد شركة"); setSaving(false); return; }
+      const { error } = await supabase.from("maintenance_records").insert({ ...payload, tenant_id: profile.tenant_id });
+      setSaving(false);
+      if (error) return toast.error(error.message);
+      toast.success("تمت الإضافة");
+    }
+    setOpen(false); load();
+  };
+
+  const onClose = async (id: string) => {
+    const cost = prompt("التكلفة النهائية (MAD):", "0");
+    if (cost === null) return;
+    const { error } = await supabase.from("maintenance_records").update({
+      status: "completed",
+      completed_date: new Date().toISOString().slice(0, 10),
+      cost: Number(cost || 0),
+    }).eq("id", id);
+    if (error) toast.error(error.message); else { toast.success("تم إغلاق الأمر"); load(); }
   };
 
   const onDelete = async (id: string) => {
@@ -102,6 +120,8 @@ function MaintPage() {
     if (error) toast.error(error.message); else { toast.success("تم الحذف"); load(); }
   };
 
+  const filtered = useMemo(() => rows.filter((r) => statusFilter === "all" || r.status === statusFilter), [rows, statusFilter]);
+
   const counts = {
     scheduled: rows.filter((r) => r.status === "scheduled").length,
     in_progress: rows.filter((r) => r.status === "in_progress").length,
@@ -109,59 +129,60 @@ function MaintPage() {
     cost: rows.reduce((s, r) => s + Number(r.cost), 0),
   };
 
+  const onExport = () => {
+    exportToCSV(filtered, [
+      { key: "maintenance_type", label: "النوع" },
+      { key: "vehicle", label: "الشاحنة", get: (r) => r.vehicles?.plate_number ?? "" },
+      { key: "scheduled_date", label: "التاريخ المجدول" },
+      { key: "completed_date", label: "الإتمام" },
+      { key: "workshop", label: "الورشة" },
+      { key: "cost", label: "التكلفة" },
+      { key: "status", label: "الحالة", get: (r) => STATUS[r.status]?.label ?? r.status },
+    ], `maintenance-${new Date().toISOString().slice(0, 10)}`);
+  };
+
+  const onPrint = () => {
+    const body = `<h1>تقرير أوامر الصيانة</h1><h2>${filtered.length} أمر · إجمالي التكلفة ${counts.cost.toFixed(0)} MAD</h2>
+      <table><thead><tr><th>النوع</th><th>الشاحنة</th><th>التاريخ</th><th>الإتمام</th><th>الورشة</th><th>التكلفة</th><th>الحالة</th></tr></thead>
+      <tbody>${filtered.map((r) => `<tr><td>${esc(r.maintenance_type)}</td><td>${esc(r.vehicles?.plate_number)}</td><td>${esc(r.scheduled_date)}</td><td>${esc(r.completed_date)}</td><td>${esc(r.workshop)}</td><td>${Number(r.cost).toFixed(2)}</td><td>${esc(STATUS[r.status]?.label ?? r.status)}</td></tr>`).join("")}</tbody></table>`;
+    printHTML("تقرير الصيانة", body);
+  };
+
   return (
     <>
       <PageHeader
         title="الصيانة الوقائية والتصحيحية"
-        subtitle="تنبيهات حسب الكيلومترات، ساعات التشغيل والتاريخ"
+        subtitle="أوامر الصيانة، الأعطال، قطع الغيار، وتنبيهات مواعيد الصيانة"
         action={
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90"><Plus className="h-4 w-4" /> صيانة جديدة</Button>
-            </DialogTrigger>
-            <DialogContent dir="rtl">
-              <DialogHeader><DialogTitle>جدولة صيانة</DialogTitle></DialogHeader>
-              <form onSubmit={onCreate} className="space-y-4">
-                <div><Label>نوع الصيانة *</Label><Input required placeholder="مثال: تغيير زيت، فحص فرامل..." value={form.maintenance_type} onChange={(e) => setForm({ ...form, maintenance_type: e.target.value })} /></div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div><Label>التاريخ المجدول</Label><Input type="date" value={form.scheduled_date} onChange={(e) => setForm({ ...form, scheduled_date: e.target.value })} /></div>
-                  <div><Label>التكلفة (MAD)</Label><Input type="number" step="0.01" value={form.cost} onChange={(e) => setForm({ ...form, cost: e.target.value })} /></div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label>الشاحنة</Label>
-                    <Select value={form.vehicle_id} onValueChange={(v) => setForm({ ...form, vehicle_id: v })}>
-                      <SelectTrigger><SelectValue placeholder="اختر..." /></SelectTrigger>
-                      <SelectContent>{vehicles.map((v) => <SelectItem key={v.id} value={v.id}>{v.plate_number}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>الحالة</Label>
-                    <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>{Object.entries(STATUS).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div><Label>الورشة</Label><Input value={form.workshop} onChange={(e) => setForm({ ...form, workshop: e.target.value })} /></div>
-                <DialogFooter><Button type="submit" disabled={saving} className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">{saving && <Loader2 className="h-4 w-4 animate-spin" />} حفظ</Button></DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={onExport} className="gap-2"><Download className="h-4 w-4" /> تصدير</Button>
+            <Button variant="outline" onClick={onPrint} className="gap-2"><Printer className="h-4 w-4" /> طباعة</Button>
+            <Button onClick={openCreate} className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90"><Plus className="h-4 w-4" /> أمر صيانة</Button>
+          </div>
         }
       />
 
       <div className="mb-4 grid gap-3 md:grid-cols-4">
-        <div className="rounded-xl border border-border bg-card p-4"><div className="text-xs text-muted-foreground">مجدولة</div><div className="mt-1 text-2xl font-black text-warning-foreground">{counts.scheduled}</div></div>
-        <div className="rounded-xl border border-border bg-card p-4"><div className="text-xs text-muted-foreground">قيد التنفيذ</div><div className="mt-1 text-2xl font-black text-accent">{counts.in_progress}</div></div>
-        <div className="rounded-xl border border-border bg-card p-4"><div className="text-xs text-muted-foreground">مكتملة</div><div className="mt-1 text-2xl font-black text-success">{counts.completed}</div></div>
-        <div className="rounded-xl border border-border bg-card p-4"><div className="text-xs text-muted-foreground">إجمالي التكلفة</div><div className="mt-1 text-2xl font-black">{counts.cost.toFixed(0)} MAD</div></div>
+        <Card label="مجدولة" value={counts.scheduled} tone="warning" />
+        <Card label="قيد التنفيذ" value={counts.in_progress} tone="accent" />
+        <Card label="مكتملة" value={counts.completed} tone="success" />
+        <Card label="إجمالي التكلفة" value={`${counts.cost.toFixed(0)} MAD`} />
+      </div>
+
+      <div className="mb-4">
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">جميع الحالات</SelectItem>
+            {Object.entries(STATUS).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}
+          </SelectContent>
+        </Select>
       </div>
 
       {loading ? (
         <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-accent" /></div>
-      ) : rows.length === 0 ? (
-        <EmptyState icon={Wrench} title="لا توجد صيانات" description="أضف أول جدولة صيانة لبدء متابعة أعمال الصيانة." />
+      ) : filtered.length === 0 ? (
+        <EmptyState icon={Wrench} title="لا توجد صيانات" description="أضف أول أمر صيانة." />
       ) : (
         <div className="rounded-2xl border border-border bg-card overflow-x-auto">
           <table className="w-full text-sm">
@@ -177,7 +198,7 @@ function MaintPage() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((r) => {
+              {filtered.map((r) => {
                 const s = STATUS[r.status] ?? { label: r.status, cls: "bg-secondary" };
                 return (
                   <tr key={r.id} className="border-t border-border hover:bg-secondary/30">
@@ -187,7 +208,15 @@ function MaintPage() {
                     <td className="p-4">{r.workshop ?? "—"}</td>
                     <td className="p-4 font-semibold">{Number(r.cost).toFixed(0)}</td>
                     <td className="p-4"><span className={`rounded-full px-2 py-1 text-xs font-semibold ${s.cls}`}>{s.label}</span></td>
-                    <td className="p-4"><Button variant="ghost" size="sm" onClick={() => onDelete(r.id)} className="text-destructive hover:bg-destructive/10 hover:text-destructive"><Trash2 className="h-4 w-4" /></Button></td>
+                    <td className="p-4">
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm" title="تعديل" onClick={() => openEdit(r)}><Pencil className="h-4 w-4" /></Button>
+                        {r.status !== "completed" && (
+                          <Button variant="ghost" size="sm" title="إغلاق الأمر" onClick={() => onClose(r.id)} className="text-success"><CheckCircle2 className="h-4 w-4" /></Button>
+                        )}
+                        <Button variant="ghost" size="sm" onClick={() => onDelete(r.id)} className="text-destructive hover:bg-destructive/10 hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                      </div>
+                    </td>
                   </tr>
                 );
               })}
@@ -195,6 +224,53 @@ function MaintPage() {
           </table>
         </div>
       )}
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent dir="rtl" className="max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>{editingId ? "تعديل أمر صيانة" : "إنشاء أمر صيانة"}</DialogTitle></DialogHeader>
+          <form onSubmit={onSubmit} className="space-y-4">
+            <div><Label>نوع الصيانة *</Label><Input required placeholder="تغيير زيت، فحص فرامل..." value={form.maintenance_type} onChange={(e) => setForm({ ...form, maintenance_type: e.target.value })} /></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>التاريخ المجدول</Label><Input type="date" value={form.scheduled_date} onChange={(e) => setForm({ ...form, scheduled_date: e.target.value })} /></div>
+              <div><Label>التكلفة (MAD)</Label><Input type="number" step="0.01" value={form.cost} onChange={(e) => setForm({ ...form, cost: e.target.value })} /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>الشاحنة</Label>
+                <Select value={form.vehicle_id} onValueChange={(v) => setForm({ ...form, vehicle_id: v })}>
+                  <SelectTrigger><SelectValue placeholder="اختر..." /></SelectTrigger>
+                  <SelectContent>{vehicles.map((v) => <SelectItem key={v.id} value={v.id}>{v.plate_number}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div><Label>الحالة</Label>
+                <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{Object.entries(STATUS).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>الورشة</Label><Input value={form.workshop} onChange={(e) => setForm({ ...form, workshop: e.target.value })} /></div>
+              <div><Label>عداد الكيلومترات</Label><Input type="number" value={form.odometer} onChange={(e) => setForm({ ...form, odometer: e.target.value })} /></div>
+            </div>
+            <div><Label>ملاحظات / قطع الغيار</Label><Textarea rows={3} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
+            <DialogFooter>
+              <Button type="submit" disabled={saving} className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
+                {saving && <Loader2 className="h-4 w-4 animate-spin" />} حفظ
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </>
+  );
+}
+
+function Card({ label, value, tone }: { label: string; value: string | number; tone?: "success" | "warning" | "accent" }) {
+  const cls = tone === "success" ? "text-success" : tone === "warning" ? "text-warning-foreground" : tone === "accent" ? "text-accent" : "";
+  return (
+    <div className="rounded-xl border border-border bg-card p-4">
+      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className={`mt-1 text-2xl font-black ${cls}`}>{value}</div>
+    </div>
   );
 }
