@@ -662,6 +662,7 @@ export type Database = {
       fuel_logs: {
         Row: {
           cost: number
+          cost_center_id: string | null
           created_at: string
           driver_id: string | null
           fuel_date: string
@@ -676,6 +677,7 @@ export type Database = {
         }
         Insert: {
           cost?: number
+          cost_center_id?: string | null
           created_at?: string
           driver_id?: string | null
           fuel_date?: string
@@ -690,6 +692,7 @@ export type Database = {
         }
         Update: {
           cost?: number
+          cost_center_id?: string | null
           created_at?: string
           driver_id?: string | null
           fuel_date?: string
@@ -703,6 +706,13 @@ export type Database = {
           vehicle_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fuel_logs_cost_center_id_fkey"
+            columns: ["cost_center_id"]
+            isOneToOne: false
+            referencedRelation: "cost_centers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "fuel_logs_driver_id_fkey"
             columns: ["driver_id"]
@@ -1131,6 +1141,7 @@ export type Database = {
           archived_reason: string | null
           completed_date: string | null
           cost: number
+          cost_center_id: string | null
           created_at: string
           id: string
           maintenance_type: string
@@ -1148,6 +1159,7 @@ export type Database = {
           archived_reason?: string | null
           completed_date?: string | null
           cost?: number
+          cost_center_id?: string | null
           created_at?: string
           id?: string
           maintenance_type: string
@@ -1165,6 +1177,7 @@ export type Database = {
           archived_reason?: string | null
           completed_date?: string | null
           cost?: number
+          cost_center_id?: string | null
           created_at?: string
           id?: string
           maintenance_type?: string
@@ -1178,6 +1191,13 @@ export type Database = {
           workshop?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "maintenance_records_cost_center_id_fkey"
+            columns: ["cost_center_id"]
+            isOneToOne: false
+            referencedRelation: "cost_centers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "maintenance_records_tenant_id_fkey"
             columns: ["tenant_id"]
