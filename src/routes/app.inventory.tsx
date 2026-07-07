@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader, EmptyState } from "@/components/dashboard-layout";
-import { Package, Plus, Trash2, Loader2, ArrowLeftRight, Download, Printer } from "lucide-react";
+import { Package, Plus, Trash2, Loader2, ArrowLeftRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
@@ -14,8 +14,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { exportToCSV } from "@/lib/csv";
-import { printHTML, esc } from "@/lib/print";
+import { ExportBar } from "@/components/export-bar";
 
 export const Route = createFileRoute("/app/inventory")({
   component: InventoryPage,
