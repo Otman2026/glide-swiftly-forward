@@ -18,7 +18,9 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [identifier, setIdentifier] = useState(""); // email OR username
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [companyName, setCompanyName] = useState("");
@@ -38,25 +40,61 @@ function AuthPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  async function resolveEmail(id: string): Promise<string | null> {
+    const trimmed = id.trim();
+    if (!trimmed) return null;
+    if (trimmed.includes("@")) return trimmed;
+    // Look up email by username
+    const { data } = await supabase
+      .from("profiles")
+      .select("email")
+      .ilike("username", trimmed)
+      .maybeSingle();
+    return data?.email ?? null;
+  }
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
       if (mode === "signup") {
+        if (username.trim()) {
+          const { data: exists } = await supabase
+            .from("profiles")
+            .select("id")
+            .ilike("username", username.trim())
+            .maybeSingle();
+          if (exists) {
+            toast.error("اسم المستخدم محجوز، اختر اسماً آخر");
+            setLoading(false);
+            return;
+          }
+        }
         const redirectUrl = `${window.location.origin}/app`;
         const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
             emailRedirectTo: redirectUrl,
-            data: { full_name: fullName, company_name: companyName },
+            data: {
+              full_name: fullName,
+              company_name: companyName,
+              username: username.trim() || null,
+            },
           },
         });
         if (error) throw error;
         toast.success("تم إنشاء الحساب. يمكنك تسجيل الدخول الآن.");
         setMode("signin");
+        setIdentifier(email);
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const loginEmail = await resolveEmail(identifier);
+        if (!loginEmail) {
+          toast.error("لم يتم العثور على مستخدم بهذا الاسم أو البريد");
+          setLoading(false);
+          return;
+        }
+        const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password });
         if (error) throw error;
         toast.success("مرحباً بك");
         await routeByProfile();
@@ -90,7 +128,7 @@ function AuthPage() {
           </h1>
           <p className="mt-2 text-center text-sm text-muted-foreground">
             {mode === "signin"
-              ? "ادخل إلى منصة إدارة النقل الخاصة بك"
+              ? "ادخل باسم المستخدم أو البريد الإلكتروني"
               : "ابدأ تجربة مجانية لمدة 14 يوماً"}
           </p>
 
@@ -99,7 +137,7 @@ function AuthPage() {
               <>
                 <div>
                   <label className="mb-1.5 block text-sm font-semibold text-foreground">
-                    الاسم الكامل
+                    الاسم الكامل *
                   </label>
                   <input
                     required
@@ -111,7 +149,7 @@ function AuthPage() {
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-semibold text-foreground">
-                    اسم الشركة
+                    اسم الشركة *
                   </label>
                   <input
                     required
@@ -121,21 +159,51 @@ function AuthPage() {
                     className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
                   />
                 </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-semibold text-foreground">
+                    اسم المستخدم <span className="text-muted-foreground font-normal">(اختياري)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value.replace(/\s/g, ""))}
+                    placeholder="مثال: ahmed2026"
+                    className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+                    dir="ltr"
+                  />
+                  <p className="mt-1 text-xs text-muted-foreground">يستخدم للدخول بدل البريد. اتركه فارغاً للاكتفاء بالبريد.</p>
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-semibold text-foreground">
+                    البريد الإلكتروني *
+                    <span className="text-muted-foreground font-normal"> (للاسترجاع والتنبيهات)</span>
+                  </label>
+                  <input
+                    required
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+                    dir="ltr"
+                  />
+                </div>
               </>
             )}
-            <div>
-              <label className="mb-1.5 block text-sm font-semibold text-foreground">
-                البريد الإلكتروني
-              </label>
-              <input
-                required
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
-                dir="ltr"
-              />
-            </div>
+            {mode === "signin" && (
+              <div>
+                <label className="mb-1.5 block text-sm font-semibold text-foreground">
+                  اسم المستخدم أو البريد الإلكتروني
+                </label>
+                <input
+                  required
+                  type="text"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+                  dir="ltr"
+                />
+              </div>
+            )}
             <div>
               <label className="mb-1.5 block text-sm font-semibold text-foreground">
                 كلمة المرور

@@ -1135,6 +1135,75 @@ export type Database = {
           },
         ]
       }
+      license_keys: {
+        Row: {
+          activated_at: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          issued_at: string
+          issued_by: string | null
+          license_key: string
+          max_users: number | null
+          max_vehicles: number | null
+          notes: string | null
+          plan_key: string
+          revoked_at: string | null
+          revoked_reason: string | null
+          tenant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          activated_at?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          issued_at?: string
+          issued_by?: string | null
+          license_key: string
+          max_users?: number | null
+          max_vehicles?: number | null
+          notes?: string | null
+          plan_key: string
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          activated_at?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          issued_at?: string
+          issued_by?: string | null
+          license_key?: string
+          max_users?: number | null
+          max_vehicles?: number | null
+          notes?: string | null
+          plan_key?: string
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "license_keys_plan_key_fkey"
+            columns: ["plan_key"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["key"]
+          },
+          {
+            foreignKeyName: "license_keys_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       maintenance_records: {
         Row: {
           archived_at: string | null
@@ -1330,6 +1399,51 @@ export type Database = {
           },
         ]
       }
+      plans: {
+        Row: {
+          created_at: string
+          features: Json
+          id: string
+          is_active: boolean
+          key: string
+          max_users: number | null
+          max_vehicles: number | null
+          name: string
+          price_monthly: number | null
+          price_yearly: number | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          features?: Json
+          id?: string
+          is_active?: boolean
+          key: string
+          max_users?: number | null
+          max_vehicles?: number | null
+          name: string
+          price_monthly?: number | null
+          price_yearly?: number | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          features?: Json
+          id?: string
+          is_active?: boolean
+          key?: string
+          max_users?: number | null
+          max_vehicles?: number | null
+          name?: string
+          price_monthly?: number | null
+          price_yearly?: number | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1344,6 +1458,7 @@ export type Database = {
           phone: string | null
           tenant_id: string | null
           updated_at: string
+          username: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -1358,6 +1473,7 @@ export type Database = {
           phone?: string | null
           tenant_id?: string | null
           updated_at?: string
+          username?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -1372,6 +1488,7 @@ export type Database = {
           phone?: string | null
           tenant_id?: string | null
           updated_at?: string
+          username?: string | null
         }
         Relationships: [
           {
@@ -2325,6 +2442,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      gen_license_key: { Args: never; Returns: string }
       generate_expiry_notifications: { Args: never; Returns: number }
       get_user_customer: { Args: { _user_id: string }; Returns: string }
       get_user_driver: { Args: { _user_id: string }; Returns: string }
