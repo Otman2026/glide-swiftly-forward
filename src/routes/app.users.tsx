@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { PageHeader, EmptyState } from "@/components/dashboard-layout";
-import { Shield, Loader2, Trash2, Plus, Users as UsersIcon } from "lucide-react";
+import { Shield, Loader2, Trash2, Plus, Users as UsersIcon, Ban, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
@@ -31,6 +31,8 @@ type Member = {
   email: string | null;
   customer_id: string | null;
   driver_id: string | null;
+  disabled_at: string | null;
+  disabled_reason: string | null;
   roles: string[];
 };
 
@@ -57,7 +59,7 @@ function UsersPage() {
 
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("id,full_name,email,customer_id,driver_id")
+      .select("id,full_name,email,customer_id,driver_id,disabled_at,disabled_reason")
       .eq("tenant_id", tid);
     const { data: roles } = await supabase
       .from("user_roles")
@@ -65,11 +67,11 @@ function UsersPage() {
       .eq("tenant_id", tid);
 
     const map = new Map<string, Member>();
-    (profiles ?? []).forEach(p => map.set(p.id, { user_id: p.id, full_name: p.full_name, email: p.email, customer_id: p.customer_id, driver_id: p.driver_id, roles: [] }));
+    (profiles ?? []).forEach((p: any) => map.set(p.id, { user_id: p.id, full_name: p.full_name, email: p.email, customer_id: p.customer_id, driver_id: p.driver_id, disabled_at: p.disabled_at, disabled_reason: p.disabled_reason, roles: [] }));
     (roles ?? []).forEach(r => {
       const m = map.get(r.user_id);
       if (m) m.roles.push(r.role);
-      else map.set(r.user_id, { user_id: r.user_id, full_name: null, email: null, customer_id: null, driver_id: null, roles: [r.role] });
+      else map.set(r.user_id, { user_id: r.user_id, full_name: null, email: null, customer_id: null, driver_id: null, disabled_at: null, disabled_reason: null, roles: [r.role] });
     });
     setRows(Array.from(map.values()));
     setLoading(false);
@@ -136,6 +138,23 @@ function UsersPage() {
     else { toast.success("تمت الإزالة"); load(); }
   };
 
+  const toggleDisabled = async (m: Member) => {
+    const isDisabled = !!m.disabled_at;
+    let reason: string | null = null;
+    if (!isDisabled) {
+      reason = prompt("سبب التعطيل (اختياري):") ?? "";
+      if (reason === null) return;
+    } else if (!confirm(`إعادة تفعيل ${m.full_name ?? m.email}؟`)) return;
+    const { error } = await supabase.from("profiles").update({
+      disabled_at: isDisabled ? null : new Date().toISOString(),
+      disabled_reason: isDisabled ? null : (reason || null),
+    }).eq("id", m.user_id);
+    if (error) return toast.error(error.message);
+    toast.success(isDisabled ? "تم التفعيل" : "تم التعطيل");
+    load();
+  };
+
+
   return (
     <>
       <PageHeader
@@ -183,18 +202,32 @@ function UsersPage() {
               <tr>
                 <th className="p-4 text-right font-semibold">الاسم</th>
                 <th className="p-4 text-right font-semibold">البريد</th>
+                <th className="p-4 text-right font-semibold">الحالة</th>
                 <th className="p-4 text-right font-semibold">الأدوار</th>
                 <th className="p-4 text-right font-semibold">الربط</th>
+                <th className="p-4 text-right font-semibold">إجراءات</th>
               </tr>
             </thead>
             <tbody>
               {rows.map(m => {
                 const cust = m.customer_id ? customers.find(c => c.id === m.customer_id)?.name : null;
                 const drv = m.driver_id ? drivers.find(d => d.id === m.driver_id)?.full_name : null;
+                const disabled = !!m.disabled_at;
                 return (
-                  <tr key={m.user_id} className="border-t border-border hover:bg-secondary/30">
+                  <tr key={m.user_id} className={`border-t border-border hover:bg-secondary/30 ${disabled ? "opacity-60" : ""}`}>
                     <td className="p-4 font-semibold">{m.full_name ?? "—"}</td>
                     <td className="p-4 text-muted-foreground" dir="ltr">{m.email ?? "—"}</td>
+                    <td className="p-4">
+                      {disabled ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-destructive/10 px-2 py-1 text-xs font-bold text-destructive" title={m.disabled_reason ?? ""}>
+                          <Ban className="h-3 w-3" /> معطل
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-1 text-xs font-bold text-success">
+                          <CheckCircle2 className="h-3 w-3" /> نشط
+                        </span>
+                      )}
+                    </td>
                     <td className="p-4">
                       <div className="flex flex-wrap gap-2">
                         {m.roles.length === 0 && <span className="text-xs text-muted-foreground">لا توجد أدوار</span>}
@@ -212,12 +245,24 @@ function UsersPage() {
                       </div>
                     </td>
                     <td className="p-4 text-xs">
-                      <div className="space-y-1 mb-2">
+                      <div className="space-y-1">
                         {cust && <div className="text-primary">عميل: {cust}</div>}
                         {drv && <div className="text-accent">سائق: {drv}</div>}
                         {!cust && !drv && <div className="text-muted-foreground">—</div>}
                       </div>
-                      <Button size="sm" variant="outline" onClick={() => openLink(m)}>ربط</Button>
+                    </td>
+                    <td className="p-4">
+                      <div className="flex flex-wrap gap-2">
+                        <Button size="sm" variant="outline" onClick={() => openLink(m)}>ربط</Button>
+                        <Button
+                          size="sm"
+                          variant={disabled ? "default" : "outline"}
+                          onClick={() => toggleDisabled(m)}
+                          className={disabled ? "bg-success text-success-foreground hover:bg-success/90" : "text-destructive hover:bg-destructive/10"}
+                        >
+                          {disabled ? <><CheckCircle2 className="h-3 w-3" /> تفعيل</> : <><Ban className="h-3 w-3" /> تعطيل</>}
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 );
