@@ -80,7 +80,7 @@ function ReportsPage() {
     const fromIso = `${from}T00:00:00Z`;
     const toIso = `${to}T23:59:59Z`;
     const [orders, expenses, fuel, maintenance, incidents, vehicles, customers, drivers, trips] = await Promise.all([
-      supabase.from("transport_orders").select("id,total_amount,status,customer_id,created_at").gte("created_at", fromIso).lte("created_at", toIso),
+      supabase.from("transport_orders").select("id,price,status,customer_id,created_at").gte("created_at", fromIso).lte("created_at", toIso),
       supabase.from("expenses").select("amount,expense_date,category").gte("expense_date", from).lte("expense_date", to),
       supabase.from("fuel_logs").select("liters,cost,vehicle_id,fuel_date").gte("fuel_date", from).lte("fuel_date", to),
       supabase.from("maintenance_records").select("cost,vehicle_id,service_date").gte("service_date", from).lte("service_date", to),
@@ -113,7 +113,7 @@ function ReportsPage() {
 
   const pnl = useMemo(() => {
     if (!data) return null;
-    const revenue = sum(data.orders.filter((o) => o.status === "delivered"), "total_amount");
+    const revenue = sum(data.orders.filter((o) => o.status === "delivered"), "price");
     const expenses = sum(data.expenses, "amount");
     const fuel = sum(data.fuel, "cost");
     const maint = sum(data.maintenance, "cost");
@@ -152,7 +152,7 @@ function ReportsPage() {
           "العميل": c.name,
           "عدد الطلبات": orders.length,
           "المسلّم": delivered.length,
-          "الإيرادات (MAD)": sum(delivered, "total_amount").toFixed(2),
+          "الإيرادات (MAD)": sum(delivered, "price").toFixed(2),
         };
       })
       .filter((r) => Number(r["عدد الطلبات"]) > 0)
