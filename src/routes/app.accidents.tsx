@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { DocumentsDialog } from "@/components/documents-dialog";
 import { exportToCSV } from "@/lib/csv";
 import { printHTML, esc } from "@/lib/print";
+import { SearchInput } from "@/components/search-input";
 
 export const Route = createFileRoute("/app/accidents")({ component: AccidentsPage });
 
