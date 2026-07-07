@@ -1139,6 +1139,8 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           customer_id: string | null
+          disabled_at: string | null
+          disabled_reason: string | null
           driver_id: string | null
           email: string | null
           full_name: string | null
@@ -1151,6 +1153,8 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           customer_id?: string | null
+          disabled_at?: string | null
+          disabled_reason?: string | null
           driver_id?: string | null
           email?: string | null
           full_name?: string | null
@@ -1163,6 +1167,8 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           customer_id?: string | null
+          disabled_at?: string | null
+          disabled_reason?: string | null
           driver_id?: string | null
           email?: string | null
           full_name?: string | null
@@ -2074,6 +2080,7 @@ export type Database = {
         Returns: boolean
       }
       is_system_owner: { Args: { _user_id: string }; Returns: boolean }
+      is_user_active: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role:
