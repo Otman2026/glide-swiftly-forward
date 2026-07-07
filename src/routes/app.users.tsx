@@ -138,6 +138,23 @@ function UsersPage() {
     else { toast.success("تمت الإزالة"); load(); }
   };
 
+  const toggleDisabled = async (m: Member) => {
+    const isDisabled = !!m.disabled_at;
+    let reason: string | null = null;
+    if (!isDisabled) {
+      reason = prompt("سبب التعطيل (اختياري):") ?? "";
+      if (reason === null) return;
+    } else if (!confirm(`إعادة تفعيل ${m.full_name ?? m.email}؟`)) return;
+    const { error } = await supabase.from("profiles").update({
+      disabled_at: isDisabled ? null : new Date().toISOString(),
+      disabled_reason: isDisabled ? null : (reason || null),
+    }).eq("user_id" as any, m.user_id).eq("id", m.user_id);
+    if (error) return toast.error(error.message);
+    toast.success(isDisabled ? "تم التفعيل" : "تم التعطيل");
+    load();
+  };
+
+
   return (
     <>
       <PageHeader
