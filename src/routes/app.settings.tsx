@@ -112,7 +112,7 @@ function SettingsPage() {
         id: u.user.id,
         tenant_id: tenantId,
         full_name: profile.full_name.trim() || null,
-        email: u.user.email ?? profile.email || null,
+        email: u.user.email ?? (profile.email || null),
         phone: profile.phone.trim() || null,
         username,
       } as any, { onConflict: "id" });
