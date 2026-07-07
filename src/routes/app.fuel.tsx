@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader, EmptyState } from "@/components/dashboard-layout";
-import { Fuel, Plus, Loader2, Trash2, Pencil, Printer, Download } from "lucide-react";
+import { Fuel, Plus, Loader2, Trash2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -9,8 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { exportToCSV } from "@/lib/csv";
-import { printHTML, esc } from "@/lib/print";
+import { ExportBar } from "@/components/export-bar";
 
 export const Route = createFileRoute("/app/fuel")({ component: FuelPage });
 
