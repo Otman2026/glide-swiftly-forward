@@ -27,6 +27,7 @@ import {
   Menu,
   X,
   Home,
+  MapPin,
   type LucideIcon,
 } from "lucide-react";
 
