@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { PageHeader, EmptyState } from "@/components/dashboard-layout";
-import { Users, Plus, Search, Trash2, Loader2, Printer, Download, Pencil } from "lucide-react";
+import { Users, Plus, Search, Trash2, Loader2, Printer, Download, Pencil, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
@@ -223,6 +223,9 @@ function CustomersPage() {
                   <td className="p-4 font-mono text-xs">{c.tax_id ?? "—"}</td>
                   <td className="p-4">
                     <div className="flex gap-1">
+                      <Link to="/app/customers/$id" params={{ id: c.id }}>
+                        <Button variant="ghost" size="sm" title="ملف 360°"><Eye className="h-4 w-4" /></Button>
+                      </Link>
                       <Button variant="ghost" size="sm" onClick={() => openEdit(c)} title="تعديل"><Pencil className="h-4 w-4" /></Button>
                       <Button variant="ghost" size="sm" onClick={() => onPrint(c)} title="طباعة"><Printer className="h-4 w-4" /></Button>
                       <Button variant="ghost" size="sm" onClick={() => onDelete(c.id)} title="حذف"

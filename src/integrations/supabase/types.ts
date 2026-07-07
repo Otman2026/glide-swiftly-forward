@@ -167,6 +167,7 @@ export type Database = {
           archived_at: string | null
           archived_reason: string | null
           contract_number: string
+          cost_center_id: string | null
           created_at: string
           created_by: string | null
           currency: string | null
@@ -185,6 +186,7 @@ export type Database = {
           archived_at?: string | null
           archived_reason?: string | null
           contract_number: string
+          cost_center_id?: string | null
           created_at?: string
           created_by?: string | null
           currency?: string | null
@@ -203,6 +205,7 @@ export type Database = {
           archived_at?: string | null
           archived_reason?: string | null
           contract_number?: string
+          cost_center_id?: string | null
           created_at?: string
           created_by?: string | null
           currency?: string | null
@@ -219,6 +222,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "contracts_cost_center_id_fkey"
+            columns: ["cost_center_id"]
+            isOneToOne: false
+            referencedRelation: "cost_centers"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "contracts_customer_id_fkey"
             columns: ["customer_id"]
             isOneToOne: false
@@ -227,6 +237,53 @@ export type Database = {
           },
           {
             foreignKeyName: "contracts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cost_centers: {
+        Row: {
+          active: boolean
+          archived_at: string | null
+          budget: number | null
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          archived_at?: string | null
+          budget?: number | null
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          archived_at?: string | null
+          budget?: number | null
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cost_centers_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -541,7 +598,9 @@ export type Database = {
       expenses: {
         Row: {
           amount: number
+          archived_at: string | null
           category: string
+          cost_center_id: string | null
           created_at: string
           description: string | null
           expense_date: string
@@ -552,7 +611,9 @@ export type Database = {
         }
         Insert: {
           amount: number
+          archived_at?: string | null
           category: string
+          cost_center_id?: string | null
           created_at?: string
           description?: string | null
           expense_date?: string
@@ -563,7 +624,9 @@ export type Database = {
         }
         Update: {
           amount?: number
+          archived_at?: string | null
           category?: string
+          cost_center_id?: string | null
           created_at?: string
           description?: string | null
           expense_date?: string
@@ -573,6 +636,13 @@ export type Database = {
           vehicle_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "expenses_cost_center_id_fkey"
+            columns: ["cost_center_id"]
+            isOneToOne: false
+            referencedRelation: "cost_centers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "expenses_tenant_id_fkey"
             columns: ["tenant_id"]
@@ -907,6 +977,7 @@ export type Database = {
         Row: {
           archived_at: string | null
           archived_reason: string | null
+          cost_center_id: string | null
           created_at: string
           created_by: string | null
           customer_id: string | null
@@ -928,6 +999,7 @@ export type Database = {
         Insert: {
           archived_at?: string | null
           archived_reason?: string | null
+          cost_center_id?: string | null
           created_at?: string
           created_by?: string | null
           customer_id?: string | null
@@ -949,6 +1021,7 @@ export type Database = {
         Update: {
           archived_at?: string | null
           archived_reason?: string | null
+          cost_center_id?: string | null
           created_at?: string
           created_by?: string | null
           customer_id?: string | null
@@ -968,6 +1041,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "invoices_cost_center_id_fkey"
+            columns: ["cost_center_id"]
+            isOneToOne: false
+            referencedRelation: "cost_centers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "invoices_customer_id_fkey"
             columns: ["customer_id"]
@@ -1827,6 +1907,7 @@ export type Database = {
           archived_at: string | null
           archived_reason: string | null
           cost: number | null
+          cost_center_id: string | null
           created_at: string
           customer_id: string | null
           destination: string | null
@@ -1848,6 +1929,7 @@ export type Database = {
           archived_at?: string | null
           archived_reason?: string | null
           cost?: number | null
+          cost_center_id?: string | null
           created_at?: string
           customer_id?: string | null
           destination?: string | null
@@ -1869,6 +1951,7 @@ export type Database = {
           archived_at?: string | null
           archived_reason?: string | null
           cost?: number | null
+          cost_center_id?: string | null
           created_at?: string
           customer_id?: string | null
           destination?: string | null
@@ -1887,6 +1970,13 @@ export type Database = {
           vehicle_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "trips_cost_center_id_fkey"
+            columns: ["cost_center_id"]
+            isOneToOne: false
+            referencedRelation: "cost_centers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "trips_customer_id_fkey"
             columns: ["customer_id"]
@@ -1955,6 +2045,7 @@ export type Database = {
           archived_reason: string | null
           brand: string | null
           capacity_tons: number | null
+          cost_center_id: string | null
           created_at: string
           id: string
           inspection_expiry: string | null
@@ -1974,6 +2065,7 @@ export type Database = {
           archived_reason?: string | null
           brand?: string | null
           capacity_tons?: number | null
+          cost_center_id?: string | null
           created_at?: string
           id?: string
           inspection_expiry?: string | null
@@ -1993,6 +2085,7 @@ export type Database = {
           archived_reason?: string | null
           brand?: string | null
           capacity_tons?: number | null
+          cost_center_id?: string | null
           created_at?: string
           id?: string
           inspection_expiry?: string | null
@@ -2008,6 +2101,13 @@ export type Database = {
           year?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "vehicles_cost_center_id_fkey"
+            columns: ["cost_center_id"]
+            isOneToOne: false
+            referencedRelation: "cost_centers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "vehicles_tenant_id_fkey"
             columns: ["tenant_id"]
