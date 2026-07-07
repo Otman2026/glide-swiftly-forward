@@ -25,6 +25,7 @@ import { Route as AppSystemOwnerRouteImport } from './routes/app.system-owner'
 import { Route as AppShipmentsRouteImport } from './routes/app.shipments'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppReportsRouteImport } from './routes/app.reports'
+import { Route as AppPipelineRouteImport } from './routes/app.pipeline'
 import { Route as AppOrdersRouteImport } from './routes/app.orders'
 import { Route as AppNotificationsRouteImport } from './routes/app.notifications'
 import { Route as AppMaintenanceRouteImport } from './routes/app.maintenance'
@@ -124,6 +125,11 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
 const AppReportsRoute = AppReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPipelineRoute = AppPipelineRouteImport.update({
+  id: '/pipeline',
+  path: '/pipeline',
   getParentRoute: () => AppRoute,
 } as any)
 const AppOrdersRoute = AppOrdersRouteImport.update({
@@ -252,6 +258,7 @@ export interface FileRoutesByFullPath {
   '/app/maintenance': typeof AppMaintenanceRoute
   '/app/notifications': typeof AppNotificationsRoute
   '/app/orders': typeof AppOrdersRoute
+  '/app/pipeline': typeof AppPipelineRoute
   '/app/reports': typeof AppReportsRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/shipments': typeof AppShipmentsRoute
@@ -289,6 +296,7 @@ export interface FileRoutesByTo {
   '/app/maintenance': typeof AppMaintenanceRoute
   '/app/notifications': typeof AppNotificationsRoute
   '/app/orders': typeof AppOrdersRoute
+  '/app/pipeline': typeof AppPipelineRoute
   '/app/reports': typeof AppReportsRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/shipments': typeof AppShipmentsRoute
@@ -328,6 +336,7 @@ export interface FileRoutesById {
   '/app/maintenance': typeof AppMaintenanceRoute
   '/app/notifications': typeof AppNotificationsRoute
   '/app/orders': typeof AppOrdersRoute
+  '/app/pipeline': typeof AppPipelineRoute
   '/app/reports': typeof AppReportsRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/shipments': typeof AppShipmentsRoute
@@ -368,6 +377,7 @@ export interface FileRouteTypes {
     | '/app/maintenance'
     | '/app/notifications'
     | '/app/orders'
+    | '/app/pipeline'
     | '/app/reports'
     | '/app/settings'
     | '/app/shipments'
@@ -405,6 +415,7 @@ export interface FileRouteTypes {
     | '/app/maintenance'
     | '/app/notifications'
     | '/app/orders'
+    | '/app/pipeline'
     | '/app/reports'
     | '/app/settings'
     | '/app/shipments'
@@ -443,6 +454,7 @@ export interface FileRouteTypes {
     | '/app/maintenance'
     | '/app/notifications'
     | '/app/orders'
+    | '/app/pipeline'
     | '/app/reports'
     | '/app/settings'
     | '/app/shipments'
@@ -580,6 +592,13 @@ declare module '@tanstack/react-router' {
       path: '/reports'
       fullPath: '/app/reports'
       preLoaderRoute: typeof AppReportsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/pipeline': {
+      id: '/app/pipeline'
+      path: '/pipeline'
+      fullPath: '/app/pipeline'
+      preLoaderRoute: typeof AppPipelineRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/orders': {
@@ -744,6 +763,7 @@ interface AppRouteChildren {
   AppMaintenanceRoute: typeof AppMaintenanceRoute
   AppNotificationsRoute: typeof AppNotificationsRoute
   AppOrdersRoute: typeof AppOrdersRoute
+  AppPipelineRoute: typeof AppPipelineRoute
   AppReportsRoute: typeof AppReportsRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppShipmentsRoute: typeof AppShipmentsRoute
@@ -776,6 +796,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppMaintenanceRoute: AppMaintenanceRoute,
   AppNotificationsRoute: AppNotificationsRoute,
   AppOrdersRoute: AppOrdersRoute,
+  AppPipelineRoute: AppPipelineRoute,
   AppReportsRoute: AppReportsRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppShipmentsRoute: AppShipmentsRoute,
