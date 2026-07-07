@@ -2,7 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/dashboard-layout";
 import { supabase } from "@/integrations/supabase/client";
-import { FileDown, Loader2, TrendingUp, TrendingDown, Wallet } from "lucide-react";
+import { FileDown, FileText, FileSpreadsheet, Loader2, TrendingUp, TrendingDown, Wallet } from "lucide-react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 export const Route = createFileRoute("/app/reports")({
   component: ReportsPage,
@@ -26,6 +29,32 @@ const toCsv = (rows: Row[], filename: string) => {
   a.click();
   URL.revokeObjectURL(url);
 };
+
+const toXlsx = (rows: Row[], filename: string, sheetName = "Report") => {
+  if (!rows.length) return;
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, sheetName.slice(0, 31));
+  XLSX.writeFile(wb, filename);
+};
+
+const toPdf = (rows: Row[], filename: string, title: string) => {
+  if (!rows.length) return;
+  const doc = new jsPDF({ orientation: "landscape" });
+  doc.setFontSize(14);
+  doc.text(title, doc.internal.pageSize.getWidth() / 2, 14, { align: "center" });
+  const headers = Object.keys(rows[0]);
+  autoTable(doc, {
+    startY: 22,
+    head: [headers],
+    body: rows.map((r) => headers.map((h) => String(r[h] ?? ""))),
+    styles: { fontSize: 9, cellPadding: 3 },
+    headStyles: { fillBox: true, fillColor: [30, 41, 59], textColor: 255 },
+    alternateRowStyles: { fillColor: [245, 247, 250] },
+  });
+  doc.save(filename);
+};
+
 
 function ReportsPage() {
   const today = new Date().toISOString().slice(0, 10);
