@@ -61,6 +61,53 @@ export type Database = {
           },
         ]
       }
+      billing_requests: {
+        Row: {
+          billing_cycle: string
+          created_at: string
+          current_plan: Database["public"]["Enums"]["subscription_plan"]
+          id: string
+          notes: string | null
+          requested_by: string | null
+          requested_plan: Database["public"]["Enums"]["subscription_plan"]
+          status: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          billing_cycle?: string
+          created_at?: string
+          current_plan?: Database["public"]["Enums"]["subscription_plan"]
+          id?: string
+          notes?: string | null
+          requested_by?: string | null
+          requested_plan: Database["public"]["Enums"]["subscription_plan"]
+          status?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          billing_cycle?: string
+          created_at?: string
+          current_plan?: Database["public"]["Enums"]["subscription_plan"]
+          id?: string
+          notes?: string | null
+          requested_by?: string | null
+          requested_plan?: Database["public"]["Enums"]["subscription_plan"]
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_requests_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contracts: {
         Row: {
           contract_number: string
