@@ -146,21 +146,8 @@ function OrdersPage() {
       </dl>`);
   };
 
-  const onExport = () => {
-    if (filtered.length === 0) return toast.error("لا توجد بيانات");
-    exportToCSV(filtered, [
-      { key: "order_number", label: "الرقم" },
-      { key: "customer", label: "العميل", get: (r) => r.customers?.name ?? "" },
-      { key: "type", label: "النوع", get: (r) => TYPE_LABEL[r.transport_type] },
-      { key: "origin", label: "من" },
-      { key: "destination", label: "إلى" },
-      { key: "pickup_date", label: "تحميل" },
-      { key: "delivery_date", label: "تسليم" },
-      { key: "price", label: "السعر" },
-      { key: "status", label: "الحالة", get: (r) => STATUS_LABEL[r.status] },
-    ], `orders-${new Date().toISOString().slice(0, 10)}`);
-    toast.success("تم التصدير");
-  };
+
+
 
   const filtered = rows.filter((r) => {
     if (statusFilter !== "all" && r.status !== statusFilter) return false;
