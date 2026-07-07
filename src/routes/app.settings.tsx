@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { PageHeader } from "@/components/dashboard-layout";
-import { User, Building2, Loader2, KeyRound, ImageIcon, FileSignature, Receipt, Upload, Trash2 } from "lucide-react";
+import { User, Building2, Loader2, KeyRound, ImageIcon, FileSignature, Receipt, Upload, Trash2, AtSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,7 +41,7 @@ function SettingsPage() {
   const [savingCo, setSavingCo] = useState(false);
   const [savingPwd, setSavingPwd] = useState(false);
   const [tenantId, setTenantId] = useState<string | null>(null);
-  const [profile, setProfile] = useState({ full_name: "", email: "", phone: "" });
+  const [profile, setProfile] = useState({ full_name: "", email: "", phone: "", username: "" });
   const [company, setCompany] = useState<Company>(emptyCompany);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [stampPreview, setStampPreview] = useState<string | null>(null);
@@ -51,10 +51,26 @@ function SettingsPage() {
 
   useEffect(() => {
     (async () => {
-      const { data: u } = await supabase.auth.getUser();
-      if (!u.user) return;
-      const { data: p } = await supabase.from("profiles").select("full_name,email,phone,tenant_id").eq("id", u.user.id).maybeSingle();
-      if (p) setProfile({ full_name: p.full_name ?? "", email: p.email ?? "", phone: (p as any).phone ?? "" });
+      const { data: u, error: userError } = await supabase.auth.getUser();
+      if (userError || !u.user) {
+        toast.error("يجب تسجيل الدخول أولاً");
+        setLoading(false);
+        return;
+      }
+      const { data: p, error: profileError } = await supabase
+        .from("profiles")
+        .select("full_name,email,phone,username,tenant_id")
+        .eq("id", u.user.id)
+        .maybeSingle();
+      if (profileError) {
+        toast.error(profileError.message);
+      }
+      setProfile({
+        full_name: p?.full_name ?? (u.user.user_metadata?.full_name as string | undefined) ?? "",
+        email: p?.email ?? u.user.email ?? "",
+        phone: (p as any)?.phone ?? "",
+        username: (p as any)?.username ?? "",
+      });
       const tid = p?.tenant_id ?? null;
       setTenantId(tid);
       if (tid) {
@@ -84,16 +100,45 @@ function SettingsPage() {
   const saveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    const { data: u } = await supabase.auth.getUser();
-    if (!u.user) return;
-    const { error } = await supabase.from("profiles").update({ full_name: profile.full_name, phone: profile.phone as any }).eq("id", u.user.id);
-    setSaving(false);
-    if (error) toast.error(error.message); else toast.success("تم حفظ الملف الشخصي");
+    try {
+      const { data: u, error: userError } = await supabase.auth.getUser();
+      if (userError || !u.user) {
+        toast.error("انتهت الجلسة، يرجى تسجيل الدخول من جديد");
+        return;
+      }
+
+      const username = profile.username.trim().toLowerCase() || null;
+      const { error } = await supabase.from("profiles").upsert({
+        id: u.user.id,
+        tenant_id: tenantId,
+        full_name: profile.full_name.trim() || null,
+        email: u.user.email ?? profile.email || null,
+        phone: profile.phone.trim() || null,
+        username,
+      } as any, { onConflict: "id" });
+
+      if (error) {
+        if (error.message.includes("uq_profiles_username")) {
+          toast.error("اسم المستخدم محجوز، اختر اسماً آخر");
+        } else {
+          toast.error(error.message);
+        }
+        return;
+      }
+
+      setProfile((current) => ({ ...current, email: u.user.email ?? current.email, username: username ?? "" }));
+      toast.success("تم حفظ الملف الشخصي");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const saveCompany = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!tenantId) return;
+    if (!tenantId) {
+      toast.error("لا توجد شركة مرتبطة بهذا الحساب");
+      return;
+    }
     setSavingCo(true);
     const { error } = await supabase.from("tenants").update({
       name: company.name,
@@ -129,7 +174,7 @@ function SettingsPage() {
   };
 
   const uploadAsset = async (kind: "logo" | "stamp", file: File) => {
-    if (!tenantId) return;
+    if (!tenantId) { toast.error("لا توجد شركة مرتبطة بهذا الحساب"); return; }
     const ext = file.name.split(".").pop() || "png";
     const path = `${tenantId}/${kind}-${Date.now()}.${ext}`;
     const up = await supabase.storage.from("tenant-assets").upload(path, file, { upsert: true });
@@ -144,7 +189,7 @@ function SettingsPage() {
   };
 
   const removeAsset = async (kind: "logo" | "stamp") => {
-    if (!tenantId) return;
+    if (!tenantId) { toast.error("لا توجد شركة مرتبطة بهذا الحساب"); return; }
     const col = kind === "logo" ? "logo_url" : "stamp_url";
     const current = kind === "logo" ? company.logo_url : company.stamp_url;
     if (current && !current.startsWith("http")) {
@@ -282,6 +327,13 @@ function SettingsPage() {
             </div>
             <div className="space-y-4">
               <div><Label>الاسم الكامل</Label><Input value={profile.full_name} onChange={(e) => setProfile({ ...profile, full_name: e.target.value })} /></div>
+              <div>
+                <Label>اسم المستخدم</Label>
+                <div className="relative">
+                  <AtSign className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input dir="ltr" className="pl-9" value={profile.username} onChange={(e) => setProfile({ ...profile, username: e.target.value.replace(/\s/g, "").toLowerCase() })} />
+                </div>
+              </div>
               <div><Label>البريد الإلكتروني</Label><Input dir="ltr" value={profile.email} disabled /></div>
               <div><Label>الهاتف</Label><Input dir="ltr" value={profile.phone} onChange={(e) => setProfile({ ...profile, phone: e.target.value })} /></div>
               <Button type="submit" disabled={saving} className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
