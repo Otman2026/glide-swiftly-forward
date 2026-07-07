@@ -21,8 +21,8 @@ electron/
 ### 2) شغّل البناء
 ثلاث طرق:
 
-**أ) تلقائياً مع أي رفع للكود:**
-بمجرد أن يتزامن المشروع مع GitHub أو يتم عمل Push لأي فرع، سيبدأ بناء المثبّت تلقائياً.
+**أ) تلقائياً مع أي رفع للكود — الطريقة المعتمدة إذا لم يظهر زر Run workflow:**
+بمجرد أن يتزامن المشروع مع GitHub أو يتم عمل Push لأي فرع، سيبدأ بناء المثبّت تلقائياً بدون الحاجة إلى زر **Run workflow**.
 
 بعد انتهاء البناء ستجد آخر نسخة دائماً في:
 **GitHub → Releases → SAIFO Windows Setup - Latest → Assets → ملف Setup.exe**
@@ -33,7 +33,7 @@ git tag v1.0.0
 git push origin v1.0.0
 ```
 
-**ج) يدوياً:** من GitHub → **Actions → Build Windows Setup → Run workflow**.
+**ج) يدوياً:** من GitHub → **Actions → Build Windows Setup → Run workflow** إذا كان الزر ظاهراً في حسابك.
 
 ### 3) نزّل الملف
 - الأفضل: من صفحة **Releases** → **SAIFO Windows Setup - Latest** → قسم **Assets**.
@@ -44,7 +44,7 @@ git push origin v1.0.0
 
 الملف الناتج:
 ```
-SAIFO-TRANSPORT-ERP-Setup-1.0.0.exe
+SAIFO-TRANSPORT-ERP-Setup-1.0.1.exe
 ```
 
 ## تخصيص عنوان التطبيق
