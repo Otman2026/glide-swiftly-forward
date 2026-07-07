@@ -111,13 +111,6 @@ function ReportsPage() {
       maintenance: maintenance.data ?? [],
       incidents: incidents.data ?? [],
       vehicles: vehicles.data ?? [],
-    setData({
-      orders: orders.data ?? [],
-      expenses: expenses.data ?? [],
-      fuel: fuel.data ?? [],
-      maintenance: maintenance.data ?? [],
-      incidents: incidents.data ?? [],
-      vehicles: vehicles.data ?? [],
       customers: customers.data ?? [],
       drivers: drivers.data ?? [],
       trips: trips.data ?? [],
