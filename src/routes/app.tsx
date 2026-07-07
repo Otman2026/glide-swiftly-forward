@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { useAuth } from "@/hooks/use-auth";
+import { applyPrintBrand } from "@/lib/company";
 
 export const Route = createFileRoute("/app")({
   component: AppGate,
@@ -15,6 +16,10 @@ function AppGate() {
   useEffect(() => {
     if (!loading && !session) navigate({ to: "/auth" });
   }, [loading, session, navigate]);
+
+  useEffect(() => {
+    if (session) applyPrintBrand().catch(() => {});
+  }, [session]);
 
   if (loading || !session) {
     return (
