@@ -2,7 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/dashboard-layout";
 import { supabase } from "@/integrations/supabase/client";
-import { FileDown, Loader2, TrendingUp, TrendingDown, Wallet } from "lucide-react";
+import { FileDown, FileText, FileSpreadsheet, Loader2, TrendingUp, TrendingDown, Wallet } from "lucide-react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 export const Route = createFileRoute("/app/reports")({
   component: ReportsPage,
@@ -26,6 +29,32 @@ const toCsv = (rows: Row[], filename: string) => {
   a.click();
   URL.revokeObjectURL(url);
 };
+
+const toXlsx = (rows: Row[], filename: string, sheetName = "Report") => {
+  if (!rows.length) return;
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, sheetName.slice(0, 31));
+  XLSX.writeFile(wb, filename);
+};
+
+const toPdf = (rows: Row[], filename: string, title: string) => {
+  if (!rows.length) return;
+  const doc = new jsPDF({ orientation: "landscape" });
+  doc.setFontSize(14);
+  doc.text(title, doc.internal.pageSize.getWidth() / 2, 14, { align: "center" });
+  const headers = Object.keys(rows[0]);
+  autoTable(doc, {
+    startY: 22,
+    head: [headers],
+    body: rows.map((r) => headers.map((h) => String(r[h] ?? ""))),
+    styles: { fontSize: 9, cellPadding: 3 },
+    headStyles: { fillColor: [30, 41, 59], textColor: 255 },
+    alternateRowStyles: { fillColor: [245, 247, 250] },
+  });
+  doc.save(filename);
+};
+
 
 function ReportsPage() {
   const today = new Date().toISOString().slice(0, 10);
@@ -154,15 +183,29 @@ function ReportsPage() {
       <PageHeader
         title="مركز التقارير"
         subtitle="تقارير مالية وتشغيلية قابلة للتصدير"
-        action={
-          <button
-            onClick={() => toCsv(rows.length ? rows : pnlRows(pnl), `saifo-report-${tab}-${from}_${to}.csv`)}
-            disabled={loading || !data}
-            className="flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-semibold text-accent-foreground hover:bg-accent/90 disabled:opacity-50"
-          >
-            <FileDown className="h-4 w-4" /> تصدير CSV
-          </button>
-        }
+        action={(() => {
+          const exportRows = rows.length ? rows : pnlRows(pnl);
+          const base = `saifo-report-${tab}-${from}_${to}`;
+          const title = `تقرير SAIFO — ${tab} — ${from} → ${to}`;
+          const disabled = loading || !data;
+          const btn = "flex h-10 items-center gap-2 rounded-lg px-3 text-sm font-semibold disabled:opacity-50";
+          return (
+            <div className="flex flex-wrap gap-2">
+              <button onClick={() => toCsv(exportRows, `${base}.csv`)} disabled={disabled}
+                className={`${btn} bg-secondary hover:bg-secondary/80`}>
+                <FileDown className="h-4 w-4" /> CSV
+              </button>
+              <button onClick={() => toXlsx(exportRows, `${base}.xlsx`, tab)} disabled={disabled}
+                className={`${btn} bg-success/10 text-success hover:bg-success/20`}>
+                <FileSpreadsheet className="h-4 w-4" /> Excel
+              </button>
+              <button onClick={() => toPdf(exportRows, `${base}.pdf`, title)} disabled={disabled}
+                className={`${btn} bg-destructive/10 text-destructive hover:bg-destructive/20`}>
+                <FileText className="h-4 w-4" /> PDF
+              </button>
+            </div>
+          );
+        })()}
       />
 
       <div className="mb-4 flex flex-wrap items-end gap-3 rounded-2xl border border-border bg-card p-4">
