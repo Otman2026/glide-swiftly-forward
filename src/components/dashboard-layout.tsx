@@ -22,6 +22,9 @@ import {
   LogOut,
   Search,
   Bell,
+  Menu,
+  X,
+  Home,
   type LucideIcon,
 } from "lucide-react";
 
@@ -78,6 +81,7 @@ const NAV: NavGroup[] = [
 export function DashboardLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [me, setMe] = useState<{ full_name: string | null; tenant_name: string | null }>({
     full_name: null,
     tenant_name: null,
@@ -102,6 +106,10 @@ export function DashboardLayout() {
     })();
   }, []);
 
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     toast.success("تم تسجيل الخروج");
@@ -111,18 +119,39 @@ export function DashboardLayout() {
 
   return (
     <div className="flex min-h-screen bg-secondary/40" dir="rtl">
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="hidden w-72 flex-shrink-0 flex-col border-l border-sidebar-border bg-sidebar text-sidebar-foreground lg:flex">
-        <div className="flex items-center gap-3 border-b border-sidebar-border px-6 py-5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl gradient-accent">
-            <Truck className="h-5 w-5 text-white" strokeWidth={2.5} />
-          </div>
-          <div>
-            <div className="text-sm font-black leading-tight">SAIFO</div>
-            <div className="-mt-0.5 text-[10px] font-bold tracking-widest text-accent">
-              TRANSPORT ERP
+      <aside
+        className={`${
+          mobileOpen ? "flex" : "hidden"
+        } fixed inset-y-0 right-0 z-50 w-72 flex-col border-l border-sidebar-border bg-sidebar text-sidebar-foreground lg:static lg:z-auto lg:flex`}
+      >
+        <div className="flex items-center justify-between gap-3 border-b border-sidebar-border px-6 py-5">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl gradient-accent">
+              <Truck className="h-5 w-5 text-white" strokeWidth={2.5} />
+            </div>
+            <div>
+              <div className="text-sm font-black leading-tight">SAIFO</div>
+              <div className="-mt-0.5 text-[10px] font-bold tracking-widest text-accent">
+                TRANSPORT ERP
+              </div>
             </div>
           </div>
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="rounded-lg p-1 text-sidebar-foreground/70 hover:bg-sidebar-accent lg:hidden"
+            aria-label="إغلاق القائمة"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
 
         <nav className="flex-1 overflow-y-auto px-3 py-4">
@@ -181,25 +210,47 @@ export function DashboardLayout() {
 
       {/* Main */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        <header className="flex items-center justify-between border-b border-border bg-background px-6 py-3">
-          <div className="flex items-center gap-3">
-            <div className="relative">
+        <header className="flex items-center justify-between gap-3 border-b border-border bg-background px-4 py-3 md:px-6">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-background hover:bg-secondary lg:hidden"
+              aria-label="فتح القائمة"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+            <Link
+              to="/"
+              className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-background hover:bg-secondary"
+              title="الصفحة الرئيسية"
+            >
+              <Home className="h-4 w-4" />
+            </Link>
+            <div className="relative hidden md:block">
               <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="search"
-                placeholder="بحث في العملاء، الشحنات، المركبات..."
-                className="h-10 w-96 rounded-lg border border-border bg-secondary/60 pl-4 pr-10 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+                placeholder="بحث..."
+                className="h-10 w-64 rounded-lg border border-border bg-secondary/60 pl-4 pr-10 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 xl:w-96"
               />
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 rounded-full bg-success/10 px-3 py-1">
+          <div className="flex items-center gap-2">
+            <div className="hidden items-center gap-2 rounded-full bg-success/10 px-3 py-1 sm:flex">
               <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
               <span className="text-xs font-semibold text-success">تجربة — 13 يوم متبقي</span>
             </div>
             <button className="relative flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-background hover:bg-secondary">
               <Bell className="h-4 w-4" />
               <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-accent" />
+            </button>
+            <button
+              onClick={handleSignOut}
+              title="تسجيل الخروج"
+              className="flex h-10 items-center gap-2 rounded-lg border border-border bg-background px-3 text-sm font-semibold hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">خروج</span>
             </button>
           </div>
         </header>
