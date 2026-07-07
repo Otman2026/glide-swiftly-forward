@@ -286,6 +286,89 @@ export type Database = {
           },
         ]
       }
+      shipments: {
+        Row: {
+          created_at: string
+          delivered_at: string | null
+          destination: string
+          distance_km: number | null
+          driver_id: string | null
+          id: string
+          loaded_at: string | null
+          notes: string | null
+          order_id: string | null
+          origin: string
+          shipment_number: string
+          status: Database["public"]["Enums"]["shipment_status"]
+          tenant_id: string
+          updated_at: string
+          vehicle_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          delivered_at?: string | null
+          destination: string
+          distance_km?: number | null
+          driver_id?: string | null
+          id?: string
+          loaded_at?: string | null
+          notes?: string | null
+          order_id?: string | null
+          origin: string
+          shipment_number: string
+          status?: Database["public"]["Enums"]["shipment_status"]
+          tenant_id: string
+          updated_at?: string
+          vehicle_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          delivered_at?: string | null
+          destination?: string
+          distance_km?: number | null
+          driver_id?: string | null
+          id?: string
+          loaded_at?: string | null
+          notes?: string | null
+          order_id?: string | null
+          origin?: string
+          shipment_number?: string
+          status?: Database["public"]["Enums"]["shipment_status"]
+          tenant_id?: string
+          updated_at?: string
+          vehicle_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shipments_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shipments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "transport_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shipments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shipments_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           created_at: string
@@ -380,6 +463,94 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      transport_orders: {
+        Row: {
+          contract_id: string | null
+          created_at: string
+          created_by: string | null
+          currency: string | null
+          customer_id: string
+          delivery_date: string | null
+          destination: string
+          goods_description: string | null
+          id: string
+          notes: string | null
+          order_number: string
+          origin: string
+          pickup_date: string | null
+          price: number | null
+          status: Database["public"]["Enums"]["order_status"]
+          tenant_id: string
+          transport_type: Database["public"]["Enums"]["transport_type"]
+          updated_at: string
+          weight_tons: number | null
+        }
+        Insert: {
+          contract_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          customer_id: string
+          delivery_date?: string | null
+          destination: string
+          goods_description?: string | null
+          id?: string
+          notes?: string | null
+          order_number: string
+          origin: string
+          pickup_date?: string | null
+          price?: number | null
+          status?: Database["public"]["Enums"]["order_status"]
+          tenant_id: string
+          transport_type?: Database["public"]["Enums"]["transport_type"]
+          updated_at?: string
+          weight_tons?: number | null
+        }
+        Update: {
+          contract_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          customer_id?: string
+          delivery_date?: string | null
+          destination?: string
+          goods_description?: string | null
+          id?: string
+          notes?: string | null
+          order_number?: string
+          origin?: string
+          pickup_date?: string | null
+          price?: number | null
+          status?: Database["public"]["Enums"]["order_status"]
+          tenant_id?: string
+          transport_type?: Database["public"]["Enums"]["transport_type"]
+          updated_at?: string
+          weight_tons?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transport_orders_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transport_orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transport_orders_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -510,8 +681,26 @@ export type Database = {
         | "driver"
       contract_status: "draft" | "active" | "expired" | "cancelled"
       driver_status: "active" | "on_leave" | "inactive"
+      order_status:
+        | "pending"
+        | "confirmed"
+        | "assigned"
+        | "in_transit"
+        | "delivered"
+        | "cancelled"
+      shipment_status:
+        | "planned"
+        | "loading"
+        | "in_transit"
+        | "delivered"
+        | "cancelled"
       subscription_plan: "trial" | "starter" | "professional" | "enterprise"
       tenant_status: "trial" | "active" | "suspended" | "cancelled"
+      transport_type:
+        | "national"
+        | "international"
+        | "own_account"
+        | "third_party"
       vehicle_status: "available" | "in_use" | "maintenance" | "out_of_service"
     }
     CompositeTypes: {
@@ -652,8 +841,29 @@ export const Constants = {
       ],
       contract_status: ["draft", "active", "expired", "cancelled"],
       driver_status: ["active", "on_leave", "inactive"],
+      order_status: [
+        "pending",
+        "confirmed",
+        "assigned",
+        "in_transit",
+        "delivered",
+        "cancelled",
+      ],
+      shipment_status: [
+        "planned",
+        "loading",
+        "in_transit",
+        "delivered",
+        "cancelled",
+      ],
       subscription_plan: ["trial", "starter", "professional", "enterprise"],
       tenant_status: ["trial", "active", "suspended", "cancelled"],
+      transport_type: [
+        "national",
+        "international",
+        "own_account",
+        "third_party",
+      ],
       vehicle_status: ["available", "in_use", "maintenance", "out_of_service"],
     },
   },
