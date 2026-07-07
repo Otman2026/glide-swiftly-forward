@@ -228,6 +228,12 @@ function InvoicesPage() {
               title="الفواتير"
               rows={rows}
               columns={[
+            <SearchInput value={q} onChange={setQ} placeholder="بحث برقم/عميل/حالة…" />
+            <ExportBar
+              filename="invoices"
+              title="الفواتير"
+              rows={filtered}
+              columns={[
                 { key: "invoice_number", label: "رقم الفاتورة" },
                 { key: "issue_date", label: "تاريخ الإصدار" },
                 { key: "due_date", label: "تاريخ الاستحقاق" },
