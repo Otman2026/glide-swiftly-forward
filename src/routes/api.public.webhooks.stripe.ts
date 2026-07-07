@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import Stripe from "stripe";
+import type StripeType from "stripe";
 
 export const Route = createFileRoute("/api/public/webhooks/stripe")({
   server: {
@@ -18,11 +18,12 @@ export const Route = createFileRoute("/api/public/webhooks/stripe")({
         }
 
         const rawBody = await request.text();
+        const { default: Stripe } = await import("stripe");
         const stripe = new Stripe(stripeSecretKey, {
           httpClient: Stripe.createFetchHttpClient(),
         });
 
-        let event: Stripe.Event;
+        let event: StripeType.Event;
         try {
           event = await stripe.webhooks.constructEventAsync(
             rawBody,
