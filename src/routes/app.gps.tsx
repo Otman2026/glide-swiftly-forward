@@ -61,7 +61,7 @@ function GpsPage() {
       .update({
         archived_at: archive ? new Date().toISOString() : null,
         archived_reason: archive ? reason : null,
-      })
+      } as never)
       .eq("id", d.id);
     if (error) return toast.error(error.message);
     toast.success(archive ? "تم أرشفة الجهاز" : "تم إعادة تفعيل الجهاز");
