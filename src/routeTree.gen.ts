@@ -41,6 +41,7 @@ import { Route as AppCustomersRouteImport } from './routes/app.customers'
 import { Route as AppContractsRouteImport } from './routes/app.contracts'
 import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppAccidentsRouteImport } from './routes/app.accidents'
+import { Route as AuthenticatedAppAuditRouteImport } from './routes/_authenticated/app.audit'
 import { Route as ApiPublicWebhooksStripeRouteImport } from './routes/api.public.webhooks.stripe'
 import { Route as ApiPublicHooksScanAlertsRouteImport } from './routes/api.public.hooks.scan-alerts'
 
@@ -204,6 +205,11 @@ const AppAccidentsRoute = AppAccidentsRouteImport.update({
   path: '/accidents',
   getParentRoute: () => AppRoute,
 } as any)
+const AuthenticatedAppAuditRoute = AuthenticatedAppAuditRouteImport.update({
+  id: '/_authenticated/app/audit',
+  path: '/app/audit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicWebhooksStripeRoute = ApiPublicWebhooksStripeRouteImport.update({
   id: '/api/public/webhooks/stripe',
   path: '/api/public/webhooks/stripe',
@@ -249,6 +255,7 @@ export interface FileRoutesByFullPath {
   '/app/violations': typeof AppViolationsRoute
   '/app/warehouses': typeof AppWarehousesRoute
   '/app/': typeof AppIndexRoute
+  '/app/audit': typeof AuthenticatedAppAuditRoute
   '/api/public/hooks/scan-alerts': typeof ApiPublicHooksScanAlertsRoute
   '/api/public/webhooks/stripe': typeof ApiPublicWebhooksStripeRoute
 }
@@ -284,6 +291,7 @@ export interface FileRoutesByTo {
   '/app/violations': typeof AppViolationsRoute
   '/app/warehouses': typeof AppWarehousesRoute
   '/app': typeof AppIndexRoute
+  '/app/audit': typeof AuthenticatedAppAuditRoute
   '/api/public/hooks/scan-alerts': typeof ApiPublicHooksScanAlertsRoute
   '/api/public/webhooks/stripe': typeof ApiPublicWebhooksStripeRoute
 }
@@ -321,6 +329,7 @@ export interface FileRoutesById {
   '/app/violations': typeof AppViolationsRoute
   '/app/warehouses': typeof AppWarehousesRoute
   '/app/': typeof AppIndexRoute
+  '/_authenticated/app/audit': typeof AuthenticatedAppAuditRoute
   '/api/public/hooks/scan-alerts': typeof ApiPublicHooksScanAlertsRoute
   '/api/public/webhooks/stripe': typeof ApiPublicWebhooksStripeRoute
 }
@@ -359,6 +368,7 @@ export interface FileRouteTypes {
     | '/app/violations'
     | '/app/warehouses'
     | '/app/'
+    | '/app/audit'
     | '/api/public/hooks/scan-alerts'
     | '/api/public/webhooks/stripe'
   fileRoutesByTo: FileRoutesByTo
@@ -394,6 +404,7 @@ export interface FileRouteTypes {
     | '/app/violations'
     | '/app/warehouses'
     | '/app'
+    | '/app/audit'
     | '/api/public/hooks/scan-alerts'
     | '/api/public/webhooks/stripe'
   id:
@@ -430,6 +441,7 @@ export interface FileRouteTypes {
     | '/app/violations'
     | '/app/warehouses'
     | '/app/'
+    | '/_authenticated/app/audit'
     | '/api/public/hooks/scan-alerts'
     | '/api/public/webhooks/stripe'
   fileRoutesById: FileRoutesById
@@ -440,6 +452,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   DriverRoute: typeof DriverRoute
   PortalRoute: typeof PortalRoute
+  AuthenticatedAppAuditRoute: typeof AuthenticatedAppAuditRoute
   ApiPublicHooksScanAlertsRoute: typeof ApiPublicHooksScanAlertsRoute
   ApiPublicWebhooksStripeRoute: typeof ApiPublicWebhooksStripeRoute
 }
@@ -670,6 +683,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAccidentsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_authenticated/app/audit': {
+      id: '/_authenticated/app/audit'
+      path: '/app/audit'
+      fullPath: '/app/audit'
+      preLoaderRoute: typeof AuthenticatedAppAuditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhooks/stripe': {
       id: '/api/public/webhooks/stripe'
       path: '/api/public/webhooks/stripe'
@@ -755,6 +775,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   DriverRoute: DriverRoute,
   PortalRoute: PortalRoute,
+  AuthenticatedAppAuditRoute: AuthenticatedAppAuditRoute,
   ApiPublicHooksScanAlertsRoute: ApiPublicHooksScanAlertsRoute,
   ApiPublicWebhooksStripeRoute: ApiPublicWebhooksStripeRoute,
 }
