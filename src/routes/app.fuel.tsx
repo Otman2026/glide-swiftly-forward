@@ -136,7 +136,8 @@ function FuelPage() {
         }
       />
 
-      <div className="mb-4 flex flex-wrap gap-3">
+      <div className="mb-4 flex flex-wrap gap-3 items-center">
+        <SearchInput value={q} onChange={setQ} placeholder="بحث بلوحة/سائق/محطة…" />
         <Select value={vehicleFilter} onValueChange={setVehicleFilter}>
           <SelectTrigger className="w-64"><SelectValue placeholder="فلترة حسب الشاحنة" /></SelectTrigger>
           <SelectContent>
