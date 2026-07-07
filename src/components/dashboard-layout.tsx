@@ -39,6 +39,7 @@ const NAV: NavGroup[] = [
     items: [
       { to: "/app", label: "الرئيسية", icon: LayoutDashboard },
       { to: "/app/kpi", label: "مؤشرات KPI", icon: BarChart3 },
+      { to: "/app/notifications", label: "الإشعارات", icon: Bell },
     ],
   },
   {
