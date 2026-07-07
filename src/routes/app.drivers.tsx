@@ -137,9 +137,21 @@ function DriversPage() {
         title="السائقون"
         subtitle="الملفات، الرخص، الشهادات، الحوادث، المخالفات والأداء"
         action={
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={onExport} className="gap-2"><Download className="h-4 w-4" /> تصدير</Button>
-            <Button variant="outline" onClick={onPrint} className="gap-2"><Printer className="h-4 w-4" /> طباعة</Button>
+          <div className="flex flex-wrap gap-2">
+            <ExportBar
+              filename="drivers"
+              title="السائقون"
+              rows={filtered}
+              columns={[
+                { key: "full_name", label: "الاسم" },
+                { key: "phone", label: "الهاتف" },
+                { key: "national_id", label: "الرقم الوطني" },
+                { key: "license_number", label: "رقم الرخصة" },
+                { key: "license_expiry", label: "انتهاء الرخصة" },
+                { key: "hire_date", label: "تاريخ التوظيف" },
+                { key: "status", label: "الحالة", format: (r) => STATUS_LABEL[r.status] ?? r.status },
+              ]}
+            />
             <Button onClick={openCreate} className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90"><Plus className="h-4 w-4" /> سائق جديد</Button>
           </div>
         }
