@@ -239,7 +239,15 @@ function AuthPage() {
               {mode === "signin" ? "أنشئ حساباً" : "سجّل الدخول"}
             </button>
           </div>
+
+          <div className="mt-4 text-center text-xs text-muted-foreground">
+            بمتابعة استخدامك فأنت توافق على{" "}
+            <Link to="/terms" className="font-semibold text-primary hover:underline">شروط الاستخدام</Link>
+            {" "}و{" "}
+            <Link to="/privacy" className="font-semibold text-primary hover:underline">سياسة الخصوصية</Link>
+          </div>
         </div>
+
       </div>
     </div>
   );
