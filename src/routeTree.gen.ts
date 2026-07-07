@@ -45,6 +45,7 @@ import { Route as AppCostCentersRouteImport } from './routes/app.cost-centers'
 import { Route as AppContractsRouteImport } from './routes/app.contracts'
 import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppAuditRouteImport } from './routes/app.audit'
+import { Route as AppArchiveRouteImport } from './routes/app.archive'
 import { Route as AppAccidentsRouteImport } from './routes/app.accidents'
 import { Route as ApiPublicWebhooksStripeRouteImport } from './routes/api.public.webhooks.stripe'
 import { Route as ApiPublicHooksScanAlertsRouteImport } from './routes/api.public.hooks.scan-alerts'
@@ -229,6 +230,11 @@ const AppAuditRoute = AppAuditRouteImport.update({
   path: '/audit',
   getParentRoute: () => AppRoute,
 } as any)
+const AppArchiveRoute = AppArchiveRouteImport.update({
+  id: '/archive',
+  path: '/archive',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAccidentsRoute = AppAccidentsRouteImport.update({
   id: '/accidents',
   path: '/accidents',
@@ -253,6 +259,7 @@ export interface FileRoutesByFullPath {
   '/driver': typeof DriverRoute
   '/portal': typeof PortalRoute
   '/app/accidents': typeof AppAccidentsRoute
+  '/app/archive': typeof AppArchiveRoute
   '/app/audit': typeof AppAuditRoute
   '/app/billing': typeof AppBillingRoute
   '/app/contracts': typeof AppContractsRoute
@@ -293,6 +300,7 @@ export interface FileRoutesByTo {
   '/driver': typeof DriverRoute
   '/portal': typeof PortalRoute
   '/app/accidents': typeof AppAccidentsRoute
+  '/app/archive': typeof AppArchiveRoute
   '/app/audit': typeof AppAuditRoute
   '/app/billing': typeof AppBillingRoute
   '/app/contracts': typeof AppContractsRoute
@@ -335,6 +343,7 @@ export interface FileRoutesById {
   '/driver': typeof DriverRoute
   '/portal': typeof PortalRoute
   '/app/accidents': typeof AppAccidentsRoute
+  '/app/archive': typeof AppArchiveRoute
   '/app/audit': typeof AppAuditRoute
   '/app/billing': typeof AppBillingRoute
   '/app/contracts': typeof AppContractsRoute
@@ -378,6 +387,7 @@ export interface FileRouteTypes {
     | '/driver'
     | '/portal'
     | '/app/accidents'
+    | '/app/archive'
     | '/app/audit'
     | '/app/billing'
     | '/app/contracts'
@@ -418,6 +428,7 @@ export interface FileRouteTypes {
     | '/driver'
     | '/portal'
     | '/app/accidents'
+    | '/app/archive'
     | '/app/audit'
     | '/app/billing'
     | '/app/contracts'
@@ -459,6 +470,7 @@ export interface FileRouteTypes {
     | '/driver'
     | '/portal'
     | '/app/accidents'
+    | '/app/archive'
     | '/app/audit'
     | '/app/billing'
     | '/app/contracts'
@@ -758,6 +770,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAuditRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/archive': {
+      id: '/app/archive'
+      path: '/archive'
+      fullPath: '/app/archive'
+      preLoaderRoute: typeof AppArchiveRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/accidents': {
       id: '/app/accidents'
       path: '/accidents'
@@ -784,6 +803,7 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppAccidentsRoute: typeof AppAccidentsRoute
+  AppArchiveRoute: typeof AppArchiveRoute
   AppAuditRoute: typeof AppAuditRoute
   AppBillingRoute: typeof AppBillingRoute
   AppContractsRoute: typeof AppContractsRoute
@@ -819,6 +839,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppAccidentsRoute: AppAccidentsRoute,
+  AppArchiveRoute: AppArchiveRoute,
   AppAuditRoute: AppAuditRoute,
   AppBillingRoute: AppBillingRoute,
   AppContractsRoute: AppContractsRoute,
