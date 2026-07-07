@@ -59,7 +59,7 @@ function UsersPage() {
 
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("id,full_name,email,customer_id,driver_id")
+      .select("id,full_name,email,customer_id,driver_id,disabled_at,disabled_reason")
       .eq("tenant_id", tid);
     const { data: roles } = await supabase
       .from("user_roles")
@@ -67,11 +67,11 @@ function UsersPage() {
       .eq("tenant_id", tid);
 
     const map = new Map<string, Member>();
-    (profiles ?? []).forEach(p => map.set(p.id, { user_id: p.id, full_name: p.full_name, email: p.email, customer_id: p.customer_id, driver_id: p.driver_id, roles: [] }));
+    (profiles ?? []).forEach((p: any) => map.set(p.id, { user_id: p.id, full_name: p.full_name, email: p.email, customer_id: p.customer_id, driver_id: p.driver_id, disabled_at: p.disabled_at, disabled_reason: p.disabled_reason, roles: [] }));
     (roles ?? []).forEach(r => {
       const m = map.get(r.user_id);
       if (m) m.roles.push(r.role);
-      else map.set(r.user_id, { user_id: r.user_id, full_name: null, email: null, customer_id: null, driver_id: null, roles: [r.role] });
+      else map.set(r.user_id, { user_id: r.user_id, full_name: null, email: null, customer_id: null, driver_id: null, disabled_at: null, disabled_reason: null, roles: [r.role] });
     });
     setRows(Array.from(map.values()));
     setLoading(false);
