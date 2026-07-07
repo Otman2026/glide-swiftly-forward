@@ -19,6 +19,7 @@ import { Route as AppWarehousesRouteImport } from './routes/app.warehouses'
 import { Route as AppVehiclesRouteImport } from './routes/app.vehicles'
 import { Route as AppUsersRouteImport } from './routes/app.users'
 import { Route as AppTripsRouteImport } from './routes/app.trips'
+import { Route as AppTrackingRouteImport } from './routes/app.tracking'
 import { Route as AppSystemOwnerRouteImport } from './routes/app.system-owner'
 import { Route as AppShipmentsRouteImport } from './routes/app.shipments'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
@@ -84,6 +85,11 @@ const AppUsersRoute = AppUsersRouteImport.update({
 const AppTripsRoute = AppTripsRouteImport.update({
   id: '/trips',
   path: '/trips',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTrackingRoute = AppTrackingRouteImport.update({
+  id: '/tracking',
+  path: '/tracking',
   getParentRoute: () => AppRoute,
 } as any)
 const AppSystemOwnerRoute = AppSystemOwnerRouteImport.update({
@@ -189,6 +195,7 @@ export interface FileRoutesByFullPath {
   '/app/settings': typeof AppSettingsRoute
   '/app/shipments': typeof AppShipmentsRoute
   '/app/system-owner': typeof AppSystemOwnerRoute
+  '/app/tracking': typeof AppTrackingRoute
   '/app/trips': typeof AppTripsRoute
   '/app/users': typeof AppUsersRoute
   '/app/vehicles': typeof AppVehiclesRoute
@@ -216,6 +223,7 @@ export interface FileRoutesByTo {
   '/app/settings': typeof AppSettingsRoute
   '/app/shipments': typeof AppShipmentsRoute
   '/app/system-owner': typeof AppSystemOwnerRoute
+  '/app/tracking': typeof AppTrackingRoute
   '/app/trips': typeof AppTripsRoute
   '/app/users': typeof AppUsersRoute
   '/app/vehicles': typeof AppVehiclesRoute
@@ -245,6 +253,7 @@ export interface FileRoutesById {
   '/app/settings': typeof AppSettingsRoute
   '/app/shipments': typeof AppShipmentsRoute
   '/app/system-owner': typeof AppSystemOwnerRoute
+  '/app/tracking': typeof AppTrackingRoute
   '/app/trips': typeof AppTripsRoute
   '/app/users': typeof AppUsersRoute
   '/app/vehicles': typeof AppVehiclesRoute
@@ -275,6 +284,7 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/app/shipments'
     | '/app/system-owner'
+    | '/app/tracking'
     | '/app/trips'
     | '/app/users'
     | '/app/vehicles'
@@ -302,6 +312,7 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/app/shipments'
     | '/app/system-owner'
+    | '/app/tracking'
     | '/app/trips'
     | '/app/users'
     | '/app/vehicles'
@@ -330,6 +341,7 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/app/shipments'
     | '/app/system-owner'
+    | '/app/tracking'
     | '/app/trips'
     | '/app/users'
     | '/app/vehicles'
@@ -415,6 +427,13 @@ declare module '@tanstack/react-router' {
       path: '/trips'
       fullPath: '/app/trips'
       preLoaderRoute: typeof AppTripsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/tracking': {
+      id: '/app/tracking'
+      path: '/tracking'
+      fullPath: '/app/tracking'
+      preLoaderRoute: typeof AppTrackingRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/system-owner': {
@@ -549,6 +568,7 @@ interface AppRouteChildren {
   AppSettingsRoute: typeof AppSettingsRoute
   AppShipmentsRoute: typeof AppShipmentsRoute
   AppSystemOwnerRoute: typeof AppSystemOwnerRoute
+  AppTrackingRoute: typeof AppTrackingRoute
   AppTripsRoute: typeof AppTripsRoute
   AppUsersRoute: typeof AppUsersRoute
   AppVehiclesRoute: typeof AppVehiclesRoute
@@ -573,6 +593,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppSettingsRoute: AppSettingsRoute,
   AppShipmentsRoute: AppShipmentsRoute,
   AppSystemOwnerRoute: AppSystemOwnerRoute,
+  AppTrackingRoute: AppTrackingRoute,
   AppTripsRoute: AppTripsRoute,
   AppUsersRoute: AppUsersRoute,
   AppVehiclesRoute: AppVehiclesRoute,

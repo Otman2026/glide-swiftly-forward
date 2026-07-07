@@ -128,9 +128,7 @@ function TrackingPage() {
                     </a>
                   )}
                 </div>
-                <ClientOnly fallback={<div className="flex h-96 items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-accent" /></div>}>
-                  {() => <TripMap locations={locations} />}
-                </ClientOnly>
+                <TripMap locations={locations} />
               </>
             )}
           </div>
