@@ -711,6 +711,76 @@ export type Database = {
           },
         ]
       }
+      inventory_items: {
+        Row: {
+          created_at: string
+          id: string
+          location_id: string | null
+          min_quantity: number | null
+          name: string
+          notes: string | null
+          quantity: number
+          sku: string
+          tenant_id: string
+          unit: string | null
+          unit_cost: number | null
+          updated_at: string
+          warehouse_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          location_id?: string | null
+          min_quantity?: number | null
+          name: string
+          notes?: string | null
+          quantity?: number
+          sku: string
+          tenant_id: string
+          unit?: string | null
+          unit_cost?: number | null
+          updated_at?: string
+          warehouse_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          location_id?: string | null
+          min_quantity?: number | null
+          name?: string
+          notes?: string | null
+          quantity?: number
+          sku?: string
+          tenant_id?: string
+          unit?: string | null
+          unit_cost?: number | null
+          updated_at?: string
+          warehouse_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_items_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "warehouse_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_items_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoice_items: {
         Row: {
           amount: number
@@ -1204,6 +1274,77 @@ export type Database = {
             columns: ["vehicle_id"]
             isOneToOne: false
             referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_movements: {
+        Row: {
+          created_at: string
+          from_warehouse_id: string | null
+          id: string
+          item_id: string
+          movement_type: string
+          notes: string | null
+          performed_by: string | null
+          quantity: number
+          reference: string | null
+          tenant_id: string
+          to_warehouse_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          from_warehouse_id?: string | null
+          id?: string
+          item_id: string
+          movement_type: string
+          notes?: string | null
+          performed_by?: string | null
+          quantity: number
+          reference?: string | null
+          tenant_id: string
+          to_warehouse_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          from_warehouse_id?: string | null
+          id?: string
+          item_id?: string
+          movement_type?: string
+          notes?: string | null
+          performed_by?: string | null
+          quantity?: number
+          reference?: string | null
+          tenant_id?: string
+          to_warehouse_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_from_warehouse_id_fkey"
+            columns: ["from_warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_to_warehouse_id_fkey"
+            columns: ["to_warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
             referencedColumns: ["id"]
           },
         ]
@@ -1792,6 +1933,60 @@ export type Database = {
             columns: ["vehicle_id"]
             isOneToOne: false
             referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      warehouse_locations: {
+        Row: {
+          capacity_m3: number | null
+          code: string
+          created_at: string
+          id: string
+          name: string | null
+          notes: string | null
+          tenant_id: string
+          updated_at: string
+          warehouse_id: string
+          zone: string | null
+        }
+        Insert: {
+          capacity_m3?: number | null
+          code: string
+          created_at?: string
+          id?: string
+          name?: string | null
+          notes?: string | null
+          tenant_id: string
+          updated_at?: string
+          warehouse_id: string
+          zone?: string | null
+        }
+        Update: {
+          capacity_m3?: number | null
+          code?: string
+          created_at?: string
+          id?: string
+          name?: string | null
+          notes?: string | null
+          tenant_id?: string
+          updated_at?: string
+          warehouse_id?: string
+          zone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "warehouse_locations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "warehouse_locations_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
             referencedColumns: ["id"]
           },
         ]
