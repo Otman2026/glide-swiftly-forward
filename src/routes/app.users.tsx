@@ -53,7 +53,7 @@ function UsersPage() {
 
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("id,full_name,email")
+      .select("id,full_name,email,customer_id,driver_id")
       .eq("tenant_id", tid);
     const { data: roles } = await supabase
       .from("user_roles")
@@ -61,11 +61,11 @@ function UsersPage() {
       .eq("tenant_id", tid);
 
     const map = new Map<string, Member>();
-    (profiles ?? []).forEach(p => map.set(p.id, { user_id: p.id, full_name: p.full_name, email: p.email, roles: [] }));
+    (profiles ?? []).forEach(p => map.set(p.id, { user_id: p.id, full_name: p.full_name, email: p.email, customer_id: p.customer_id, driver_id: p.driver_id, roles: [] }));
     (roles ?? []).forEach(r => {
       const m = map.get(r.user_id);
       if (m) m.roles.push(r.role);
-      else map.set(r.user_id, { user_id: r.user_id, full_name: null, email: null, roles: [r.role] });
+      else map.set(r.user_id, { user_id: r.user_id, full_name: null, email: null, customer_id: null, driver_id: null, roles: [r.role] });
     });
     setRows(Array.from(map.values()));
     setLoading(false);
