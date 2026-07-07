@@ -97,6 +97,7 @@ const NAV: NavGroup[] = [
     items: [
       { to: "/app/settings", label: "الإعدادات", icon: Settings },
       { to: "/app/users", label: "المستخدمون والصلاحيات", icon: Shield },
+      { to: "/app/audit", label: "سجل التدقيق", icon: FileText },
     ],
   },
   {
