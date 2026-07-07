@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { SearchInput, matchQuery } from "@/components/search-input";
 
 export const Route = createFileRoute("/app/documents")({
   component: DocumentsPage,
@@ -43,6 +44,7 @@ function DocumentsPage() {
   const [rows, setRows] = useState<Doc[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("");
+  const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -111,7 +113,8 @@ function DocumentsPage() {
     else { toast.success("تم الحذف"); load(); }
   };
 
-  const filtered = filter === "ALL" || !filter ? rows : rows.filter(r => r.doc_type === filter);
+  const byType = filter === "ALL" || !filter ? rows : rows.filter(r => r.doc_type === filter);
+  const filtered = matchQuery(byType, q, ["title", "reference_number"]);
   const now = new Date();
   const expiringSoon = rows.filter(r => r.expiry_date && new Date(r.expiry_date) < new Date(now.getTime() + 30 * 86400000));
 
@@ -166,6 +169,7 @@ function DocumentsPage() {
         </div>
       )}
 
+      <div className="mb-3"><SearchInput value={q} onChange={setQ} placeholder="ابحث بالعنوان أو المرجع…" /></div>
       <div className="mb-4 flex flex-wrap gap-2">
         <button onClick={() => setFilter("ALL")} className={`rounded-full px-4 py-2 text-xs font-semibold transition ${!filter || filter === "ALL" ? "bg-accent text-accent-foreground" : "bg-secondary text-muted-foreground hover:bg-secondary/70"}`}>الكل ({rows.length})</button>
         {DOC_TYPES.map(t => (

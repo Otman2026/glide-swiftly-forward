@@ -15,6 +15,7 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ExportBar } from "@/components/export-bar";
+import { SearchInput, matchQuery } from "@/components/search-input";
 
 export const Route = createFileRoute("/app/inventory")({
   component: InventoryPage,
@@ -135,10 +136,12 @@ function ItemsTab({
 }) {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [q, setQ] = useState("");
   const [form, setForm] = useState({
     warehouse_id: "", location_id: "", sku: "", name: "",
     unit: "pcs", quantity: "0", min_quantity: "0", unit_cost: "0",
   });
+  const filtered = useMemo(() => matchQuery(items, q, ["sku", "name"]), [items, q]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -173,11 +176,13 @@ function ItemsTab({
 
   return (
     <>
-      <div className="mb-3 flex flex-wrap gap-2 justify-end">
+      <div className="mb-3 flex flex-wrap items-center gap-2 justify-between">
+        <SearchInput value={q} onChange={setQ} placeholder="ابحث بالرمز أو الاسم…" />
+        <div className="flex flex-wrap gap-2">
         <ExportBar
           filename="inventory-items"
           title="جرد المخزون"
-          rows={items}
+          rows={filtered}
           columns={[
             { key: "sku", label: "SKU" },
             { key: "name", label: "الاسم" },
@@ -228,9 +233,10 @@ function ItemsTab({
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
-      {items.length === 0 ? (
+      {filtered.length === 0 ? (
         <EmptyState icon={Package} title="لا توجد أصناف بعد" description="أضف صنفاً جديداً للبدء." />
       ) : (
         <div className="rounded-2xl border border-border bg-card overflow-x-auto">
@@ -247,7 +253,7 @@ function ItemsTab({
               </tr>
             </thead>
             <tbody>
-              {items.map((i) => {
+              {filtered.map((i) => {
                 const low = Number(i.quantity) <= Number(i.min_quantity ?? 0);
                 return (
                   <tr key={i.id} className="border-t border-border hover:bg-secondary/30">

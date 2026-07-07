@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { exportToCSV } from "@/lib/csv";
 import { printHTML, esc } from "@/lib/print";
+import { SearchInput, matchQuery } from "@/components/search-input";
 
 export const Route = createFileRoute("/app/hr")({
   component: HRPage,
@@ -117,7 +118,9 @@ function Stat({ label, value }: { label: string; value: string | number }) {
 function EmployeesTab({ employees, tenantId, onChange }: { employees: Employee[]; tenantId: string | null; onChange: () => void }) {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [q, setQ] = useState("");
   const [form, setForm] = useState({ full_name: "", employee_code: "", position: "", department: "", phone: "", email: "", hire_date: "", base_salary: "" });
+  const filtered = useMemo(() => matchQuery(employees, q, ["full_name", "employee_code", "position", "department"]), [employees, q]);
 
   const onCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -152,7 +155,8 @@ function EmployeesTab({ employees, tenantId, onChange }: { employees: Employee[]
   return (
     <>
       <div className="mb-3 flex justify-between gap-2">
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <SearchInput value={q} onChange={setQ} placeholder="ابحث بالاسم أو الرقم أو القسم…" />
           <Button variant="outline" onClick={onExport} className="gap-2"><Download className="h-4 w-4" /> CSV</Button>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
@@ -177,7 +181,7 @@ function EmployeesTab({ employees, tenantId, onChange }: { employees: Employee[]
           </DialogContent>
         </Dialog>
       </div>
-      {employees.length === 0 ? (
+      {filtered.length === 0 ? (
         <EmptyState icon={UserCog} title="لا يوجد موظفون" description="ابدأ بإضافة أول موظف." />
       ) : (
         <div className="rounded-2xl border border-border bg-card overflow-x-auto">
@@ -191,7 +195,7 @@ function EmployeesTab({ employees, tenantId, onChange }: { employees: Employee[]
               </tr>
             </thead>
             <tbody>
-              {employees.map((e) => (
+              {filtered.map((e) => (
                 <tr key={e.id} className="border-t border-border hover:bg-secondary/30">
                   <td className="p-3 font-mono text-xs">{e.employee_code ?? "—"}</td>
                   <td className="p-3 font-semibold">{e.full_name}</td>

@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { exportToCSV } from "@/lib/csv";
 import { printHTML, esc } from "@/lib/print";
+import { SearchInput, matchQuery } from "@/components/search-input";
 
 export const Route = createFileRoute("/app/violations")({ component: ViolationsPage });
 
@@ -53,6 +54,7 @@ function ViolationsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [q, setQ] = useState("");
 
   const load = async () => {
     setLoading(true);
@@ -116,7 +118,15 @@ function ViolationsPage() {
     if (error) toast.error(error.message); else { toast.success("تم الحذف"); load(); }
   };
 
-  const filtered = useMemo(() => rows.filter((r) => statusFilter === "all" || r.status === statusFilter), [rows, statusFilter]);
+  const filtered = useMemo(() => {
+    const base = rows.filter((r) => statusFilter === "all" || r.status === statusFilter);
+    const s = q.trim().toLowerCase();
+    if (!s) return base;
+    return base.filter((r) =>
+      [r.violation_type, r.location, r.reference_number, r.drivers?.full_name, r.vehicles?.plate_number]
+        .some((v) => String(v ?? "").toLowerCase().includes(s))
+    );
+  }, [rows, statusFilter, q]);
   const counts = {
     total: rows.length,
     pending: rows.filter((r) => r.status === "pending").length,
@@ -165,7 +175,7 @@ function ViolationsPage() {
         <Card label="إجمالي الغرامات" value={`${counts.fines.toFixed(0)} MAD`} tone="destructive" />
       </div>
 
-      <div className="mb-4">
+      <div className="mb-4 flex flex-wrap items-center gap-2">
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
           <SelectContent>
@@ -173,6 +183,7 @@ function ViolationsPage() {
             {Object.entries(STAT).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}
           </SelectContent>
         </Select>
+        <SearchInput value={q} onChange={setQ} placeholder="ابحث بالنوع أو المرجع أو السائق…" />
       </div>
 
       {loading ? (
