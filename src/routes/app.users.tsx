@@ -257,6 +257,20 @@ function UsersPage() {
                         <Button size="sm" variant="outline" onClick={() => openLink(m)}>ربط</Button>
                         <Button
                           size="sm"
+                          variant="outline"
+                          onClick={async () => {
+                            try {
+                              const r = await sendPasswordReset({ data: { targetUserId: m.user_id } });
+                              toast.success(`تم إرسال رابط إعادة التعيين إلى ${r.email}`);
+                            } catch (e) {
+                              toast.error((e as Error).message);
+                            }
+                          }}
+                        >
+                          <KeyRound className="h-3 w-3" /> كلمة المرور
+                        </Button>
+                        <Button
+                          size="sm"
                           variant={disabled ? "default" : "outline"}
                           onClick={() => toggleDisabled(m)}
                           className={disabled ? "bg-success text-success-foreground hover:bg-success/90" : "text-destructive hover:bg-destructive/10"}
