@@ -164,8 +164,24 @@ function TripsPage() {
     <>
       <PageHeader title="إدارة الرحلات" subtitle="بدء، إنهاء، عرض المسار، وطباعة التقارير"
         action={
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={onExport} className="gap-2"><Download className="h-4 w-4" /> CSV</Button>
+          <div className="flex flex-wrap gap-2">
+            <ExportBar
+              filename="trips"
+              title="الرحلات"
+              rows={filtered}
+              columns={[
+                { key: "trip_number", label: "رقم الرحلة" },
+                { key: "origin", label: "من" },
+                { key: "destination", label: "إلى" },
+                { key: "distance_km", label: "المسافة (كم)" },
+                { key: "revenue", label: "الإيراد" },
+                { key: "cost", label: "التكلفة" },
+                { key: "status", label: "الحالة", format: (r) => STATUS_LABEL[r.status] ?? r.status },
+                { key: "vehicles", label: "المركبة", format: (r) => r.vehicles?.plate_number ?? "" },
+                { key: "drivers", label: "السائق", format: (r) => r.drivers?.full_name ?? "" },
+                { key: "customers", label: "العميل", format: (r) => r.customers?.name ?? "" },
+              ]}
+            />
             <Button onClick={() => setOpen(true)} className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
               <Plus className="h-4 w-4" /> رحلة جديدة
             </Button>
