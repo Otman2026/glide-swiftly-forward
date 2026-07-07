@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { DocumentsDialog } from "@/components/documents-dialog";
 import { exportToCSV } from "@/lib/csv";
 import { printHTML, esc } from "@/lib/print";
+import { ExportBar } from "@/components/export-bar";
 
 export const Route = createFileRoute("/app/drivers")({ component: DriversPage });
 
