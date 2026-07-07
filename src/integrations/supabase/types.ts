@@ -722,6 +722,8 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          customer_id: string | null
+          driver_id: string | null
           email: string | null
           full_name: string | null
           id: string
@@ -732,6 +734,8 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          customer_id?: string | null
+          driver_id?: string | null
           email?: string | null
           full_name?: string | null
           id: string
@@ -742,6 +746,8 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          customer_id?: string | null
+          driver_id?: string | null
           email?: string | null
           full_name?: string | null
           id?: string
@@ -750,6 +756,20 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "profiles_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "profiles_tenant_id_fkey"
             columns: ["tenant_id"]
@@ -1278,6 +1298,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_user_customer: { Args: { _user_id: string }; Returns: string }
+      get_user_driver: { Args: { _user_id: string }; Returns: string }
       get_user_tenant: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
