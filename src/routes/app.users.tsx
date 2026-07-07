@@ -50,6 +50,15 @@ function UsersPage() {
   const [drivers, setDrivers] = useState<{ id: string; full_name: string }[]>([]);
   const [linking, setLinking] = useState<Member | null>(null);
   const [linkForm, setLinkForm] = useState({ customer_id: "", driver_id: "" });
+  const [q, setQ] = useState("");
+
+  const filtered = useMemo(() => {
+    const s = q.trim().toLowerCase();
+    if (!s) return rows;
+    return rows.filter((m) =>
+      [m.full_name, m.email, ...m.roles].some((v) => String(v ?? "").toLowerCase().includes(s)),
+    );
+  }, [rows, q]);
 
   const load = async () => {
     setLoading(true);
