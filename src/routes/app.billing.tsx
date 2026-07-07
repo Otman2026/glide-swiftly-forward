@@ -254,7 +254,7 @@ function BillingPage() {
             </div>
           </div>
           <div className="mt-4 grid gap-2 text-sm">
-            <Metric label="الحالة" value={STATUS_LABEL[subscription?.status ?? "active"] ?? subscription?.status ?? "نشط"} />
+            <Metric label="الحالة" value={subscription?.status ? STATUS_LABEL[subscription.status] : "نشط"} />
             <Metric label="المستخدمون" value={subscription?.max_users?.toLocaleString("ar") ?? "—"} />
             <Metric label="المركبات" value={subscription?.max_vehicles?.toLocaleString("ar") ?? "—"} />
           </div>
