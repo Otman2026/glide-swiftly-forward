@@ -105,7 +105,7 @@ function Customer360Page() {
       <Section title="الرحلات" icon={Truck} items={trips} render={(t) => (
         <>
           <td className="p-3 font-mono text-xs">{t.trip_number ?? t.id.slice(0, 8)}</td>
-          <td className="p-3">{t.started_at ? new Date(t.started_at).toLocaleDateString("ar") : "—"}</td>
+          <td className="p-3">{t.start_date ? new Date(t.start_date).toLocaleDateString("ar") : "—"}</td>
           <td className="p-3">{Number(t.revenue || 0).toLocaleString()}</td>
           <td className="p-3">{t.status}</td>
         </>
