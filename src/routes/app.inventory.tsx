@@ -253,7 +253,7 @@ function ItemsTab({
               </tr>
             </thead>
             <tbody>
-              {items.map((i) => {
+              {filtered.map((i) => {
                 const low = Number(i.quantity) <= Number(i.min_quantity ?? 0);
                 return (
                   <tr key={i.id} className="border-t border-border hover:bg-secondary/30">
