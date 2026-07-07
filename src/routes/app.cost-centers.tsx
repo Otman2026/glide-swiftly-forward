@@ -98,8 +98,8 @@ function CostCentersPage() {
 
   return (
     <>
-      <PageHeader title="مراكز التكلفة" description="إدارة مراكز التكلفة وربطها بالمصاريف والرحلات والمركبات."
-        actions={<Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90" onClick={() => { setEditId(null); setForm(empty); setOpen(true); }}>
+      <PageHeader title="مراكز التكلفة" subtitle="إدارة مراكز التكلفة وربطها بالمصاريف والرحلات والمركبات."
+        action={<Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90" onClick={() => { setEditId(null); setForm(empty); setOpen(true); }}>
           <Plus className="h-4 w-4" /> مركز جديد</Button>} />
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
