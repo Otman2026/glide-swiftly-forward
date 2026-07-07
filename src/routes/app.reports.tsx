@@ -101,7 +101,13 @@ function ReportsPage() {
       supabase.from("customers").select("id,name"),
       supabase.from("drivers").select("id,full_name"),
       supabase.from("trips").select("id,vehicle_id,driver_id,distance_km,created_at").gte("created_at", fromIso).lte("created_at", toIso),
-    ]);
+      supabase.from("invoices").select("id,invoice_number,customer_id,issue_date,total_amount,status").gte("issue_date", from).lte("issue_date", to),
+    ] as const).then(async (p) => {
+      const [ord,exp,fu,mnt,inc,veh,cus,drv,tr,inv] = p as any[];
+      setInvoices(inv.data ?? []);
+      return [ord,exp,fu,mnt,inc,veh,cus,drv,tr];
+    }).then((r)=>r);
+    const [orders2, expenses2, fuel2, maintenance2, incidents2, vehicles2, customers2, drivers2, trips2] = [orders,expenses,fuel,maintenance,incidents,vehicles,customers,drivers,trips];
     setData({
       orders: orders.data ?? [],
       expenses: expenses.data ?? [],
