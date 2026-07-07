@@ -49,10 +49,10 @@ function CostCentersPage() {
   };
   useEffect(() => { load(); }, []);
 
-  const filtered = useMemo(() => rows.filter((r) => {
-    if (showArchived ? !r.archived_at : !!r.archived_at) return false;
-    return matchQuery(q, [r.code, r.name, r.description]);
-  }), [rows, q, showArchived]);
+  const filtered = useMemo(() => {
+    const base = rows.filter((r) => (showArchived ? !!r.archived_at : !r.archived_at));
+    return matchQuery(base, q, ["code", "name", "description"]);
+  }, [rows, q, showArchived]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
