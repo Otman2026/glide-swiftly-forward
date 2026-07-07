@@ -190,7 +190,24 @@ function ReportsPage() {
       .filter((r) => Number(r["عدد الرحلات"]) > 0 || Number(r["الحوادث"]) > 0);
   }, [data]);
 
-  const rows = tab === "vehicle" ? byVehicle : tab === "customer" ? byCustomer : tab === "driver" ? byDriver : [];
+  const statement = useMemo<Row[]>(() => {
+    if (!data) return [];
+    return data.customers.map((c) => {
+      const inv = invoices.filter((i) => i.customer_id === c.id);
+      const invoiced = sum(inv, "total_amount");
+      const paid = sum(inv.filter((i) => i.status === "paid"), "total_amount");
+      return {
+        "العميل": c.name,
+        "عدد الفواتير": inv.length,
+        "إجمالي (MAD)": invoiced.toFixed(2),
+        "مدفوع (MAD)": paid.toFixed(2),
+        "مستحق (MAD)": (invoiced - paid).toFixed(2),
+      };
+    }).filter((r) => Number(r["عدد الفواتير"]) > 0)
+      .sort((a, b) => Number(b["مستحق (MAD)"]) - Number(a["مستحق (MAD)"]));
+  }, [data, invoices]);
+
+  const rows = tab === "vehicle" ? byVehicle : tab === "customer" ? byCustomer : tab === "driver" ? byDriver : tab === "statement" ? statement : [];
 
   return (
     <>
