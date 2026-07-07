@@ -23,6 +23,7 @@ import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppOrdersRouteImport } from './routes/app.orders'
 import { Route as AppMaintenanceRouteImport } from './routes/app.maintenance'
 import { Route as AppKpiRouteImport } from './routes/app.kpi'
+import { Route as AppInvoicesRouteImport } from './routes/app.invoices'
 import { Route as AppFuelRouteImport } from './routes/app.fuel'
 import { Route as AppFinanceRouteImport } from './routes/app.finance'
 import { Route as AppDriversRouteImport } from './routes/app.drivers'
@@ -101,6 +102,11 @@ const AppKpiRoute = AppKpiRouteImport.update({
   path: '/kpi',
   getParentRoute: () => AppRoute,
 } as any)
+const AppInvoicesRoute = AppInvoicesRouteImport.update({
+  id: '/invoices',
+  path: '/invoices',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppFuelRoute = AppFuelRouteImport.update({
   id: '/fuel',
   path: '/fuel',
@@ -148,6 +154,7 @@ export interface FileRoutesByFullPath {
   '/app/drivers': typeof AppDriversRoute
   '/app/finance': typeof AppFinanceRoute
   '/app/fuel': typeof AppFuelRoute
+  '/app/invoices': typeof AppInvoicesRoute
   '/app/kpi': typeof AppKpiRoute
   '/app/maintenance': typeof AppMaintenanceRoute
   '/app/orders': typeof AppOrdersRoute
@@ -170,6 +177,7 @@ export interface FileRoutesByTo {
   '/app/drivers': typeof AppDriversRoute
   '/app/finance': typeof AppFinanceRoute
   '/app/fuel': typeof AppFuelRoute
+  '/app/invoices': typeof AppInvoicesRoute
   '/app/kpi': typeof AppKpiRoute
   '/app/maintenance': typeof AppMaintenanceRoute
   '/app/orders': typeof AppOrdersRoute
@@ -194,6 +202,7 @@ export interface FileRoutesById {
   '/app/drivers': typeof AppDriversRoute
   '/app/finance': typeof AppFinanceRoute
   '/app/fuel': typeof AppFuelRoute
+  '/app/invoices': typeof AppInvoicesRoute
   '/app/kpi': typeof AppKpiRoute
   '/app/maintenance': typeof AppMaintenanceRoute
   '/app/orders': typeof AppOrdersRoute
@@ -219,6 +228,7 @@ export interface FileRouteTypes {
     | '/app/drivers'
     | '/app/finance'
     | '/app/fuel'
+    | '/app/invoices'
     | '/app/kpi'
     | '/app/maintenance'
     | '/app/orders'
@@ -241,6 +251,7 @@ export interface FileRouteTypes {
     | '/app/drivers'
     | '/app/finance'
     | '/app/fuel'
+    | '/app/invoices'
     | '/app/kpi'
     | '/app/maintenance'
     | '/app/orders'
@@ -264,6 +275,7 @@ export interface FileRouteTypes {
     | '/app/drivers'
     | '/app/finance'
     | '/app/fuel'
+    | '/app/invoices'
     | '/app/kpi'
     | '/app/maintenance'
     | '/app/orders'
@@ -383,6 +395,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppKpiRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/invoices': {
+      id: '/app/invoices'
+      path: '/invoices'
+      fullPath: '/app/invoices'
+      preLoaderRoute: typeof AppInvoicesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/fuel': {
       id: '/app/fuel'
       path: '/fuel'
@@ -443,6 +462,7 @@ interface AppRouteChildren {
   AppDriversRoute: typeof AppDriversRoute
   AppFinanceRoute: typeof AppFinanceRoute
   AppFuelRoute: typeof AppFuelRoute
+  AppInvoicesRoute: typeof AppInvoicesRoute
   AppKpiRoute: typeof AppKpiRoute
   AppMaintenanceRoute: typeof AppMaintenanceRoute
   AppOrdersRoute: typeof AppOrdersRoute
@@ -464,6 +484,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDriversRoute: AppDriversRoute,
   AppFinanceRoute: AppFinanceRoute,
   AppFuelRoute: AppFuelRoute,
+  AppInvoicesRoute: AppInvoicesRoute,
   AppKpiRoute: AppKpiRoute,
   AppMaintenanceRoute: AppMaintenanceRoute,
   AppOrdersRoute: AppOrdersRoute,
