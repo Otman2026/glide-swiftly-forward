@@ -77,7 +77,7 @@ function KpiPage() {
         customers: c.count ?? 0,
         orders: o.count ?? 0,
         ordersDelivered: (od.data ?? []).length,
-        revenue: sum(rev.data, "total_amount"),
+        revenue: sum(rev.data, "price"),
         expenses: sum(exp.data, "amount"),
         fuelLiters: sum(fuel.data, "liters"),
         fuelCost: sum(fuel.data, "cost"),
