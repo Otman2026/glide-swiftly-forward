@@ -29,6 +29,7 @@ import {
   X,
   Home,
   MapPin,
+  CreditCard,
   type LucideIcon,
 } from "lucide-react";
 
@@ -79,6 +80,7 @@ const NAV: NavGroup[] = [
       { to: "/app/documents", label: "الوثائق", icon: FolderArchive },
       { to: "/app/invoices", label: "الفواتير", icon: FileText },
       { to: "/app/finance", label: "المالية", icon: Wallet },
+      { to: "/app/billing", label: "الاشتراكات والدفع", icon: CreditCard },
     ],
   },
   {
@@ -94,14 +96,30 @@ const NAV: NavGroup[] = [
   },
 ];
 
+const PLAN_LABELS: Record<string, string> = {
+  trial: "تجربة",
+  starter: "Starter",
+  professional: "Professional",
+  enterprise: "Enterprise",
+};
+
 export function DashboardLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unread, setUnread] = useState(0);
-  const [me, setMe] = useState<{ full_name: string | null; tenant_name: string | null }>({
+  const [me, setMe] = useState<{
+    full_name: string | null;
+    tenant_name: string | null;
+    plan: string | null;
+    status: string | null;
+    ends_at: string | null;
+  }>({
     full_name: null,
     tenant_name: null,
+    plan: null,
+    status: null,
+    ends_at: null,
   });
 
   useEffect(() => {
@@ -111,15 +129,30 @@ export function DashboardLayout() {
         .select("full_name, tenant_id")
         .maybeSingle();
       let tenant_name: string | null = null;
+      let subscription: { plan: string | null; status: string | null; ends_at: string | null } = {
+        plan: null,
+        status: null,
+        ends_at: null,
+      };
       if (profile?.tenant_id) {
-        const { data: t } = await supabase
-          .from("tenants")
-          .select("name")
-          .eq("id", profile.tenant_id)
-          .maybeSingle();
+        const [{ data: t }, { data: sub }] = await Promise.all([
+          supabase.from("tenants").select("name").eq("id", profile.tenant_id).maybeSingle(),
+          supabase
+            .from("subscriptions")
+            .select("plan,status,ends_at")
+            .eq("tenant_id", profile.tenant_id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+        ]);
         tenant_name = t?.name ?? null;
+        subscription = {
+          plan: sub?.plan ?? null,
+          status: sub?.status ?? null,
+          ends_at: sub?.ends_at ?? null,
+        };
       }
-      setMe({ full_name: profile?.full_name ?? null, tenant_name });
+      setMe({ full_name: profile?.full_name ?? null, tenant_name, ...subscription });
     })();
   }, []);
 
@@ -145,6 +178,15 @@ export function DashboardLayout() {
     toast.success("تم تسجيل الخروج");
     navigate({ to: "/auth" });
   };
+
+  const remainingTrialDays = me.ends_at
+    ? Math.max(0, Math.ceil((new Date(me.ends_at).getTime() - Date.now()) / 86_400_000))
+    : null;
+  const subscriptionLabel = me.plan
+    ? me.plan === "trial" && remainingTrialDays !== null
+      ? `تجربة — ${remainingTrialDays} يوم متبقي`
+      : `${PLAN_LABELS[me.plan] ?? me.plan} — ${me.status ?? "active"}`
+    : null;
 
 
   return (
@@ -266,10 +308,15 @@ export function DashboardLayout() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <div className="hidden items-center gap-2 rounded-full bg-success/10 px-3 py-1 sm:flex">
-              <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
-              <span className="text-xs font-semibold text-success">تجربة — 13 يوم متبقي</span>
-            </div>
+            {subscriptionLabel && (
+              <Link
+                to="/app/billing"
+                className="hidden items-center gap-2 rounded-full bg-success/10 px-3 py-1 hover:bg-success/15 sm:flex"
+              >
+                <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
+                <span className="text-xs font-semibold text-success">{subscriptionLabel}</span>
+              </Link>
+            )}
             <Link
               to="/app/notifications"
               className="relative flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-background hover:bg-secondary"

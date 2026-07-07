@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/dashboard-layout";
-import { Crown, Building2, Key, Rocket, ShieldCheck, Users2, Loader2 } from "lucide-react";
+import { Check, Clock, Crown, Building2, Key, Rocket, ShieldCheck, Users2, Loader2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/system-owner")({
   component: SystemOwnerPage,
@@ -15,29 +16,130 @@ type Tenant = {
   status: string;
   contact_email: string | null;
   created_at: string;
-  subscriptions?: { plan: string; status: string; ends_at: string | null }[];
+  subscriptions?: { id: string; plan: PlanKey; status: string; ends_at: string | null }[];
+};
+
+type PlanKey = "trial" | "starter" | "professional" | "enterprise";
+type BillingCycle = "monthly" | "yearly";
+
+type BillingRequest = {
+  id: string;
+  tenant_id: string;
+  current_plan: PlanKey;
+  requested_plan: PlanKey;
+  billing_cycle: BillingCycle;
+  status: string;
+  notes: string | null;
+  created_at: string;
+  tenants?: { name: string; contact_email: string | null } | null;
+};
+
+const PLAN_LIMITS: Record<PlanKey, { users: number | null; vehicles: number | null; price: number | null }> = {
+  trial: { users: 5, vehicles: 10, price: 0 },
+  starter: { users: 10, vehicles: 20, price: 490 },
+  professional: { users: 35, vehicles: 80, price: 990 },
+  enterprise: { users: null, vehicles: null, price: null },
+};
+
+const PLAN_LABEL: Record<PlanKey, string> = {
+  trial: "Trial",
+  starter: "Starter",
+  professional: "Professional",
+  enterprise: "Enterprise",
 };
 
 function SystemOwnerPage() {
   const [tenants, setTenants] = useState<Tenant[]>([]);
+  const [billingRequests, setBillingRequests] = useState<BillingRequest[]>([]);
   const [userCount, setUserCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [processingId, setProcessingId] = useState<string | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    const [{ data: t }, { count }, { data: requests }] = await Promise.all([
+      supabase
+        .from("tenants")
+        .select("id,name,slug,status,contact_email,created_at,subscriptions(id,plan,status,ends_at)")
+        .order("created_at", { ascending: false }),
+      supabase.from("profiles").select("id", { count: "exact", head: true }),
+      supabase
+        .from("billing_requests")
+        .select("id,tenant_id,current_plan,requested_plan,billing_cycle,status,notes,created_at,tenants(name,contact_email)")
+        .order("created_at", { ascending: false })
+        .limit(50),
+    ]);
+    setTenants((t as unknown as Tenant[]) ?? []);
+    setBillingRequests((requests as unknown as BillingRequest[]) ?? []);
+    setUserCount(count ?? 0);
+    setLoading(false);
+  };
 
   useEffect(() => {
-    (async () => {
-      const [{ data: t }, { count }] = await Promise.all([
-        supabase.from("tenants").select("id,name,slug,status,contact_email,created_at,subscriptions(plan,status,ends_at)").order("created_at", { ascending: false }),
-        supabase.from("profiles").select("id", { count: "exact", head: true }),
-      ]);
-      setTenants((t as any) ?? []);
-      setUserCount(count ?? 0);
-      setLoading(false);
-    })();
+    load();
   }, []);
+
+  const changeRequestStatus = async (request: BillingRequest, status: "approved" | "rejected") => {
+    setProcessingId(request.id);
+
+    try {
+      if (status === "approved") {
+        const limits = PLAN_LIMITS[request.requested_plan];
+        const now = new Date();
+        const endsAt = new Date(now);
+        if (request.billing_cycle === "yearly") endsAt.setFullYear(endsAt.getFullYear() + 1);
+        else endsAt.setMonth(endsAt.getMonth() + 1);
+
+        const { data: existing, error: existingError } = await supabase
+          .from("subscriptions")
+          .select("id")
+          .eq("tenant_id", request.tenant_id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (existingError) throw existingError;
+
+        const subscriptionPayload = {
+          plan: request.requested_plan,
+          status: "active",
+          starts_at: now.toISOString(),
+          ends_at: endsAt.toISOString(),
+          max_users: limits.users,
+          max_vehicles: limits.vehicles,
+          price_monthly: limits.price,
+        };
+
+        const subscriptionResult = existing?.id
+          ? await supabase.from("subscriptions").update(subscriptionPayload).eq("id", existing.id)
+          : await supabase.from("subscriptions").insert({ tenant_id: request.tenant_id, ...subscriptionPayload });
+
+        if (subscriptionResult.error) throw subscriptionResult.error;
+
+        const { error: tenantError } = await supabase
+          .from("tenants")
+          .update({ status: request.requested_plan === "trial" ? "trial" : "active" })
+          .eq("id", request.tenant_id);
+
+        if (tenantError) throw tenantError;
+      }
+
+      const { error } = await supabase.from("billing_requests").update({ status }).eq("id", request.id);
+      if (error) throw error;
+
+      toast.success(status === "approved" ? "تم تفعيل الاشتراك" : "تم رفض الطلب");
+      await load();
+    } catch (error: any) {
+      toast.error(error?.message ?? "تعذر تحديث طلب الاشتراك");
+    } finally {
+      setProcessingId(null);
+    }
+  };
 
   const active = tenants.filter((t) => t.status === "active").length;
   const trial = tenants.filter((t) => t.status === "trial").length;
   const licenses = tenants.filter((t) => (t.subscriptions?.[0]?.status ?? "") === "active").length;
+  const pendingBilling = billingRequests.filter((request) => request.status === "pending").length;
 
   return (
     <>
@@ -69,6 +171,79 @@ function SystemOwnerPage() {
             <div className="text-xs text-muted-foreground">{s.label}</div>
           </div>
         ))}
+      </div>
+
+      <div className="mt-6 rounded-2xl border border-border bg-card">
+        <div className="flex items-center justify-between gap-3 border-b border-border p-6">
+          <div>
+            <h3 className="font-bold text-foreground">طلبات الاشتراك والدفع</h3>
+            <p className="text-xs text-muted-foreground">{pendingBilling} طلب قيد المراجعة</p>
+          </div>
+          <Clock className="h-5 w-5 text-accent" />
+        </div>
+        {loading ? (
+          <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-accent" /></div>
+        ) : billingRequests.length === 0 ? (
+          <div className="p-8 text-center text-sm text-muted-foreground">لا توجد طلبات اشتراك بعد.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-secondary/50 text-xs uppercase text-muted-foreground">
+                <tr>
+                  <th className="p-4 text-right font-semibold">الشركة</th>
+                  <th className="p-4 text-right font-semibold">من</th>
+                  <th className="p-4 text-right font-semibold">إلى</th>
+                  <th className="p-4 text-right font-semibold">الدورة</th>
+                  <th className="p-4 text-right font-semibold">الحالة</th>
+                  <th className="p-4 text-right font-semibold">إجراء</th>
+                </tr>
+              </thead>
+              <tbody>
+                {billingRequests.map((request) => (
+                  <tr key={request.id} className="border-t border-border hover:bg-secondary/30">
+                    <td className="p-4">
+                      <div className="font-semibold">{request.tenants?.name ?? "—"}</div>
+                      <div className="text-xs text-muted-foreground" dir="ltr">{request.tenants?.contact_email ?? ""}</div>
+                    </td>
+                    <td className="p-4 font-semibold">{PLAN_LABEL[request.current_plan]}</td>
+                    <td className="p-4 font-semibold text-primary">{PLAN_LABEL[request.requested_plan]}</td>
+                    <td className="p-4 text-muted-foreground">{request.billing_cycle === "yearly" ? "سنوي" : "شهري"}</td>
+                    <td className="p-4">
+                      <span className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold ${request.status === "pending" ? "bg-accent/10 text-accent" : request.status === "approved" ? "bg-success/10 text-success" : "bg-secondary text-muted-foreground"}`}>
+                        <ShieldCheck className="h-3 w-3" />
+                        {request.status === "pending" ? "قيد المراجعة" : request.status === "approved" ? "مقبول" : "مرفوض"}
+                      </span>
+                    </td>
+                    <td className="p-4">
+                      {request.status === "pending" ? (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => changeRequestStatus(request, "approved")}
+                            disabled={processingId === request.id}
+                            className="flex h-9 items-center gap-1 rounded-lg bg-success px-3 text-xs font-semibold text-success-foreground disabled:opacity-60"
+                          >
+                            {processingId === request.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+                            قبول
+                          </button>
+                          <button
+                            onClick={() => changeRequestStatus(request, "rejected")}
+                            disabled={processingId === request.id}
+                            className="flex h-9 items-center gap-1 rounded-lg border border-border bg-background px-3 text-xs font-semibold hover:bg-destructive/10 hover:text-destructive disabled:opacity-60"
+                          >
+                            <X className="h-3 w-3" />
+                            رفض
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground" dir="ltr">{new Date(request.created_at).toLocaleDateString()}</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       <div className="mt-6 rounded-2xl border border-border bg-card">
