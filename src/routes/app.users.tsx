@@ -258,6 +258,3 @@ function UsersPage() {
     </>
   );
 }
-    </>
-  );
-}
