@@ -159,8 +159,23 @@ function OrdersPage() {
     <>
       <PageHeader title="أوامر النقل (TMS)" subtitle="طلب → اعتماد → تحويل إلى شحنة"
         action={
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={onExport} className="gap-2"><Download className="h-4 w-4" /> CSV</Button>
+          <div className="flex flex-wrap gap-2">
+            <ExportBar
+              filename="orders"
+              title="أوامر النقل"
+              rows={filtered}
+              columns={[
+                { key: "order_number", label: "الرقم" },
+                { key: "customer", label: "العميل", format: (r) => r.customers?.name ?? "" },
+                { key: "type", label: "النوع", format: (r) => TYPE_LABEL[r.transport_type] },
+                { key: "origin", label: "من" },
+                { key: "destination", label: "إلى" },
+                { key: "pickup_date", label: "تحميل" },
+                { key: "delivery_date", label: "تسليم" },
+                { key: "price", label: "السعر" },
+                { key: "status", label: "الحالة", format: (r) => STATUS_LABEL[r.status] },
+              ]}
+            />
             <Button onClick={() => setOpen(true)} className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
               <Plus className="h-4 w-4" /> أمر جديد
             </Button>
