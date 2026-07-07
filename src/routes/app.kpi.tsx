@@ -59,14 +59,14 @@ function KpiPage() {
         supabase.from("drivers").select("id", { count: "exact", head: true }),
         supabase.from("customers").select("id", { count: "exact", head: true }),
         supabase.from("transport_orders").select("id", { count: "exact", head: true }),
-        supabase.from("transport_orders").select("total_amount").eq("status", "delivered"),
-        supabase.from("transport_orders").select("total_amount").eq("status", "delivered"),
+        supabase.from("transport_orders").select("price").eq("status", "delivered"),
+        supabase.from("transport_orders").select("price").eq("status", "delivered"),
         supabase.from("expenses").select("amount"),
         supabase.from("fuel_logs").select("liters,cost"),
         supabase.from("maintenance_records").select("cost"),
         supabase.from("incidents").select("repair_cost"),
-        supabase.from("transport_orders").select("status,total_amount,customer_id,created_at"),
-        supabase.from("transport_orders").select("total_amount,created_at").eq("status", "delivered"),
+        supabase.from("transport_orders").select("status,price,customer_id,created_at"),
+        supabase.from("transport_orders").select("price,created_at").eq("status", "delivered"),
         supabase.from("expenses").select("amount,expense_date,created_at"),
       ]);
       const sum = (arr: any[] | null, k: string) => (arr ?? []).reduce((a, b) => a + Number(b[k] ?? 0), 0);
