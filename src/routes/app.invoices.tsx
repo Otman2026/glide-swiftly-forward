@@ -77,6 +77,7 @@ function InvoicesPage() {
     notes: "",
   });
   const [items, setItems] = useState<Item[]>([{ description: "", quantity: 1, unit_price: 0 }]);
+  const [q, setQ] = useState("");
 
   const [viewing, setViewing] = useState<Invoice | null>(null);
   const [viewItems, setViewItems] = useState<Array<Item & { id: string; amount: number }>>([]);
