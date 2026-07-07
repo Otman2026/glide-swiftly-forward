@@ -96,7 +96,7 @@ function KpiPage() {
         months.push({ month: label, revenue: 0, expenses: 0 });
         (ordersWithDate.data ?? []).forEach((r: any) => {
           const d = new Date(r.created_at);
-          if (`${d.getFullYear()}-${d.getMonth()}` === key) months[months.length - 1].revenue += Number(r.total_amount ?? 0);
+          if (`${d.getFullYear()}-${d.getMonth()}` === key) months[months.length - 1].revenue += Number(r.price ?? 0);
         });
         (expensesWithDate.data ?? []).forEach((r: any) => {
           const d = new Date(r.expense_date ?? r.created_at);
