@@ -131,8 +131,20 @@ function CustomersPage() {
         title="إدارة العملاء (CRM)"
         subtitle="ملفات عملاء متكاملة مع سجل تعاملات، عقود، فواتير، ووثائق"
         action={
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={onExport} className="gap-2"><Download className="h-4 w-4" /> تصدير CSV</Button>
+          <div className="flex flex-wrap gap-2">
+            <ExportBar
+              filename="customers"
+              title="قائمة العملاء"
+              rows={rows}
+              columns={[
+                { key: "name", label: "الاسم" },
+                { key: "email", label: "البريد" },
+                { key: "phone", label: "الهاتف" },
+                { key: "city", label: "المدينة" },
+                { key: "country", label: "الدولة" },
+                { key: "tax_id", label: "الرقم الضريبي" },
+              ]}
+            />
             <Button onClick={openNew} className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
               <Plus className="h-4 w-4" /> عميل جديد
             </Button>
