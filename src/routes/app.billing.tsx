@@ -107,6 +107,8 @@ const STATUS_LABEL: Record<string, string> = {
   past_due: "متأخر",
 };
 
+const getStatusLabel = (status: string) => STATUS_LABEL[status] || status;
+
 function BillingPage() {
   const [loading, setLoading] = useState(true);
   const [tenantId, setTenantId] = useState<string | null>(null);
@@ -254,7 +256,7 @@ function BillingPage() {
             </div>
           </div>
           <div className="mt-4 grid gap-2 text-sm">
-            <Metric label="الحالة" value={subscription?.status ? STATUS_LABEL[subscription.status] : "نشط"} />
+            <Metric label="الحالة" value={subscription?.status ? getStatusLabel(subscription.status) : "نشط"} />
             <Metric label="المستخدمون" value={subscription?.max_users?.toLocaleString("ar") ?? "—"} />
             <Metric label="المركبات" value={subscription?.max_vehicles?.toLocaleString("ar") ?? "—"} />
           </div>
@@ -416,7 +418,7 @@ function BillingPage() {
                     </td>
                     <td className="p-4">
                       <span className="rounded-md bg-accent/10 px-2 py-1 text-xs font-bold text-accent">
-                        {STATUS_LABEL[request.status] ?? request.status}
+                        {getStatusLabel(request.status)}
                       </span>
                     </td>
                     <td className="p-4 text-muted-foreground" dir="ltr">
