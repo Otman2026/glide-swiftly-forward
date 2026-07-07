@@ -202,18 +202,32 @@ function UsersPage() {
               <tr>
                 <th className="p-4 text-right font-semibold">الاسم</th>
                 <th className="p-4 text-right font-semibold">البريد</th>
+                <th className="p-4 text-right font-semibold">الحالة</th>
                 <th className="p-4 text-right font-semibold">الأدوار</th>
                 <th className="p-4 text-right font-semibold">الربط</th>
+                <th className="p-4 text-right font-semibold">إجراءات</th>
               </tr>
             </thead>
             <tbody>
               {rows.map(m => {
                 const cust = m.customer_id ? customers.find(c => c.id === m.customer_id)?.name : null;
                 const drv = m.driver_id ? drivers.find(d => d.id === m.driver_id)?.full_name : null;
+                const disabled = !!m.disabled_at;
                 return (
-                  <tr key={m.user_id} className="border-t border-border hover:bg-secondary/30">
+                  <tr key={m.user_id} className={`border-t border-border hover:bg-secondary/30 ${disabled ? "opacity-60" : ""}`}>
                     <td className="p-4 font-semibold">{m.full_name ?? "—"}</td>
                     <td className="p-4 text-muted-foreground" dir="ltr">{m.email ?? "—"}</td>
+                    <td className="p-4">
+                      {disabled ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-destructive/10 px-2 py-1 text-xs font-bold text-destructive" title={m.disabled_reason ?? ""}>
+                          <Ban className="h-3 w-3" /> معطل
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-1 text-xs font-bold text-success">
+                          <CheckCircle2 className="h-3 w-3" /> نشط
+                        </span>
+                      )}
+                    </td>
                     <td className="p-4">
                       <div className="flex flex-wrap gap-2">
                         {m.roles.length === 0 && <span className="text-xs text-muted-foreground">لا توجد أدوار</span>}
@@ -231,12 +245,24 @@ function UsersPage() {
                       </div>
                     </td>
                     <td className="p-4 text-xs">
-                      <div className="space-y-1 mb-2">
+                      <div className="space-y-1">
                         {cust && <div className="text-primary">عميل: {cust}</div>}
                         {drv && <div className="text-accent">سائق: {drv}</div>}
                         {!cust && !drv && <div className="text-muted-foreground">—</div>}
                       </div>
-                      <Button size="sm" variant="outline" onClick={() => openLink(m)}>ربط</Button>
+                    </td>
+                    <td className="p-4">
+                      <div className="flex flex-wrap gap-2">
+                        <Button size="sm" variant="outline" onClick={() => openLink(m)}>ربط</Button>
+                        <Button
+                          size="sm"
+                          variant={disabled ? "default" : "outline"}
+                          onClick={() => toggleDisabled(m)}
+                          className={disabled ? "bg-success text-success-foreground hover:bg-success/90" : "text-destructive hover:bg-destructive/10"}
+                        >
+                          {disabled ? <><CheckCircle2 className="h-3 w-3" /> تفعيل</> : <><Ban className="h-3 w-3" /> تعطيل</>}
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 );
