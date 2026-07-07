@@ -118,7 +118,9 @@ function Stat({ label, value }: { label: string; value: string | number }) {
 function EmployeesTab({ employees, tenantId, onChange }: { employees: Employee[]; tenantId: string | null; onChange: () => void }) {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [q, setQ] = useState("");
   const [form, setForm] = useState({ full_name: "", employee_code: "", position: "", department: "", phone: "", email: "", hire_date: "", base_salary: "" });
+  const filtered = useMemo(() => matchQuery(employees, q, ["full_name", "employee_code", "position", "department"]), [employees, q]);
 
   const onCreate = async (e: React.FormEvent) => {
     e.preventDefault();
