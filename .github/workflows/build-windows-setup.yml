@@ -2,9 +2,14 @@ name: Build Windows Setup (.exe)
 
 on:
   push:
+    branches:
+      - '**'
     tags:
       - 'v*'
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build-windows:
@@ -43,6 +48,24 @@ jobs:
           name: SAIFO-TRANSPORT-ERP-Windows-Setup
           path: electron/release/*Setup*.exe
           if-no-files-found: error
+
+      - name: Publish latest installer download
+        if: github.ref_type == 'branch'
+        uses: ncipollo/release-action@v1
+        with:
+          tag: windows-latest
+          name: SAIFO Windows Setup - Latest
+          body: |
+            أحدث ملف تثبيت Windows تم بناؤه تلقائياً من آخر رفع للكود.
+
+            حمّل ملف الـ Setup من قسم Assets بالأسفل.
+          artifacts: electron/release/*Setup*.exe
+          artifactErrorsFailBuild: true
+          allowUpdates: true
+          removeArtifacts: true
+          replacesArtifacts: true
+          makeLatest: true
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Attach installer to GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
