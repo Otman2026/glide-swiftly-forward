@@ -99,11 +99,11 @@ function InvoicesPage() {
     const [{ data: inv }, { data: cust }, { data: ords }] = await Promise.all([
       supabase.from("invoices").select("*").order("issue_date", { ascending: false }),
       supabase.from("customers").select("id, name").order("name"),
-      supabase.from("transport_orders").select("id, order_number, total_price").order("created_at", { ascending: false }).limit(200),
+      supabase.from("transport_orders").select("id, order_number, price").order("created_at", { ascending: false }).limit(200),
     ]);
     setRows((inv ?? []) as Invoice[]);
     setCustomers((cust ?? []) as { id: string; name: string }[]);
-    setOrders((ords ?? []) as { id: string; order_number: string; total_price: number | null }[]);
+    setOrders((ords ?? []) as { id: string; order_number: string; price: number | null }[]);
     setLoading(false);
   }
 
@@ -137,8 +137,8 @@ function InvoicesPage() {
       return;
     }
     setForm((f) => ({ ...f, transport_order_id: orderId }));
-    if (o.total_price && items.length === 1 && !items[0].description) {
-      setItems([{ description: `أمر النقل ${o.order_number}`, quantity: 1, unit_price: o.total_price }]);
+    if (o.price && items.length === 1 && !items[0].description) {
+      setItems([{ description: `أمر النقل ${o.order_number}`, quantity: 1, unit_price: o.price }]);
     }
   }
 
@@ -208,7 +208,7 @@ function InvoicesPage() {
     <>
       <PageHeader
         title="الفواتير"
-        description="إصدار وإدارة فواتير النقل — TVA، طباعة، تصدير"
+        subtitle="إصدار وإدارة فواتير النقل — TVA، طباعة، تصدير"
         icon={FileText}
         action={
           <Dialog open={open} onOpenChange={onOpenChange}>
