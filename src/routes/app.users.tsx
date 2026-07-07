@@ -11,6 +11,8 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { sendPasswordReset } from "@/lib/admin.functions";
+import { ExportBar } from "@/components/export-bar";
+import { SearchInput } from "@/components/search-input";
 
 export const Route = createFileRoute("/app/users")({
   component: UsersPage,
