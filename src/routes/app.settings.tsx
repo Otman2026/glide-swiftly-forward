@@ -334,7 +334,7 @@ function SettingsPage() {
                   <Input dir="ltr" className="pl-9" value={profile.username} onChange={(e) => setProfile({ ...profile, username: e.target.value.replace(/\s/g, "").toLowerCase() })} />
                 </div>
               </div>
-              <div><Label>البريد الإلكتروني</Label><Input dir="ltr" value={profile.email} disabled /></div>
+              <div><Label>البريد الإلكتروني <span className="text-xs text-muted-foreground">(اختياري)</span></Label><Input dir="ltr" type="email" placeholder="you@example.com" value={profile.email.endsWith("@saifo.local") ? "" : profile.email} onChange={(e) => setProfile({ ...profile, email: e.target.value })} /></div>
               <div><Label>الهاتف</Label><Input dir="ltr" value={profile.phone} onChange={(e) => setProfile({ ...profile, phone: e.target.value })} /></div>
               <Button type="submit" disabled={saving} className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
                 {saving && <Loader2 className="h-4 w-4 animate-spin" />} حفظ
