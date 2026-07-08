@@ -140,6 +140,11 @@ export function DashboardLayout() {
 
   useEffect(() => {
     (async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (u.user) {
+        const { data: sys } = await supabase.rpc("is_system_owner", { _user_id: u.user.id });
+        setIsSysOwner(!!sys);
+      }
       const { data: profile } = await supabase
         .from("profiles")
         .select("full_name, tenant_id")
