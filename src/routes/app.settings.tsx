@@ -67,7 +67,7 @@ function SettingsPage() {
       }
       setProfile({
         full_name: p?.full_name ?? (u.user.user_metadata?.full_name as string | undefined) ?? "",
-        email: p?.email ?? u.user.email ?? "",
+        email: (p?.email && !p.email.endsWith("@saifo.local")) ? p.email : "",
         phone: (p as any)?.phone ?? "",
         username: (p as any)?.username ?? "",
       });
