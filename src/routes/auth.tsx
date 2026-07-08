@@ -165,9 +165,10 @@ function AuthPage() {
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-semibold text-foreground">
-                    اسم المستخدم <span className="text-muted-foreground font-normal">(اختياري)</span>
+                    اسم المستخدم *
                   </label>
                   <input
+                    required
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value.replace(/\s/g, ""))}
@@ -175,21 +176,9 @@ function AuthPage() {
                     className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
                     dir="ltr"
                   />
-                  <p className="mt-1 text-xs text-muted-foreground">يستخدم للدخول بدل البريد. اتركه فارغاً للاكتفاء بالبريد.</p>
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-sm font-semibold text-foreground">
-                    البريد الإلكتروني *
-                    <span className="text-muted-foreground font-normal"> (للاسترجاع والتنبيهات)</span>
-                  </label>
-                  <input
-                    required
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
-                    dir="ltr"
-                  />
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    يستخدم للدخول. البريد الإلكتروني اختياري ويمكن ربطه لاحقاً من الإعدادات.
+                  </p>
                 </div>
               </>
             )}
