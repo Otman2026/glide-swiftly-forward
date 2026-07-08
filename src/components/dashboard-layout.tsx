@@ -248,7 +248,7 @@ export function DashboardLayout() {
         </div>
 
         <nav className="flex-1 overflow-y-auto px-3 py-4">
-          {NAV.map((group) => (
+          {NAV.filter((g) => g.title !== "إدارة النظام" || isSysOwner).map((group) => (
             <div key={group.title} className="mb-6">
               <div className="mb-2 px-3 text-[10px] font-bold uppercase tracking-widest text-sidebar-foreground/50">
                 {group.title}
