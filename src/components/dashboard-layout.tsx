@@ -123,6 +123,7 @@ export function DashboardLayout() {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unread, setUnread] = useState(0);
+  const [isSysOwner, setIsSysOwner] = useState(false);
   const [me, setMe] = useState<{
     full_name: string | null;
     tenant_name: string | null;
