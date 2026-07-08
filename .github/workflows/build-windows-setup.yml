@@ -27,13 +27,6 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Copy app icon (fallback to PWA icon)
-        shell: bash
-        run: |
-          if [ -f ../public/icon-512.png ]; then
-            cp ../public/icon-512.png icon.png
-          fi
-
       - name: Install desktop shell deps
         shell: bash
         run: |

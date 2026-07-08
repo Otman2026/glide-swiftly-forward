@@ -22,14 +22,14 @@
     },
     "files": [
       "main.cjs",
-      "icon.png",
+      "icon.ico",
       "package.json"
     ],
     "win": {
       "target": [
         { "target": "nsis", "arch": ["x64"] }
       ],
-      "icon": "icon.png",
+      "icon": "icon.ico",
       "artifactName": "SAIFO-TRANSPORT-ERP-Setup-${version}.${ext}"
     },
     "nsis": {
