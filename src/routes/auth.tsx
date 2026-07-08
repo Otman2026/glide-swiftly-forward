@@ -185,7 +185,7 @@ function AuthPage() {
             {mode === "signin" && (
               <div>
                 <label className="mb-1.5 block text-sm font-semibold text-foreground">
-                  اسم المستخدم أو البريد الإلكتروني
+                  اسم المستخدم
                 </label>
                 <input
                   required
