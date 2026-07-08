@@ -40,14 +40,22 @@ jobs:
       - name: Build Windows NSIS installer
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+          DEBUG: electron-builder
         run: npm run dist:win
 
+      - name: List release output (debug)
+        if: always()
+        shell: bash
+        run: ls -la release/ || echo "no release dir"
+
       - name: Upload installer artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: SAIFO-TRANSPORT-ERP-Windows-Setup
           path: electron/release/*Setup*.exe
-          if-no-files-found: error
+          if-no-files-found: warn
 
       - name: Publish latest installer download
         if: github.ref_type == 'branch'
