@@ -67,7 +67,7 @@ function SettingsPage() {
       }
       setProfile({
         full_name: p?.full_name ?? (u.user.user_metadata?.full_name as string | undefined) ?? "",
-        email: p?.email ?? u.user.email ?? "",
+        email: (p?.email && !p.email.endsWith("@saifo.local")) ? p.email : "",
         phone: (p as any)?.phone ?? "",
         username: (p as any)?.username ?? "",
       });
@@ -108,11 +108,14 @@ function SettingsPage() {
       }
 
       const username = profile.username.trim().toLowerCase() || null;
+      const contactEmail = profile.email.trim();
+      const emailToSave =
+        contactEmail && !contactEmail.endsWith("@saifo.local") ? contactEmail : null;
       const { error } = await supabase.from("profiles").upsert({
         id: u.user.id,
         tenant_id: tenantId,
         full_name: profile.full_name.trim() || null,
-        email: u.user.email ?? (profile.email || null),
+        email: emailToSave,
         phone: profile.phone.trim() || null,
         username,
       } as any, { onConflict: "id" });
@@ -126,7 +129,7 @@ function SettingsPage() {
         return;
       }
 
-      setProfile((current) => ({ ...current, email: u.user.email ?? current.email, username: username ?? "" }));
+      setProfile((current) => ({ ...current, email: emailToSave ?? "", username: username ?? "" }));
       toast.success("تم حفظ الملف الشخصي");
     } finally {
       setSaving(false);
@@ -334,7 +337,7 @@ function SettingsPage() {
                   <Input dir="ltr" className="pl-9" value={profile.username} onChange={(e) => setProfile({ ...profile, username: e.target.value.replace(/\s/g, "").toLowerCase() })} />
                 </div>
               </div>
-              <div><Label>البريد الإلكتروني</Label><Input dir="ltr" value={profile.email} disabled /></div>
+              <div><Label>البريد الإلكتروني <span className="text-xs text-muted-foreground">(اختياري)</span></Label><Input dir="ltr" type="email" placeholder="you@example.com" value={profile.email.endsWith("@saifo.local") ? "" : profile.email} onChange={(e) => setProfile({ ...profile, email: e.target.value })} /></div>
               <div><Label>الهاتف</Label><Input dir="ltr" value={profile.phone} onChange={(e) => setProfile({ ...profile, phone: e.target.value })} /></div>
               <Button type="submit" disabled={saving} className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
                 {saving && <Loader2 className="h-4 w-4 animate-spin" />} حفظ

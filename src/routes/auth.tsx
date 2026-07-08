@@ -18,8 +18,7 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [identifier, setIdentifier] = useState(""); // email OR username
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState(""); // username (or email if already linked)
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -44,13 +43,14 @@ function AuthPage() {
     const trimmed = id.trim();
     if (!trimmed) return null;
     if (trimmed.includes("@")) return trimmed;
-    // Look up email by username
     const { data } = await supabase
       .from("profiles")
       .select("email")
       .ilike("username", trimmed)
       .maybeSingle();
-    return data?.email ?? null;
+    if (data?.email) return data.email;
+    // Fallback to synthetic email used for username-only accounts
+    return `${trimmed.toLowerCase()}@saifo.local`;
   }
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -58,39 +58,43 @@ function AuthPage() {
     setLoading(true);
     try {
       if (mode === "signup") {
-        if (username.trim()) {
-          const { data: exists } = await supabase
-            .from("profiles")
-            .select("id")
-            .ilike("username", username.trim())
-            .maybeSingle();
-          if (exists) {
-            toast.error("اسم المستخدم محجوز، اختر اسماً آخر");
-            setLoading(false);
-            return;
-          }
+        const uname = username.trim();
+        if (!uname || !/^[a-zA-Z0-9._-]{3,32}$/.test(uname)) {
+          toast.error("اسم المستخدم مطلوب (3–32 حرف/رقم)");
+          setLoading(false);
+          return;
         }
-        const redirectUrl = `${window.location.origin}/app`;
+        const { data: exists } = await supabase
+          .from("profiles")
+          .select("id")
+          .ilike("username", uname)
+          .maybeSingle();
+        if (exists) {
+          toast.error("اسم المستخدم محجوز، اختر اسماً آخر");
+          setLoading(false);
+          return;
+        }
+        const syntheticEmail = `${uname.toLowerCase()}@saifo.local`;
         const { error } = await supabase.auth.signUp({
-          email,
+          email: syntheticEmail,
           password,
           options: {
-            emailRedirectTo: redirectUrl,
+            emailRedirectTo: `${window.location.origin}/app`,
             data: {
               full_name: fullName,
               company_name: companyName,
-              username: username.trim() || null,
+              username: uname,
             },
           },
         });
         if (error) throw error;
         toast.success("تم إنشاء الحساب. يمكنك تسجيل الدخول الآن.");
         setMode("signin");
-        setIdentifier(email);
+        setIdentifier(uname);
       } else {
         const loginEmail = await resolveEmail(identifier);
         if (!loginEmail) {
-          toast.error("لم يتم العثور على مستخدم بهذا الاسم أو البريد");
+          toast.error("لم يتم العثور على مستخدم بهذا الاسم");
           setLoading(false);
           return;
         }
@@ -161,9 +165,10 @@ function AuthPage() {
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-semibold text-foreground">
-                    اسم المستخدم <span className="text-muted-foreground font-normal">(اختياري)</span>
+                    اسم المستخدم *
                   </label>
                   <input
+                    required
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value.replace(/\s/g, ""))}
@@ -171,28 +176,16 @@ function AuthPage() {
                     className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
                     dir="ltr"
                   />
-                  <p className="mt-1 text-xs text-muted-foreground">يستخدم للدخول بدل البريد. اتركه فارغاً للاكتفاء بالبريد.</p>
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-sm font-semibold text-foreground">
-                    البريد الإلكتروني *
-                    <span className="text-muted-foreground font-normal"> (للاسترجاع والتنبيهات)</span>
-                  </label>
-                  <input
-                    required
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
-                    dir="ltr"
-                  />
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    يستخدم للدخول. البريد الإلكتروني اختياري ويمكن ربطه لاحقاً من الإعدادات.
+                  </p>
                 </div>
               </>
             )}
             {mode === "signin" && (
               <div>
                 <label className="mb-1.5 block text-sm font-semibold text-foreground">
-                  اسم المستخدم أو البريد الإلكتروني
+                  اسم المستخدم
                 </label>
                 <input
                   required

@@ -123,6 +123,7 @@ export function DashboardLayout() {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unread, setUnread] = useState(0);
+  const [isSysOwner, setIsSysOwner] = useState(false);
   const [me, setMe] = useState<{
     full_name: string | null;
     tenant_name: string | null;
@@ -139,6 +140,11 @@ export function DashboardLayout() {
 
   useEffect(() => {
     (async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (u.user) {
+        const { data: sys } = await supabase.rpc("is_system_owner", { _user_id: u.user.id });
+        setIsSysOwner(!!sys);
+      }
       const { data: profile } = await supabase
         .from("profiles")
         .select("full_name, tenant_id")
@@ -242,7 +248,7 @@ export function DashboardLayout() {
         </div>
 
         <nav className="flex-1 overflow-y-auto px-3 py-4">
-          {NAV.map((group) => (
+          {NAV.filter((g) => g.title !== "إدارة النظام" || isSysOwner).map((group) => (
             <div key={group.title} className="mb-6">
               <div className="mb-2 px-3 text-[10px] font-bold uppercase tracking-widest text-sidebar-foreground/50">
                 {group.title}
