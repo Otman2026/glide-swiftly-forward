@@ -108,11 +108,14 @@ function SettingsPage() {
       }
 
       const username = profile.username.trim().toLowerCase() || null;
+      const contactEmail = profile.email.trim();
+      const emailToSave =
+        contactEmail && !contactEmail.endsWith("@saifo.local") ? contactEmail : null;
       const { error } = await supabase.from("profiles").upsert({
         id: u.user.id,
         tenant_id: tenantId,
         full_name: profile.full_name.trim() || null,
-        email: u.user.email ?? (profile.email || null),
+        email: emailToSave,
         phone: profile.phone.trim() || null,
         username,
       } as any, { onConflict: "id" });
@@ -126,7 +129,7 @@ function SettingsPage() {
         return;
       }
 
-      setProfile((current) => ({ ...current, email: u.user.email ?? current.email, username: username ?? "" }));
+      setProfile((current) => ({ ...current, email: emailToSave ?? "", username: username ?? "" }));
       toast.success("تم حفظ الملف الشخصي");
     } finally {
       setSaving(false);
