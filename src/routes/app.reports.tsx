@@ -7,6 +7,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { printHTML, esc } from "@/lib/print";
+import { StatCard as SharedStatCard } from "@/components/stat-card";
 
 export const Route = createFileRoute("/app/reports")({
   component: ReportsPage,
