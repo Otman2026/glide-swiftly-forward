@@ -157,22 +157,29 @@ function KpiPage() {
       <PageHeader title="مؤشرات الأداء (KPIs)" subtitle="نظرة عامة مباشرة على أداء شركتك من قاعدة البيانات" />
 
       <div className="mb-6 grid gap-4 md:grid-cols-3">
-        <div className="rounded-2xl border border-border bg-card p-6">
-          <div className="text-xs text-muted-foreground">إجمالي الإيرادات</div>
-          <div className="mt-2 text-3xl font-black text-success">{(s.revenue / 1000).toFixed(1)}K MAD</div>
-          <div className="mt-2 flex items-center gap-1 text-xs font-semibold text-success"><TrendingUp className="h-3 w-3" /> من الطلبات المسلّمة</div>
-        </div>
-        <div className="rounded-2xl border border-border bg-card p-6">
-          <div className="text-xs text-muted-foreground">إجمالي التكاليف</div>
-          <div className="mt-2 text-3xl font-black text-destructive">{((s.expenses + s.fuelCost + s.maintenanceCost + s.incidentsCost) / 1000).toFixed(1)}K MAD</div>
-          <div className="mt-2 text-xs text-muted-foreground">مصاريف + وقود + صيانة + حوادث</div>
-        </div>
-        <div className="rounded-2xl border border-border bg-card p-6">
-          <div className="text-xs text-muted-foreground">صافي الربح</div>
-          <div className={`mt-2 text-3xl font-black ${net >= 0 ? "text-primary" : "text-destructive"}`}>{(net / 1000).toFixed(1)}K MAD</div>
-          <div className="mt-2 text-xs text-muted-foreground">إيراد/شاحنة: {revenuePerVehicle.toFixed(0)} MAD</div>
-        </div>
+        <StatCard
+          label="إجمالي الإيرادات"
+          value={`${(s.revenue / 1000).toFixed(1)}K MAD`}
+          tone="success"
+          icon={TrendingUp}
+          hint="من الطلبات المسلّمة"
+        />
+        <StatCard
+          label="إجمالي التكاليف"
+          value={`${((s.expenses + s.fuelCost + s.maintenanceCost + s.incidentsCost) / 1000).toFixed(1)}K MAD`}
+          tone="danger"
+          icon={Wrench}
+          hint="مصاريف + وقود + صيانة + حوادث"
+        />
+        <StatCard
+          label="صافي الربح"
+          value={`${(net / 1000).toFixed(1)}K MAD`}
+          tone={net >= 0 ? "brand" : "danger"}
+          icon={BarChart3}
+          hint={`إيراد/شاحنة: ${revenuePerVehicle.toFixed(0)} MAD`}
+        />
       </div>
+
 
       <div className="mb-6 grid gap-4 lg:grid-cols-3">
         <div className="rounded-2xl border border-border bg-card p-5 lg:col-span-2">
