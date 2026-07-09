@@ -383,6 +383,14 @@ function DeviceDialog({
               </select>
             </Field>
           </div>
+          <Field label="معرّف الجهاز في Traccar (uniqueId / id)">
+            <input
+              value={form.traccar_device_id}
+              onChange={(e) => setForm({ ...form, traccar_device_id: e.target.value })}
+              placeholder="مثال: 123 أو 860123456789"
+              className="input"
+            />
+          </Field>
           <Field label="ملاحظات">
             <textarea
               value={form.notes}
@@ -390,6 +398,7 @@ function DeviceDialog({
               className="input min-h-[70px]"
             />
           </Field>
+
         </div>
         <div className="mt-5 flex justify-end gap-2">
           <button
