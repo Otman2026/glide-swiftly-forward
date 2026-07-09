@@ -282,7 +282,16 @@ function ShipmentsPage() {
               {filtered.map((s) => (
                 <tr key={s.id} className="border-t border-border hover:bg-secondary/30">
                   <td className="p-4 font-mono font-semibold text-primary" dir="ltr">{s.shipment_number}</td>
-                  <td className="p-4">{s.origin}</td>
+                  <td className="p-4">
+                    {s.origin}
+                    {s.scope && (
+                      <div className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                        s.scope === "international" ? "bg-warning/20 text-warning-foreground" :
+                        s.scope === "national" ? "bg-success/15 text-success" :
+                        "bg-chart-3/15 text-chart-3"
+                      }`}>{SCOPE_LABELS[s.scope]}</div>
+                    )}
+                  </td>
                   <td className="p-4">{s.destination}</td>
                   <td className="p-4 font-mono text-xs" dir="ltr">{s.vehicles?.plate_number ?? "—"}</td>
                   <td className="p-4">{s.drivers?.full_name ?? "—"}</td>
