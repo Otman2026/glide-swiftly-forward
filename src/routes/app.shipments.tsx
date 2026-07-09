@@ -88,12 +88,16 @@ function ShipmentsPage() {
     setSaving(true);
     const { data: profile } = await supabase.from("profiles").select("tenant_id").maybeSingle();
     if (!profile?.tenant_id) { toast.error("لا توجد شركة"); setSaving(false); return; }
+    const scope = scopeFor(form.origin_country, form.destination_country, form.origin_city, form.destination_city);
     const { error } = await supabase.from("shipments").insert({
       tenant_id: profile.tenant_id, shipment_number: form.shipment_number,
       order_id: form.order_id !== "none" ? form.order_id : null,
       vehicle_id: form.vehicle_id !== "none" ? form.vehicle_id : null,
       driver_id: form.driver_id !== "none" ? form.driver_id : null,
       origin: form.origin, destination: form.destination,
+      origin_country: form.origin_country, origin_city: form.origin_city,
+      destination_country: form.destination_country, destination_city: form.destination_city,
+      scope,
       distance_km: form.distance_km ? Number(form.distance_km) : null,
       status: form.status,
     });
@@ -101,7 +105,12 @@ function ShipmentsPage() {
     if (error) return toast.error(error.message);
     toast.success("تمت إضافة الشحنة");
     setOpen(false);
-    setForm({ shipment_number: "", order_id: "none", vehicle_id: "none", driver_id: "none", origin: "", destination: "", distance_km: "", status: "planned" });
+    setForm({
+      shipment_number: "", order_id: "none", vehicle_id: "none", driver_id: "none",
+      origin: "", destination: "", distance_km: "", status: "planned",
+      origin_country: DEFAULT_COUNTRY, origin_city: null,
+      destination_country: DEFAULT_COUNTRY, destination_city: null,
+    });
     load();
   };
 
