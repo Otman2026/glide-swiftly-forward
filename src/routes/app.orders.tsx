@@ -75,7 +75,7 @@ function OrdersPage() {
     setLoading(true);
     const [{ data, error }, { data: cust }] = await Promise.all([
       supabase.from("transport_orders")
-        .select("id,order_number,transport_type,origin,destination,pickup_date,delivery_date,price,currency,status,customer_id,tenant_id,goods_description,weight_tons,notes,customers(name)")
+        .select("id,order_number,transport_type,origin,destination,pickup_date,delivery_date,price,currency,status,customer_id,tenant_id,goods_description,weight_tons,notes,scope,origin_country,origin_city,destination_country,destination_city,customers(name)")
         .order("created_at", { ascending: false }),
       supabase.from("customers").select("id,name").order("name"),
     ]);
