@@ -429,3 +429,201 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     </label>
   );
 }
+
+type TraccarConfig = {
+  base_url: string;
+  username: string | null;
+  password: string | null;
+  enabled: boolean;
+  last_sync_at: string | null;
+};
+
+function TraccarSettingsDialog({ onClose }: { onClose: () => void }) {
+  const [form, setForm] = useState<TraccarConfig>({
+    base_url: "",
+    username: "",
+    password: "",
+    enabled: true,
+    last_sync_at: null,
+  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [tenantId, setTenantId] = useState<string | null>(null);
+  const [remoteDevices, setRemoteDevices] = useState<Array<{ id: number; name: string; uniqueId: string; status: string }>>([]);
+  const testFn = useServerFn(testTraccarConnection);
+
+  useEffect(() => {
+    (async () => {
+      const { data: profile } = await supabase.from("profiles").select("tenant_id").maybeSingle();
+      if (!profile?.tenant_id) {
+        toast.error("لا توجد شركة مرتبطة");
+        onClose();
+        return;
+      }
+      setTenantId(profile.tenant_id);
+      const { data } = await supabase
+        .from("traccar_configs")
+        .select("*")
+        .eq("tenant_id", profile.tenant_id)
+        .maybeSingle();
+      if (data) {
+        setForm({
+          base_url: data.base_url ?? "",
+          username: data.username ?? "",
+          password: data.password ?? "",
+          enabled: data.enabled ?? true,
+          last_sync_at: data.last_sync_at,
+        });
+      }
+      setLoading(false);
+    })();
+  }, [onClose]);
+
+  const save = async () => {
+    if (!tenantId) return;
+    if (!form.base_url.trim()) return toast.error("عنوان الخادم مطلوب");
+    setSaving(true);
+    const payload = {
+      tenant_id: tenantId,
+      base_url: form.base_url.trim().replace(/\/+$/, ""),
+      username: form.username || null,
+      password: form.password || null,
+      enabled: form.enabled,
+    };
+    const { error } = await supabase
+      .from("traccar_configs")
+      .upsert(payload, { onConflict: "tenant_id" });
+    setSaving(false);
+    if (error) return toast.error(error.message);
+    toast.success("تم الحفظ");
+  };
+
+  const test = async () => {
+    if (!form.base_url.trim()) return toast.error("أدخل عنوان الخادم أولاً");
+    setTesting(true);
+    try {
+      const r = await testFn({
+        data: {
+          base_url: form.base_url.trim(),
+          username: form.username || undefined,
+          password: form.password || undefined,
+        },
+      });
+      setRemoteDevices(r.devices);
+      toast.success(`اتصال ناجح — ${r.count} جهاز في Traccar`);
+    } catch (e: any) {
+      toast.error(e?.message ?? "فشل الاتصال");
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="w-full max-w-2xl rounded-2xl border border-border bg-card p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-bold">إعدادات Traccar</h2>
+          <button onClick={onClose} className="rounded p-1 hover:bg-secondary">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        {loading ? (
+          <div className="flex justify-center py-10">
+            <Loader2 className="h-6 w-6 animate-spin text-accent" />
+          </div>
+        ) : (
+          <div className="grid gap-3">
+            <Field label="عنوان خادم Traccar *">
+              <input
+                value={form.base_url}
+                onChange={(e) => setForm({ ...form, base_url: e.target.value })}
+                placeholder="https://demo.traccar.org"
+                className="input"
+                dir="ltr"
+              />
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="اسم المستخدم">
+                <input
+                  value={form.username ?? ""}
+                  onChange={(e) => setForm({ ...form, username: e.target.value })}
+                  className="input"
+                  dir="ltr"
+                />
+              </Field>
+              <Field label="كلمة السر">
+                <input
+                  type="password"
+                  value={form.password ?? ""}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  className="input"
+                  dir="ltr"
+                />
+              </Field>
+            </div>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={form.enabled}
+                onChange={(e) => setForm({ ...form, enabled: e.target.checked })}
+              />
+              مُفعّل
+            </label>
+            {form.last_sync_at && (
+              <div className="text-xs text-muted-foreground">
+                آخر مزامنة: {new Date(form.last_sync_at).toLocaleString("ar")}
+              </div>
+            )}
+            {remoteDevices.length > 0 && (
+              <div className="max-h-48 overflow-y-auto rounded-lg border border-border p-2">
+                <div className="mb-1 text-xs font-bold text-muted-foreground">أجهزة Traccar المكتشفة:</div>
+                <table className="w-full text-xs">
+                  <thead className="text-muted-foreground">
+                    <tr><th className="text-right">ID</th><th className="text-right">الاسم</th><th className="text-right">uniqueId</th><th className="text-right">الحالة</th></tr>
+                  </thead>
+                  <tbody>
+                    {remoteDevices.map((d) => (
+                      <tr key={d.id} className="border-t border-border">
+                        <td className="py-1 font-mono">{d.id}</td>
+                        <td>{d.name}</td>
+                        <td className="font-mono">{d.uniqueId}</td>
+                        <td>{d.status}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div className="mt-1 text-[10px] text-muted-foreground">
+                  استخدم قيمة ID أو uniqueId في حقل "معرّف جهاز Traccar" لكل جهاز.
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+        <div className="mt-5 flex justify-end gap-2">
+          <button
+            onClick={test}
+            disabled={testing}
+            className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-semibold hover:bg-secondary disabled:opacity-60"
+          >
+            {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+            اختبار وجلب الأجهزة
+          </button>
+          <button
+            onClick={onClose}
+            className="rounded-lg border border-border px-4 py-2 text-sm font-semibold"
+          >
+            إغلاق
+          </button>
+          <button
+            onClick={save}
+            disabled={saving}
+            className="rounded-lg bg-accent px-4 py-2 text-sm font-bold text-accent-foreground disabled:opacity-60"
+          >
+            {saving ? "جاري الحفظ..." : "حفظ"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
