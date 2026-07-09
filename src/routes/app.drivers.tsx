@@ -13,6 +13,7 @@ import { DocumentsDialog } from "@/components/documents-dialog";
 import { exportToCSV } from "@/lib/csv";
 import { printHTML, esc } from "@/lib/print";
 import { ExportBar } from "@/components/export-bar";
+import { StatCard } from "@/components/stat-card";
 
 export const Route = createFileRoute("/app/drivers")({ component: DriversPage });
 
@@ -304,11 +305,11 @@ function PerformanceDialog({ driver, onClose }: { driver: Driver; onClose: () =>
               <div className="text-xs text-muted-foreground mt-1">من 100</div>
             </div>
             <div className="grid grid-cols-2 gap-3 text-sm">
-              <Stat label="عدد الرحلات" value={stats.trips} />
-              <Stat label="رحلات مكتملة" value={stats.completedTrips} />
-              <Stat label="الحوادث" value={stats.incidents} sub={`${stats.incidentCost.toFixed(0)} MAD`} />
-              <Stat label="المخالفات" value={stats.violations} sub={`${stats.fineTotal.toFixed(0)} MAD`} />
-              <Stat label="استهلاك الوقود" value={`${stats.fuelLiters.toFixed(0)}L`} sub={`${stats.fuelCost.toFixed(0)} MAD`} />
+              <StatCard label="عدد الرحلات" value={stats.trips} tone="info" />
+              <StatCard label="رحلات مكتملة" value={stats.completedTrips} tone="success" />
+              <StatCard label="الحوادث" value={stats.incidents} hint={`${stats.incidentCost.toFixed(0)} MAD`} tone="danger" />
+              <StatCard label="المخالفات" value={stats.violations} hint={`${stats.fineTotal.toFixed(0)} MAD`} tone="warning" />
+              <StatCard label="استهلاك الوقود" value={`${stats.fuelLiters.toFixed(0)}L`} hint={`${stats.fuelCost.toFixed(0)} MAD`} tone="brand" />
             </div>
           </div>
         )}
@@ -317,12 +318,3 @@ function PerformanceDialog({ driver, onClose }: { driver: Driver; onClose: () =>
   );
 }
 
-function Stat({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
-  return (
-    <div className="rounded-xl border border-border p-3">
-      <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="text-2xl font-black">{value}</div>
-      {sub && <div className="text-xs text-accent">{sub}</div>}
-    </div>
-  );
-}
