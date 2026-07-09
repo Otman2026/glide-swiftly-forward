@@ -141,15 +141,15 @@ function KpiPage() {
   const utilization = s.vehicles > 0 ? (s.vehiclesInUse / s.vehicles) * 100 : 0;
   const revenuePerVehicle = s.vehicles > 0 ? s.revenue / s.vehicles : 0;
 
-  const cards = [
-    { label: "الشاحنات", value: s.vehicles, sub: `${s.vehiclesInUse} في الخدمة`, icon: Truck, tint: "text-accent" },
-    { label: "السائقون", value: s.drivers, sub: "نشط", icon: Users, tint: "text-primary" },
-    { label: "العملاء", value: s.customers, sub: "في CRM", icon: Users, tint: "text-success" },
-    { label: "الطلبات", value: s.orders, sub: `${s.ordersDelivered} مسلّم`, icon: Package, tint: "text-accent" },
-    { label: "استهلاك الوقود", value: `${s.fuelLiters.toFixed(0)}L`, sub: `${s.fuelCost.toFixed(0)} MAD`, icon: Fuel, tint: "text-warning-foreground" },
-    { label: "الحوادث", value: s.incidents, sub: `${s.incidentsCost.toFixed(0)} MAD`, icon: AlertTriangle, tint: "text-destructive" },
-    { label: "الصيانة", value: `${s.maintenanceCost.toFixed(0)}`, sub: "MAD", icon: Wrench, tint: "text-warning-foreground" },
-    { label: "معدل استغلال الأسطول", value: `${utilization.toFixed(0)}%`, sub: "", icon: BarChart3, tint: "text-primary" },
+  const cards: { label: string; value: string | number; hint?: string; icon: any; tone: StatTone }[] = [
+    { label: "الشاحنات", value: s.vehicles, hint: `${s.vehiclesInUse} في الخدمة`, icon: Truck, tone: "info" },
+    { label: "السائقون", value: s.drivers, hint: "نشط", icon: Users, tone: "brand" },
+    { label: "العملاء", value: s.customers, hint: "في CRM", icon: Users, tone: "success" },
+    { label: "الطلبات", value: s.orders, hint: `${s.ordersDelivered} مسلّم`, icon: Package, tone: "info" },
+    { label: "استهلاك الوقود", value: `${s.fuelLiters.toFixed(0)}L`, hint: `${s.fuelCost.toFixed(0)} MAD`, icon: Fuel, tone: "warning" },
+    { label: "الحوادث", value: s.incidents, hint: `${s.incidentsCost.toFixed(0)} MAD`, icon: AlertTriangle, tone: "danger" },
+    { label: "الصيانة", value: `${s.maintenanceCost.toFixed(0)}`, hint: "MAD", icon: Wrench, tone: "warning" },
+    { label: "معدل استغلال الأسطول", value: `${utilization.toFixed(0)}%`, icon: BarChart3, tone: "brand" },
   ];
 
   return (
