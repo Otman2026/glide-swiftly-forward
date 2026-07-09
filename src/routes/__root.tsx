@@ -144,11 +144,29 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const [online, setOnline] = useState(true);
+
+  useEffect(() => {
+    registerServiceWorker();
+    const upd = () => setOnline(navigator.onLine);
+    upd();
+    window.addEventListener("online", upd);
+    window.addEventListener("offline", upd);
+    return () => {
+      window.removeEventListener("online", upd);
+      window.removeEventListener("offline", upd);
+    };
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+      {!online && (
+        <div className="fixed inset-x-0 top-0 z-[100] bg-warning py-1.5 text-center text-xs font-bold text-warning-foreground">
+          وضع دون اتصال — التغييرات ستُزامَن عند عودة الشبكة
+        </div>
+      )}
       <Outlet />
     </QueryClientProvider>
   );
 }
+
