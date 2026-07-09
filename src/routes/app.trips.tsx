@@ -14,13 +14,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { exportToCSV } from "@/lib/csv";
 import { printHTML, esc } from "@/lib/print";
 import { ExportBar } from "@/components/export-bar";
+import { RoutePicker, type RouteValue } from "@/components/route-picker";
+import { DEFAULT_COUNTRY, SCOPE_LABELS, scopeFor } from "@/lib/geo";
 
 export const Route = createFileRoute("/app/trips")({ component: TripsPage });
 
+type Scope = "local" | "national" | "international";
 type Trip = {
   id: string; trip_number: string; origin: string | null; destination: string | null;
   distance_km: number | null; revenue: number | null; cost: number | null;
   status: string; start_date: string | null; end_date: string | null;
+  scope: Scope | null;
+  origin_country: string | null; origin_city: string | null;
+  destination_country: string | null; destination_city: string | null;
   vehicles: { plate_number: string } | null;
   drivers: { full_name: string } | null;
   customers: { name: string } | null;
@@ -40,6 +46,10 @@ const STATUS_COLOR: Record<string, string> = {
 const emptyForm = {
   trip_number: "", vehicle_id: "", driver_id: "", customer_id: "",
   origin: "", destination: "", distance_km: "", revenue: "", cost: "", status: "planned",
+  origin_country: DEFAULT_COUNTRY as string | null,
+  origin_city: null as string | null,
+  destination_country: DEFAULT_COUNTRY as string | null,
+  destination_city: null as string | null,
 };
 
 function TripsPage() {
@@ -57,7 +67,7 @@ function TripsPage() {
   const load = async () => {
     setLoading(true);
     const [t, v, d, c] = await Promise.all([
-      supabase.from("trips").select("id,trip_number,origin,destination,distance_km,revenue,cost,status,start_date,end_date,vehicles(plate_number),drivers(full_name),customers(name)").order("created_at", { ascending: false }),
+      supabase.from("trips").select("id,trip_number,origin,destination,distance_km,revenue,cost,status,start_date,end_date,scope,origin_country,origin_city,destination_country,destination_city,vehicles(plate_number),drivers(full_name),customers(name)").order("created_at", { ascending: false }),
       supabase.from("vehicles").select("id,plate_number"),
       supabase.from("drivers").select("id,full_name"),
       supabase.from("customers").select("id,name"),
@@ -76,11 +86,15 @@ function TripsPage() {
     setSaving(true);
     const { data: profile } = await supabase.from("profiles").select("tenant_id").maybeSingle();
     if (!profile?.tenant_id) { toast.error("لا توجد شركة"); setSaving(false); return; }
+    const scope = scopeFor(form.origin_country, form.destination_country, form.origin_city, form.destination_city);
     const { error } = await supabase.from("trips").insert({
       tenant_id: profile.tenant_id, trip_number: form.trip_number,
       vehicle_id: form.vehicle_id || null, driver_id: form.driver_id || null,
       customer_id: form.customer_id || null,
       origin: form.origin || null, destination: form.destination || null,
+      origin_country: form.origin_country, origin_city: form.origin_city,
+      destination_country: form.destination_country, destination_city: form.destination_city,
+      scope,
       distance_km: form.distance_km ? Number(form.distance_km) : null,
       revenue: form.revenue ? Number(form.revenue) : 0,
       cost: form.cost ? Number(form.cost) : 0,
@@ -215,10 +229,16 @@ function TripsPage() {
                   <option value="">—</option>{customers.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
                 </select></div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div><Label>من</Label><Input value={form.origin} onChange={(e) => setForm({ ...form, origin: e.target.value })} /></div>
-              <div><Label>إلى</Label><Input value={form.destination} onChange={(e) => setForm({ ...form, destination: e.target.value })} /></div>
-            </div>
+            <RoutePicker
+              value={{
+                origin_country: form.origin_country,
+                origin_city: form.origin_city,
+                destination_country: form.destination_country,
+                destination_city: form.destination_city,
+              }}
+              onChange={(v: RouteValue) => setForm({ ...form, ...v })}
+              onLegacyChange={(o, d) => setForm((f) => ({ ...f, origin: o, destination: d }))}
+            />
             <div className="grid grid-cols-3 gap-3">
               <div><Label>المسافة (كم)</Label><Input type="number" dir="ltr" value={form.distance_km} onChange={(e) => setForm({ ...form, distance_km: e.target.value })} /></div>
               <div><Label>الإيرادات (MAD)</Label><Input type="number" dir="ltr" value={form.revenue} onChange={(e) => setForm({ ...form, revenue: e.target.value })} /></div>
@@ -272,7 +292,16 @@ function TripsPage() {
                 return (
                   <tr key={r.id} className="border-t border-border hover:bg-secondary/30">
                     <td className="p-4 font-mono font-semibold" dir="ltr">{r.trip_number}</td>
-                    <td className="p-4 text-xs">{r.origin ?? "—"} → {r.destination ?? "—"}</td>
+                    <td className="p-4 text-xs">
+                      <div>{r.origin ?? "—"} → {r.destination ?? "—"}</div>
+                      {r.scope && (
+                        <span className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                          r.scope === "international" ? "bg-warning/20 text-warning-foreground" :
+                          r.scope === "national" ? "bg-success/15 text-success" :
+                          "bg-chart-3/15 text-chart-3"
+                        }`}>{SCOPE_LABELS[r.scope]}</span>
+                      )}
+                    </td>
                     <td className="p-4 font-mono text-xs" dir="ltr">{r.vehicles?.plate_number ?? "—"}</td>
                     <td className="p-4">{r.drivers?.full_name ?? "—"}</td>
                     <td className="p-4">{r.customers?.name ?? "—"}</td>

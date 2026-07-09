@@ -15,14 +15,20 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { printHTML, esc } from "@/lib/print";
 import { ExportBar } from "@/components/export-bar";
+import { RoutePicker, type RouteValue } from "@/components/route-picker";
+import { DEFAULT_COUNTRY, SCOPE_LABELS, scopeFor } from "@/lib/geo";
 
 export const Route = createFileRoute("/app/shipments")({ component: ShipmentsPage });
 
 type Status = "planned" | "loading" | "in_transit" | "delivered" | "cancelled";
+type Scope = "local" | "national" | "international";
 type Shipment = {
   id: string; shipment_number: string; origin: string; destination: string;
   distance_km: number | null; status: Status;
   order_id: string | null; vehicle_id: string | null; driver_id: string | null;
+  scope: Scope | null;
+  origin_country: string | null; origin_city: string | null;
+  destination_country: string | null; destination_city: string | null;
   vehicles?: { plate_number: string } | null;
   drivers?: { full_name: string } | null;
   transport_orders?: { order_number: string } | null;
@@ -54,13 +60,17 @@ function ShipmentsPage() {
   const [form, setForm] = useState({
     shipment_number: "", order_id: "none", vehicle_id: "none", driver_id: "none",
     origin: "", destination: "", distance_km: "", status: "planned" as Status,
+    origin_country: DEFAULT_COUNTRY as string | null,
+    origin_city: null as string | null,
+    destination_country: DEFAULT_COUNTRY as string | null,
+    destination_city: null as string | null,
   });
 
   const load = async () => {
     setLoading(true);
     const [{ data, error }, { data: o }, { data: v }, { data: d }] = await Promise.all([
       supabase.from("shipments")
-        .select("id,shipment_number,origin,destination,distance_km,status,order_id,vehicle_id,driver_id,vehicles(plate_number),drivers(full_name),transport_orders(order_number)")
+        .select("id,shipment_number,origin,destination,distance_km,status,order_id,vehicle_id,driver_id,scope,origin_country,origin_city,destination_country,destination_city,vehicles(plate_number),drivers(full_name),transport_orders(order_number)")
         .order("created_at", { ascending: false }),
       supabase.from("transport_orders").select("id,order_number").order("created_at", { ascending: false }),
       supabase.from("vehicles").select("id,plate_number"),
@@ -78,12 +88,16 @@ function ShipmentsPage() {
     setSaving(true);
     const { data: profile } = await supabase.from("profiles").select("tenant_id").maybeSingle();
     if (!profile?.tenant_id) { toast.error("لا توجد شركة"); setSaving(false); return; }
+    const scope = scopeFor(form.origin_country, form.destination_country, form.origin_city, form.destination_city);
     const { error } = await supabase.from("shipments").insert({
       tenant_id: profile.tenant_id, shipment_number: form.shipment_number,
       order_id: form.order_id !== "none" ? form.order_id : null,
       vehicle_id: form.vehicle_id !== "none" ? form.vehicle_id : null,
       driver_id: form.driver_id !== "none" ? form.driver_id : null,
       origin: form.origin, destination: form.destination,
+      origin_country: form.origin_country, origin_city: form.origin_city,
+      destination_country: form.destination_country, destination_city: form.destination_city,
+      scope,
       distance_km: form.distance_km ? Number(form.distance_km) : null,
       status: form.status,
     });
@@ -91,7 +105,12 @@ function ShipmentsPage() {
     if (error) return toast.error(error.message);
     toast.success("تمت إضافة الشحنة");
     setOpen(false);
-    setForm({ shipment_number: "", order_id: "none", vehicle_id: "none", driver_id: "none", origin: "", destination: "", distance_km: "", status: "planned" });
+    setForm({
+      shipment_number: "", order_id: "none", vehicle_id: "none", driver_id: "none",
+      origin: "", destination: "", distance_km: "", status: "planned",
+      origin_country: DEFAULT_COUNTRY, origin_city: null,
+      destination_country: DEFAULT_COUNTRY, destination_city: null,
+    });
     load();
   };
 
@@ -197,12 +216,16 @@ function ShipmentsPage() {
                   </SelectContent>
                 </Select></div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div><Label>من *</Label>
-                <Input required value={form.origin} onChange={(e) => setForm({ ...form, origin: e.target.value })} /></div>
-              <div><Label>إلى *</Label>
-                <Input required value={form.destination} onChange={(e) => setForm({ ...form, destination: e.target.value })} /></div>
-            </div>
+            <RoutePicker
+              value={{
+                origin_country: form.origin_country,
+                origin_city: form.origin_city,
+                destination_country: form.destination_country,
+                destination_city: form.destination_city,
+              }}
+              onChange={(v: RouteValue) => setForm({ ...form, ...v })}
+              onLegacyChange={(o, d) => setForm((f) => ({ ...f, origin: o, destination: d }))}
+            />
             <div className="grid grid-cols-2 gap-3">
               <div><Label>المسافة (كم)</Label>
                 <Input type="number" step="0.1" value={form.distance_km} onChange={(e) => setForm({ ...form, distance_km: e.target.value })} /></div>
@@ -259,7 +282,16 @@ function ShipmentsPage() {
               {filtered.map((s) => (
                 <tr key={s.id} className="border-t border-border hover:bg-secondary/30">
                   <td className="p-4 font-mono font-semibold text-primary" dir="ltr">{s.shipment_number}</td>
-                  <td className="p-4">{s.origin}</td>
+                  <td className="p-4">
+                    {s.origin}
+                    {s.scope && (
+                      <div className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                        s.scope === "international" ? "bg-warning/20 text-warning-foreground" :
+                        s.scope === "national" ? "bg-success/15 text-success" :
+                        "bg-chart-3/15 text-chart-3"
+                      }`}>{SCOPE_LABELS[s.scope]}</div>
+                    )}
+                  </td>
                   <td className="p-4">{s.destination}</td>
                   <td className="p-4 font-mono text-xs" dir="ltr">{s.vehicles?.plate_number ?? "—"}</td>
                   <td className="p-4">{s.drivers?.full_name ?? "—"}</td>
