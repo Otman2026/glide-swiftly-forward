@@ -3,12 +3,15 @@ import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/dashboard-layout";
 import { supabase } from "@/integrations/supabase/client";
 import { ExportBar } from "@/components/export-bar";
-import { Radio, Plus, Loader2, X, Trash2, Pencil, CheckCircle2, XCircle } from "lucide-react";
+import { Radio, Plus, Loader2, X, Trash2, Pencil, CheckCircle2, XCircle, Settings, RefreshCw, Download } from "lucide-react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { syncTraccarPositions, testTraccarConnection } from "@/lib/traccar.functions";
 
 export const Route = createFileRoute("/app/gps")({
   component: GpsPage,
 });
+
 
 type Device = {
   id: string;
