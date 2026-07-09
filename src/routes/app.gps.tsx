@@ -309,7 +309,9 @@ function DeviceDialog({
       vehicle_id: form.vehicle_id || null,
       status: form.status,
       notes: form.notes || null,
+      traccar_device_id: form.traccar_device_id?.trim() || null,
     };
+
     const { error } = device
       ? await supabase.from("gps_devices").update(payload).eq("id", device.id)
       : await supabase
