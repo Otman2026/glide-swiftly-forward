@@ -1,3 +1,4 @@
+import { StatCard } from "@/components/stat-card";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader, EmptyState } from "@/components/dashboard-layout";
