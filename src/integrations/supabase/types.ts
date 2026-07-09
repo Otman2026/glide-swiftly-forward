@@ -750,6 +750,7 @@ export type Database = {
           sim_number: string | null
           status: string
           tenant_id: string
+          traccar_device_id: string | null
           updated_at: string
           vehicle_id: string | null
         }
@@ -766,6 +767,7 @@ export type Database = {
           sim_number?: string | null
           status?: string
           tenant_id: string
+          traccar_device_id?: string | null
           updated_at?: string
           vehicle_id?: string | null
         }
@@ -782,6 +784,7 @@ export type Database = {
           sim_number?: string | null
           status?: string
           tenant_id?: string
+          traccar_device_id?: string | null
           updated_at?: string
           vehicle_id?: string | null
         }
@@ -1911,6 +1914,50 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      traccar_configs: {
+        Row: {
+          base_url: string
+          created_at: string
+          enabled: boolean
+          id: string
+          last_sync_at: string | null
+          password: string | null
+          tenant_id: string
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          base_url: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          last_sync_at?: string | null
+          password?: string | null
+          tenant_id: string
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          base_url?: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          last_sync_at?: string | null
+          password?: string | null
+          tenant_id?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "traccar_configs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       transport_orders: {
         Row: {
