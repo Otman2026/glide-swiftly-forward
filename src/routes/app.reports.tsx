@@ -325,17 +325,6 @@ function pnlRows(pnl: any): Row[] {
   ];
 }
 
-function StatCard({ label, value, tint, icon: Icon }: { label: string; value: number; tint: string; icon: any }) {
-  return (
-    <div className="rounded-2xl border border-border bg-card p-6">
-      <div className="mb-2 flex items-center justify-between">
-        <div className="text-xs text-muted-foreground">{label}</div>
-        <Icon className={`h-5 w-5 ${tint}`} />
-      </div>
-      <div className={`text-3xl font-black ${tint}`}>{(value / 1000).toFixed(1)}K MAD</div>
-    </div>
-  );
-}
 
 function Line({ label, value, positive }: { label: string; value: number; positive?: boolean }) {
   return (
