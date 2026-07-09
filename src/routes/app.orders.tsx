@@ -23,11 +23,15 @@ export const Route = createFileRoute("/app/orders")({ component: OrdersPage });
 type Status = "pending" | "confirmed" | "assigned" | "in_transit" | "delivered" | "cancelled";
 type TType = "national" | "international" | "own_account" | "third_party";
 
+type Scope = "local" | "national" | "international";
 type Order = {
   id: string; order_number: string; transport_type: TType; origin: string; destination: string;
   pickup_date: string | null; delivery_date: string | null; price: number | null; currency: string | null;
   status: Status; customer_id: string; tenant_id: string;
   goods_description: string | null; weight_tons: number | null; notes: string | null;
+  scope: Scope | null;
+  origin_country: string | null; origin_city: string | null;
+  destination_country: string | null; destination_city: string | null;
   customers?: { name: string } | null;
 };
 
