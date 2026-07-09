@@ -296,7 +296,16 @@ function OrdersPage() {
                 <tr key={o.id} className="border-t border-border hover:bg-secondary/30">
                   <td className="p-4 font-mono font-semibold text-primary" dir="ltr">{o.order_number}</td>
                   <td className="p-4">{o.customers?.name ?? "—"}</td>
-                  <td className="p-4 text-xs">{TYPE_LABEL[o.transport_type]}</td>
+                  <td className="p-4 text-xs">
+                    <div>{TYPE_LABEL[o.transport_type]}</div>
+                    {o.scope && (
+                      <span className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                        o.scope === "international" ? "bg-warning/20 text-warning-foreground" :
+                        o.scope === "national" ? "bg-success/15 text-success" :
+                        "bg-chart-3/15 text-chart-3"
+                      }`}>{SCOPE_LABELS[o.scope]}</span>
+                    )}
+                  </td>
                   <td className="p-4">{o.origin}</td>
                   <td className="p-4">{o.destination}</td>
                   <td className="p-4 font-semibold">{o.price ? `${Number(o.price).toLocaleString()} ${o.currency}` : "—"}</td>
