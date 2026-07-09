@@ -453,11 +453,18 @@ function LicensesTab({ licenses, tenants, plans, onReload }: { licenses: License
           <DialogHeader><DialogTitle>{edit ? "تعديل ترخيص" : "ترخيص جديد"}</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div>
-              <Label>الشركة</Label>
+              <Label>الشركة / الحساب <span className="text-destructive">*</span></Label>
               <select value={form.tenant_id} onChange={(e) => setForm({ ...form, tenant_id: e.target.value })} className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm">
-                <option value="">— بلا (مفتاح مستقل) —</option>
-                {tenants.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+                <option value="">— اختر مؤسسة —</option>
+                {tenants.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}{t.contact_email ? ` — ${t.contact_email}` : ""}
+                  </option>
+                ))}
               </select>
+              {tenants.length === 0 && (
+                <p className="mt-1 text-xs text-destructive">لا توجد مؤسسات مسجلة. يجب أن ينشئ العميل حساباً مع اسم شركة أولاً.</p>
+              )}
             </div>
             <div>
               <Label>الخطة</Label>
