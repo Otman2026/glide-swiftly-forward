@@ -88,10 +88,15 @@ function OrdersPage() {
     setSaving(true);
     const { data: profile } = await supabase.from("profiles").select("tenant_id").maybeSingle();
     if (!profile?.tenant_id) { toast.error("لا توجد شركة"); setSaving(false); return; }
+    if (!form.origin_city || !form.destination_city) { toast.error("اختر مدينة الانطلاق والوصول"); setSaving(false); return; }
+    const scope = scopeFor(form.origin_country, form.destination_country, form.origin_city, form.destination_city);
     const { error } = await supabase.from("transport_orders").insert({
       tenant_id: profile.tenant_id, customer_id: form.customer_id,
       order_number: form.order_number, transport_type: form.transport_type,
       origin: form.origin, destination: form.destination,
+      origin_country: form.origin_country, origin_city: form.origin_city,
+      destination_country: form.destination_country, destination_city: form.destination_city,
+      scope,
       pickup_date: form.pickup_date || null, delivery_date: form.delivery_date || null,
       price: form.price ? Number(form.price) : null, currency: form.currency,
       status: form.status,
