@@ -274,19 +274,33 @@ export function DashboardLayout() {
               <Truck className="h-5 w-5 text-white" strokeWidth={2.5} />
             </div>
             <div>
-              <div className="text-sm font-black leading-tight">SAIFO</div>
-              <div className="-mt-0.5 text-[10px] font-bold tracking-widest text-accent">
-                TRANSPORT ERP
-              </div>
+              <div className="text-sm font-black leading-tight">{brandName}</div>
+              {brandTagline && (
+                <div className="-mt-0.5 text-[10px] font-bold tracking-widest text-accent">
+                  {brandTagline}
+                </div>
+              )}
             </div>
           </div>
-          <button
-            onClick={() => setMobileOpen(false)}
-            className="rounded-lg p-1 text-sidebar-foreground/70 hover:bg-sidebar-accent lg:hidden"
-            aria-label="إغلاق القائمة"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-1">
+            {canEditBrand && (
+              <button
+                onClick={handleEditBrand}
+                className="rounded-lg p-1 text-sidebar-foreground/70 hover:bg-sidebar-accent"
+                aria-label="تعديل اسم العلامة"
+                title="تعديل الاسم"
+              >
+                <Pencil className="h-4 w-4" />
+              </button>
+            )}
+            <button
+              onClick={() => setMobileOpen(false)}
+              className="rounded-lg p-1 text-sidebar-foreground/70 hover:bg-sidebar-accent lg:hidden"
+              aria-label="إغلاق القائمة"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         <nav className="flex-1 overflow-y-auto px-3 py-4">
