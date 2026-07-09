@@ -292,7 +292,16 @@ function TripsPage() {
                 return (
                   <tr key={r.id} className="border-t border-border hover:bg-secondary/30">
                     <td className="p-4 font-mono font-semibold" dir="ltr">{r.trip_number}</td>
-                    <td className="p-4 text-xs">{r.origin ?? "—"} → {r.destination ?? "—"}</td>
+                    <td className="p-4 text-xs">
+                      <div>{r.origin ?? "—"} → {r.destination ?? "—"}</div>
+                      {r.scope && (
+                        <span className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                          r.scope === "international" ? "bg-warning/20 text-warning-foreground" :
+                          r.scope === "national" ? "bg-success/15 text-success" :
+                          "bg-chart-3/15 text-chart-3"
+                        }`}>{SCOPE_LABELS[r.scope]}</span>
+                      )}
+                    </td>
                     <td className="p-4 font-mono text-xs" dir="ltr">{r.vehicles?.plate_number ?? "—"}</td>
                     <td className="p-4">{r.drivers?.full_name ?? "—"}</td>
                     <td className="p-4">{r.customers?.name ?? "—"}</td>
