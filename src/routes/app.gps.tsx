@@ -37,6 +37,10 @@ function GpsPage() {
   const [showArchived, setShowArchived] = useState(false);
   const [editing, setEditing] = useState<Device | null>(null);
   const [open, setOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const syncFn = useServerFn(syncTraccarPositions);
+
 
   const load = async () => {
     setLoading(true);
