@@ -31,6 +31,8 @@ import {
   Home,
   MapPin,
   CreditCard,
+  KeyRound,
+
   type LucideIcon,
 } from "lucide-react";
 
