@@ -283,9 +283,9 @@ function ReportsPage() {
       ) : tab === "pnl" ? (
         <div className="space-y-4">
           <div className="grid gap-4 md:grid-cols-3">
-            <StatCard label="الإيرادات" value={pnl.revenue} tint="text-success" icon={TrendingUp} />
-            <StatCard label="التكاليف" value={pnl.cost} tint="text-destructive" icon={TrendingDown} />
-            <StatCard label="صافي الربح" value={pnl.net} tint={pnl.net >= 0 ? "text-primary" : "text-destructive"} icon={Wallet} />
+            <SharedStatCard label="الإيرادات" value={`${(pnl.revenue / 1000).toFixed(1)}K MAD`} tone="success" icon={TrendingUp} />
+            <SharedStatCard label="التكاليف" value={`${(pnl.cost / 1000).toFixed(1)}K MAD`} tone="danger" icon={TrendingDown} />
+            <SharedStatCard label="صافي الربح" value={`${(pnl.net / 1000).toFixed(1)}K MAD`} tone={pnl.net >= 0 ? "brand" : "danger"} icon={Wallet} />
           </div>
           <div className="overflow-hidden rounded-2xl border border-border bg-card">
             <table className="w-full text-sm">
