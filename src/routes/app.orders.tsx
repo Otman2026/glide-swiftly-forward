@@ -15,6 +15,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { printHTML, esc } from "@/lib/print";
 import { ExportBar } from "@/components/export-bar";
+import { RoutePicker, type RouteValue } from "@/components/route-picker";
+import { DEFAULT_COUNTRY, SCOPE_LABELS, SCOPE_TONES, scopeFor } from "@/lib/geo";
 
 export const Route = createFileRoute("/app/orders")({ component: OrdersPage });
 
