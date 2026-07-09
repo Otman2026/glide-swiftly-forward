@@ -31,6 +31,8 @@ import {
   Home,
   MapPin,
   CreditCard,
+  KeyRound,
+
   type LucideIcon,
 } from "lucide-react";
 
@@ -101,9 +103,11 @@ const NAV: NavGroup[] = [
       { to: "/app/settings", label: "الإعدادات", icon: Settings },
       { to: "/app/users", label: "المستخدمون والصلاحيات", icon: Shield },
       { to: "/app/roles", label: "الأدوار والصلاحيات", icon: Shield },
+      { to: "/app/license", label: "التراخيص و Offline", icon: KeyRound },
       { to: "/app/audit", label: "سجل التدقيق", icon: FileText },
       { to: "/app/archive", label: "الأرشيف والاسترجاع", icon: FolderArchive },
     ],
+
   },
   {
     title: "إدارة النظام",

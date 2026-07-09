@@ -32,6 +32,7 @@ import { Route as AppPipelineRouteImport } from './routes/app.pipeline'
 import { Route as AppOrdersRouteImport } from './routes/app.orders'
 import { Route as AppNotificationsRouteImport } from './routes/app.notifications'
 import { Route as AppMaintenanceRouteImport } from './routes/app.maintenance'
+import { Route as AppLicenseRouteImport } from './routes/app.license'
 import { Route as AppKpiRouteImport } from './routes/app.kpi'
 import { Route as AppInvoicesRouteImport } from './routes/app.invoices'
 import { Route as AppInventoryRouteImport } from './routes/app.inventory'
@@ -168,6 +169,11 @@ const AppMaintenanceRoute = AppMaintenanceRouteImport.update({
   path: '/maintenance',
   getParentRoute: () => AppRoute,
 } as any)
+const AppLicenseRoute = AppLicenseRouteImport.update({
+  id: '/license',
+  path: '/license',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppKpiRoute = AppKpiRouteImport.update({
   id: '/kpi',
   path: '/kpi',
@@ -295,6 +301,7 @@ export interface FileRoutesByFullPath {
   '/app/inventory': typeof AppInventoryRoute
   '/app/invoices': typeof AppInvoicesRoute
   '/app/kpi': typeof AppKpiRoute
+  '/app/license': typeof AppLicenseRoute
   '/app/maintenance': typeof AppMaintenanceRoute
   '/app/notifications': typeof AppNotificationsRoute
   '/app/orders': typeof AppOrdersRoute
@@ -339,6 +346,7 @@ export interface FileRoutesByTo {
   '/app/inventory': typeof AppInventoryRoute
   '/app/invoices': typeof AppInvoicesRoute
   '/app/kpi': typeof AppKpiRoute
+  '/app/license': typeof AppLicenseRoute
   '/app/maintenance': typeof AppMaintenanceRoute
   '/app/notifications': typeof AppNotificationsRoute
   '/app/orders': typeof AppOrdersRoute
@@ -385,6 +393,7 @@ export interface FileRoutesById {
   '/app/inventory': typeof AppInventoryRoute
   '/app/invoices': typeof AppInvoicesRoute
   '/app/kpi': typeof AppKpiRoute
+  '/app/license': typeof AppLicenseRoute
   '/app/maintenance': typeof AppMaintenanceRoute
   '/app/notifications': typeof AppNotificationsRoute
   '/app/orders': typeof AppOrdersRoute
@@ -432,6 +441,7 @@ export interface FileRouteTypes {
     | '/app/inventory'
     | '/app/invoices'
     | '/app/kpi'
+    | '/app/license'
     | '/app/maintenance'
     | '/app/notifications'
     | '/app/orders'
@@ -476,6 +486,7 @@ export interface FileRouteTypes {
     | '/app/inventory'
     | '/app/invoices'
     | '/app/kpi'
+    | '/app/license'
     | '/app/maintenance'
     | '/app/notifications'
     | '/app/orders'
@@ -521,6 +532,7 @@ export interface FileRouteTypes {
     | '/app/inventory'
     | '/app/invoices'
     | '/app/kpi'
+    | '/app/license'
     | '/app/maintenance'
     | '/app/notifications'
     | '/app/orders'
@@ -717,6 +729,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMaintenanceRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/license': {
+      id: '/app/license'
+      path: '/license'
+      fullPath: '/app/license'
+      preLoaderRoute: typeof AppLicenseRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/kpi': {
       id: '/app/kpi'
       path: '/kpi'
@@ -890,6 +909,7 @@ interface AppRouteChildren {
   AppInventoryRoute: typeof AppInventoryRoute
   AppInvoicesRoute: typeof AppInvoicesRoute
   AppKpiRoute: typeof AppKpiRoute
+  AppLicenseRoute: typeof AppLicenseRoute
   AppMaintenanceRoute: typeof AppMaintenanceRoute
   AppNotificationsRoute: typeof AppNotificationsRoute
   AppOrdersRoute: typeof AppOrdersRoute
@@ -926,6 +946,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppInventoryRoute: AppInventoryRoute,
   AppInvoicesRoute: AppInvoicesRoute,
   AppKpiRoute: AppKpiRoute,
+  AppLicenseRoute: AppLicenseRoute,
   AppMaintenanceRoute: AppMaintenanceRoute,
   AppNotificationsRoute: AppNotificationsRoute,
   AppOrdersRoute: AppOrdersRoute,
