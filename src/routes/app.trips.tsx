@@ -86,11 +86,15 @@ function TripsPage() {
     setSaving(true);
     const { data: profile } = await supabase.from("profiles").select("tenant_id").maybeSingle();
     if (!profile?.tenant_id) { toast.error("لا توجد شركة"); setSaving(false); return; }
+    const scope = scopeFor(form.origin_country, form.destination_country, form.origin_city, form.destination_city);
     const { error } = await supabase.from("trips").insert({
       tenant_id: profile.tenant_id, trip_number: form.trip_number,
       vehicle_id: form.vehicle_id || null, driver_id: form.driver_id || null,
       customer_id: form.customer_id || null,
       origin: form.origin || null, destination: form.destination || null,
+      origin_country: form.origin_country, origin_city: form.origin_city,
+      destination_country: form.destination_country, destination_city: form.destination_city,
+      scope,
       distance_km: form.distance_km ? Number(form.distance_km) : null,
       revenue: form.revenue ? Number(form.revenue) : 0,
       cost: form.cost ? Number(form.cost) : 0,
