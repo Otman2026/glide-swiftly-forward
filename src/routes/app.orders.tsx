@@ -215,12 +215,16 @@ function OrdersPage() {
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>{Object.entries(TYPE_LABEL).map(([k, l]) => <SelectItem key={k} value={k}>{l}</SelectItem>)}</SelectContent>
                 </Select></div>
-              <div className="grid grid-cols-2 gap-3">
-                <div><Label>نقطة التحميل *</Label>
-                  <Input required value={form.origin} onChange={(e) => setForm({ ...form, origin: e.target.value })} /></div>
-                <div><Label>نقطة التسليم *</Label>
-                  <Input required value={form.destination} onChange={(e) => setForm({ ...form, destination: e.target.value })} /></div>
-              </div>
+              <RoutePicker
+                value={{
+                  origin_country: form.origin_country,
+                  origin_city: form.origin_city,
+                  destination_country: form.destination_country,
+                  destination_city: form.destination_city,
+                }}
+                onChange={(v: RouteValue) => setForm({ ...form, ...v })}
+                onLegacyChange={(o, d) => setForm((f) => ({ ...f, origin: o, destination: d }))}
+              />
               <div className="grid grid-cols-2 gap-3">
                 <div><Label>تاريخ التحميل</Label>
                   <Input type="date" value={form.pickup_date} onChange={(e) => setForm({ ...form, pickup_date: e.target.value })} /></div>
