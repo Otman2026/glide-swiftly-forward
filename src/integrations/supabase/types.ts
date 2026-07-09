@@ -1521,6 +1521,8 @@ export type Database = {
           created_at: string
           delivered_at: string | null
           destination: string
+          destination_city: string | null
+          destination_country: string | null
           distance_km: number | null
           driver_id: string | null
           id: string
@@ -1528,6 +1530,9 @@ export type Database = {
           notes: string | null
           order_id: string | null
           origin: string
+          origin_city: string | null
+          origin_country: string | null
+          scope: Database["public"]["Enums"]["trip_scope"] | null
           shipment_number: string
           status: Database["public"]["Enums"]["shipment_status"]
           tenant_id: string
@@ -1540,6 +1545,8 @@ export type Database = {
           created_at?: string
           delivered_at?: string | null
           destination: string
+          destination_city?: string | null
+          destination_country?: string | null
           distance_km?: number | null
           driver_id?: string | null
           id?: string
@@ -1547,6 +1554,9 @@ export type Database = {
           notes?: string | null
           order_id?: string | null
           origin: string
+          origin_city?: string | null
+          origin_country?: string | null
+          scope?: Database["public"]["Enums"]["trip_scope"] | null
           shipment_number: string
           status?: Database["public"]["Enums"]["shipment_status"]
           tenant_id: string
@@ -1559,6 +1569,8 @@ export type Database = {
           created_at?: string
           delivered_at?: string | null
           destination?: string
+          destination_city?: string | null
+          destination_country?: string | null
           distance_km?: number | null
           driver_id?: string | null
           id?: string
@@ -1566,6 +1578,9 @@ export type Database = {
           notes?: string | null
           order_id?: string | null
           origin?: string
+          origin_city?: string | null
+          origin_country?: string | null
+          scope?: Database["public"]["Enums"]["trip_scope"] | null
           shipment_number?: string
           status?: Database["public"]["Enums"]["shipment_status"]
           tenant_id?: string
@@ -1908,13 +1923,18 @@ export type Database = {
           customer_id: string
           delivery_date: string | null
           destination: string
+          destination_city: string | null
+          destination_country: string | null
           goods_description: string | null
           id: string
           notes: string | null
           order_number: string
           origin: string
+          origin_city: string | null
+          origin_country: string | null
           pickup_date: string | null
           price: number | null
+          scope: Database["public"]["Enums"]["trip_scope"] | null
           status: Database["public"]["Enums"]["order_status"]
           tenant_id: string
           transport_type: Database["public"]["Enums"]["transport_type"]
@@ -1931,13 +1951,18 @@ export type Database = {
           customer_id: string
           delivery_date?: string | null
           destination: string
+          destination_city?: string | null
+          destination_country?: string | null
           goods_description?: string | null
           id?: string
           notes?: string | null
           order_number: string
           origin: string
+          origin_city?: string | null
+          origin_country?: string | null
           pickup_date?: string | null
           price?: number | null
+          scope?: Database["public"]["Enums"]["trip_scope"] | null
           status?: Database["public"]["Enums"]["order_status"]
           tenant_id: string
           transport_type?: Database["public"]["Enums"]["transport_type"]
@@ -1954,13 +1979,18 @@ export type Database = {
           customer_id?: string
           delivery_date?: string | null
           destination?: string
+          destination_city?: string | null
+          destination_country?: string | null
           goods_description?: string | null
           id?: string
           notes?: string | null
           order_number?: string
           origin?: string
+          origin_city?: string | null
+          origin_country?: string | null
           pickup_date?: string | null
           price?: number | null
+          scope?: Database["public"]["Enums"]["trip_scope"] | null
           status?: Database["public"]["Enums"]["order_status"]
           tenant_id?: string
           transport_type?: Database["public"]["Enums"]["transport_type"]
@@ -2048,13 +2078,18 @@ export type Database = {
           created_at: string
           customer_id: string | null
           destination: string | null
+          destination_city: string | null
+          destination_country: string | null
           distance_km: number | null
           driver_id: string | null
           end_date: string | null
           id: string
           notes: string | null
           origin: string | null
+          origin_city: string | null
+          origin_country: string | null
           revenue: number | null
+          scope: Database["public"]["Enums"]["trip_scope"] | null
           start_date: string | null
           status: string
           tenant_id: string
@@ -2070,13 +2105,18 @@ export type Database = {
           created_at?: string
           customer_id?: string | null
           destination?: string | null
+          destination_city?: string | null
+          destination_country?: string | null
           distance_km?: number | null
           driver_id?: string | null
           end_date?: string | null
           id?: string
           notes?: string | null
           origin?: string | null
+          origin_city?: string | null
+          origin_country?: string | null
           revenue?: number | null
+          scope?: Database["public"]["Enums"]["trip_scope"] | null
           start_date?: string | null
           status?: string
           tenant_id: string
@@ -2092,13 +2132,18 @@ export type Database = {
           created_at?: string
           customer_id?: string | null
           destination?: string | null
+          destination_city?: string | null
+          destination_country?: string | null
           distance_km?: number | null
           driver_id?: string | null
           end_date?: string | null
           id?: string
           notes?: string | null
           origin?: string | null
+          origin_city?: string | null
+          origin_country?: string | null
           revenue?: number | null
+          scope?: Database["public"]["Enums"]["trip_scope"] | null
           start_date?: string | null
           status?: string
           tenant_id?: string
@@ -2498,6 +2543,7 @@ export type Database = {
         | "international"
         | "own_account"
         | "third_party"
+      trip_scope: "local" | "national" | "international"
       vehicle_status: "available" | "in_use" | "maintenance" | "out_of_service"
     }
     CompositeTypes: {
@@ -2661,6 +2707,7 @@ export const Constants = {
         "own_account",
         "third_party",
       ],
+      trip_scope: ["local", "national", "international"],
       vehicle_status: ["available", "in_use", "maintenance", "out_of_service"],
     },
   },

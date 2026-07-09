@@ -15,17 +15,23 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { printHTML, esc } from "@/lib/print";
 import { ExportBar } from "@/components/export-bar";
+import { RoutePicker, type RouteValue } from "@/components/route-picker";
+import { DEFAULT_COUNTRY, SCOPE_LABELS, scopeFor } from "@/lib/geo";
 
 export const Route = createFileRoute("/app/orders")({ component: OrdersPage });
 
 type Status = "pending" | "confirmed" | "assigned" | "in_transit" | "delivered" | "cancelled";
 type TType = "national" | "international" | "own_account" | "third_party";
 
+type Scope = "local" | "national" | "international";
 type Order = {
   id: string; order_number: string; transport_type: TType; origin: string; destination: string;
   pickup_date: string | null; delivery_date: string | null; price: number | null; currency: string | null;
   status: Status; customer_id: string; tenant_id: string;
   goods_description: string | null; weight_tons: number | null; notes: string | null;
+  scope: Scope | null;
+  origin_country: string | null; origin_city: string | null;
+  destination_country: string | null; destination_city: string | null;
   customers?: { name: string } | null;
 };
 
@@ -48,6 +54,10 @@ const emptyForm = {
   origin: "", destination: "", pickup_date: "", delivery_date: "",
   price: "", currency: "MAD", status: "pending" as Status,
   goods_description: "", weight_tons: "",
+  origin_country: DEFAULT_COUNTRY as string | null,
+  origin_city: null as string | null,
+  destination_country: DEFAULT_COUNTRY as string | null,
+  destination_city: null as string | null,
 };
 
 function OrdersPage() {
@@ -65,7 +75,7 @@ function OrdersPage() {
     setLoading(true);
     const [{ data, error }, { data: cust }] = await Promise.all([
       supabase.from("transport_orders")
-        .select("id,order_number,transport_type,origin,destination,pickup_date,delivery_date,price,currency,status,customer_id,tenant_id,goods_description,weight_tons,notes,customers(name)")
+        .select("id,order_number,transport_type,origin,destination,pickup_date,delivery_date,price,currency,status,customer_id,tenant_id,goods_description,weight_tons,notes,scope,origin_country,origin_city,destination_country,destination_city,customers(name)")
         .order("created_at", { ascending: false }),
       supabase.from("customers").select("id,name").order("name"),
     ]);
@@ -82,10 +92,15 @@ function OrdersPage() {
     setSaving(true);
     const { data: profile } = await supabase.from("profiles").select("tenant_id").maybeSingle();
     if (!profile?.tenant_id) { toast.error("لا توجد شركة"); setSaving(false); return; }
+    if (!form.origin_city || !form.destination_city) { toast.error("اختر مدينة الانطلاق والوصول"); setSaving(false); return; }
+    const scope = scopeFor(form.origin_country, form.destination_country, form.origin_city, form.destination_city);
     const { error } = await supabase.from("transport_orders").insert({
       tenant_id: profile.tenant_id, customer_id: form.customer_id,
       order_number: form.order_number, transport_type: form.transport_type,
       origin: form.origin, destination: form.destination,
+      origin_country: form.origin_country, origin_city: form.origin_city,
+      destination_country: form.destination_country, destination_city: form.destination_city,
+      scope,
       pickup_date: form.pickup_date || null, delivery_date: form.delivery_date || null,
       price: form.price ? Number(form.price) : null, currency: form.currency,
       status: form.status,
@@ -204,12 +219,16 @@ function OrdersPage() {
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>{Object.entries(TYPE_LABEL).map(([k, l]) => <SelectItem key={k} value={k}>{l}</SelectItem>)}</SelectContent>
                 </Select></div>
-              <div className="grid grid-cols-2 gap-3">
-                <div><Label>نقطة التحميل *</Label>
-                  <Input required value={form.origin} onChange={(e) => setForm({ ...form, origin: e.target.value })} /></div>
-                <div><Label>نقطة التسليم *</Label>
-                  <Input required value={form.destination} onChange={(e) => setForm({ ...form, destination: e.target.value })} /></div>
-              </div>
+              <RoutePicker
+                value={{
+                  origin_country: form.origin_country,
+                  origin_city: form.origin_city,
+                  destination_country: form.destination_country,
+                  destination_city: form.destination_city,
+                }}
+                onChange={(v: RouteValue) => setForm({ ...form, ...v })}
+                onLegacyChange={(o, d) => setForm((f) => ({ ...f, origin: o, destination: d }))}
+              />
               <div className="grid grid-cols-2 gap-3">
                 <div><Label>تاريخ التحميل</Label>
                   <Input type="date" value={form.pickup_date} onChange={(e) => setForm({ ...form, pickup_date: e.target.value })} /></div>
@@ -277,7 +296,16 @@ function OrdersPage() {
                 <tr key={o.id} className="border-t border-border hover:bg-secondary/30">
                   <td className="p-4 font-mono font-semibold text-primary" dir="ltr">{o.order_number}</td>
                   <td className="p-4">{o.customers?.name ?? "—"}</td>
-                  <td className="p-4 text-xs">{TYPE_LABEL[o.transport_type]}</td>
+                  <td className="p-4 text-xs">
+                    <div>{TYPE_LABEL[o.transport_type]}</div>
+                    {o.scope && (
+                      <span className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                        o.scope === "international" ? "bg-warning/20 text-warning-foreground" :
+                        o.scope === "national" ? "bg-success/15 text-success" :
+                        "bg-chart-3/15 text-chart-3"
+                      }`}>{SCOPE_LABELS[o.scope]}</span>
+                    )}
+                  </td>
                   <td className="p-4">{o.origin}</td>
                   <td className="p-4">{o.destination}</td>
                   <td className="p-4 font-semibold">{o.price ? `${Number(o.price).toLocaleString()} ${o.currency}` : "—"}</td>
