@@ -216,12 +216,16 @@ function ShipmentsPage() {
                   </SelectContent>
                 </Select></div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div><Label>من *</Label>
-                <Input required value={form.origin} onChange={(e) => setForm({ ...form, origin: e.target.value })} /></div>
-              <div><Label>إلى *</Label>
-                <Input required value={form.destination} onChange={(e) => setForm({ ...form, destination: e.target.value })} /></div>
-            </div>
+            <RoutePicker
+              value={{
+                origin_country: form.origin_country,
+                origin_city: form.origin_city,
+                destination_country: form.destination_country,
+                destination_city: form.destination_city,
+              }}
+              onChange={(v: RouteValue) => setForm({ ...form, ...v })}
+              onLegacyChange={(o, d) => setForm((f) => ({ ...f, origin: o, destination: d }))}
+            />
             <div className="grid grid-cols-2 gap-3">
               <div><Label>المسافة (كم)</Label>
                 <Input type="number" step="0.1" value={form.distance_km} onChange={(e) => setForm({ ...form, distance_km: e.target.value })} /></div>
