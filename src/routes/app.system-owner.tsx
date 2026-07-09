@@ -337,9 +337,20 @@ function SubsTab({ tenants, plans, onReload }: { tenants: Tenant[]; plans: Plan[
 function LicensesTab({ licenses, tenants, plans, onReload }: { licenses: License[]; tenants: Tenant[]; plans: Plan[]; onReload: () => void }) {
   const [open, setOpen] = useState(false);
   const [edit, setEdit] = useState<License | null>(null);
+  const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<{ tenant_id: string; plan_key: string; expires_at: string; notes: string; max_users: string; max_vehicles: string }>(
     { tenant_id: "", plan_key: "starter", expires_at: "", notes: "", max_users: "", max_vehicles: "" }
   );
+
+  function makeLicenseKey() {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    const groups = Array.from({ length: 4 }, (_, groupIndex) =>
+      Array.from({ length: 4 }, (_, charIndex) => chars[bytes[groupIndex * 4 + charIndex] % chars.length]).join(""),
+    );
+    return `SAIFO-${groups.join("-")}`;
+  }
 
   function openNew() {
     setEdit(null);
@@ -359,8 +370,13 @@ function LicensesTab({ licenses, tenants, plans, onReload }: { licenses: License
   }
 
   async function save() {
+    if (!form.tenant_id) return toast.error("يرجى اختيار الشركة / الحساب أولاً");
+    if (!form.plan_key) return toast.error("يرجى اختيار الخطة");
+
+    setSaving(true);
+    const { data: user } = await supabase.auth.getUser();
     const payload = {
-      tenant_id: form.tenant_id || null,
+      tenant_id: form.tenant_id,
       plan_key: form.plan_key,
       expires_at: form.expires_at ? new Date(form.expires_at).toISOString() : null,
       notes: form.notes || null,
@@ -369,7 +385,12 @@ function LicensesTab({ licenses, tenants, plans, onReload }: { licenses: License
     };
     const res = edit
       ? await supabase.from("license_keys").update(payload).eq("id", edit.id)
-      : await supabase.from("license_keys").insert(payload as any);
+      : await supabase.from("license_keys").insert({
+          ...payload,
+          license_key: makeLicenseKey(),
+          issued_by: user.user?.id ?? null,
+        } as any);
+    setSaving(false);
     if (res.error) return toast.error(res.error.message);
     toast.success(edit ? "تم التعديل" : "تم إنشاء الترخيص");
     setOpen(false);
@@ -481,7 +502,10 @@ function LicensesTab({ licenses, tenants, plans, onReload }: { licenses: License
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>إلغاء</Button>
-            <Button onClick={save}>{edit ? "حفظ" : "إنشاء"}</Button>
+            <Button onClick={save} disabled={saving || !form.tenant_id || !form.plan_key}>
+              {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+              {edit ? "حفظ" : "إنشاء"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
