@@ -4,6 +4,10 @@
   "version": "1.0.1",
   "description": "SAIFO TRANSPORT ERP — Desktop",
   "author": "SAIFO Transport",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Otman2026/glide-swiftly-forward.git"
+  },
   "main": "main.cjs",
   "private": true,
   "scripts": {
