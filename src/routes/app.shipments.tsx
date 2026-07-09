@@ -21,10 +21,14 @@ import { DEFAULT_COUNTRY, SCOPE_LABELS, scopeFor } from "@/lib/geo";
 export const Route = createFileRoute("/app/shipments")({ component: ShipmentsPage });
 
 type Status = "planned" | "loading" | "in_transit" | "delivered" | "cancelled";
+type Scope = "local" | "national" | "international";
 type Shipment = {
   id: string; shipment_number: string; origin: string; destination: string;
   distance_km: number | null; status: Status;
   order_id: string | null; vehicle_id: string | null; driver_id: string | null;
+  scope: Scope | null;
+  origin_country: string | null; origin_city: string | null;
+  destination_country: string | null; destination_city: string | null;
   vehicles?: { plate_number: string } | null;
   drivers?: { full_name: string } | null;
   transport_orders?: { order_number: string } | null;
