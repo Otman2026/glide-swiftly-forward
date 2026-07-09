@@ -46,6 +46,10 @@ const STATUS_COLOR: Record<string, string> = {
 const emptyForm = {
   trip_number: "", vehicle_id: "", driver_id: "", customer_id: "",
   origin: "", destination: "", distance_km: "", revenue: "", cost: "", status: "planned",
+  origin_country: DEFAULT_COUNTRY as string | null,
+  origin_city: null as string | null,
+  destination_country: DEFAULT_COUNTRY as string | null,
+  destination_city: null as string | null,
 };
 
 function TripsPage() {
