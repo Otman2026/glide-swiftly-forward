@@ -56,7 +56,7 @@ const TONE_STYLES: Record<
 export type StatCardProps = {
   label: string;
   value: string | number;
-  icon: LucideIcon;
+  icon?: LucideIcon;
   tone?: StatTone;
   hint?: string;
   suffix?: string;
