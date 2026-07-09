@@ -70,7 +70,7 @@ function ShipmentsPage() {
     setLoading(true);
     const [{ data, error }, { data: o }, { data: v }, { data: d }] = await Promise.all([
       supabase.from("shipments")
-        .select("id,shipment_number,origin,destination,distance_km,status,order_id,vehicle_id,driver_id,vehicles(plate_number),drivers(full_name),transport_orders(order_number)")
+        .select("id,shipment_number,origin,destination,distance_km,status,order_id,vehicle_id,driver_id,scope,origin_country,origin_city,destination_country,destination_city,vehicles(plate_number),drivers(full_name),transport_orders(order_number)")
         .order("created_at", { ascending: false }),
       supabase.from("transport_orders").select("id,order_number").order("created_at", { ascending: false }),
       supabase.from("vehicles").select("id,plate_number"),
