@@ -60,6 +60,10 @@ function ShipmentsPage() {
   const [form, setForm] = useState({
     shipment_number: "", order_id: "none", vehicle_id: "none", driver_id: "none",
     origin: "", destination: "", distance_km: "", status: "planned" as Status,
+    origin_country: DEFAULT_COUNTRY as string | null,
+    origin_city: null as string | null,
+    destination_country: DEFAULT_COUNTRY as string | null,
+    destination_city: null as string | null,
   });
 
   const load = async () => {
