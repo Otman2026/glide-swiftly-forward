@@ -157,6 +157,11 @@ export function DashboardLayout() {
       if (u.user) {
         const { data: sys } = await supabase.rpc("is_system_owner", { _user_id: u.user.id });
         setIsSysOwner(!!sys);
+        const { data: adminRole } = await supabase.rpc("has_role", {
+          _user_id: u.user.id,
+          _role: "company_admin",
+        });
+        setCanEditBrand(!!adminRole || !!sys);
       }
       const { data: profile } = await supabase
         .from("profiles")
@@ -169,6 +174,7 @@ export function DashboardLayout() {
         ends_at: null,
       };
       if (profile?.tenant_id) {
+        setTenantId(profile.tenant_id);
         const [{ data: t }, { data: sub }] = await Promise.all([
           supabase.from("tenants").select("name").eq("id", profile.tenant_id).maybeSingle(),
           supabase
@@ -180,6 +186,7 @@ export function DashboardLayout() {
             .maybeSingle(),
         ]);
         tenant_name = t?.name ?? null;
+        if (tenant_name && !localStorage.getItem("brand_name")) setBrandName(tenant_name);
         subscription = {
           plan: sub?.plan ?? null,
           status: sub?.status ?? null,
