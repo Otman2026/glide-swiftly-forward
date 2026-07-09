@@ -220,6 +220,28 @@ export function DashboardLayout() {
     navigate({ to: "/auth" });
   };
 
+  const handleEditBrand = async () => {
+    const newName = window.prompt("اسم العلامة التجارية (السطر الأول)", brandName);
+    if (newName === null) return;
+    const newTagline = window.prompt("الوصف (السطر الثاني)", brandTagline);
+    if (newTagline === null) return;
+    const name = newName.trim() || "SAIFO";
+    const tagline = newTagline.trim();
+    setBrandName(name);
+    setBrandTagline(tagline);
+    localStorage.setItem("brand_name", name);
+    localStorage.setItem("brand_tagline", tagline);
+    if (tenantId) {
+      const { error } = await supabase.from("tenants").update({ name }).eq("id", tenantId);
+      if (error) {
+        toast.error("تعذر حفظ اسم الشركة: " + error.message);
+        return;
+      }
+      setMe((m) => ({ ...m, tenant_name: name }));
+    }
+    toast.success("تم تحديث اسم العلامة");
+  };
+
   const remainingTrialDays = me.ends_at
     ? Math.max(0, Math.ceil((new Date(me.ends_at).getTime() - Date.now()) / 86_400_000))
     : null;
