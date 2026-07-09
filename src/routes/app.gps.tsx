@@ -85,7 +85,21 @@ function GpsPage() {
     load();
   };
 
+  const runSync = async () => {
+    setSyncing(true);
+    try {
+      const r = await syncFn();
+      toast.success(`تمت المزامنة: ${r.updated} جهاز، ${r.inserted} نقطة مسار`);
+      load();
+    } catch (e: any) {
+      toast.error(e?.message ?? "فشل الاتصال بـ Traccar");
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   return (
+
     <>
       <PageHeader
         title="أجهزة GPS"
