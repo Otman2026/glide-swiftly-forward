@@ -3,12 +3,15 @@ import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/dashboard-layout";
 import { supabase } from "@/integrations/supabase/client";
 import { ExportBar } from "@/components/export-bar";
-import { Radio, Plus, Loader2, X, Trash2, Pencil, CheckCircle2, XCircle } from "lucide-react";
+import { Radio, Plus, Loader2, X, Trash2, Pencil, CheckCircle2, XCircle, Settings, RefreshCw, Download } from "lucide-react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { syncTraccarPositions, testTraccarConnection } from "@/lib/traccar.functions";
 
 export const Route = createFileRoute("/app/gps")({
   component: GpsPage,
 });
+
 
 type Device = {
   id: string;
@@ -22,8 +25,10 @@ type Device = {
   last_longitude: number | null;
   notes: string | null;
   archived_at: string | null;
+  traccar_device_id: string | null;
 };
 type Vehicle = { id: string; plate_number: string };
+
 
 function GpsPage() {
   const [devices, setDevices] = useState<Device[]>([]);
@@ -32,6 +37,10 @@ function GpsPage() {
   const [showArchived, setShowArchived] = useState(false);
   const [editing, setEditing] = useState<Device | null>(null);
   const [open, setOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const syncFn = useServerFn(syncTraccarPositions);
+
 
   const load = async () => {
     setLoading(true);
@@ -76,7 +85,21 @@ function GpsPage() {
     load();
   };
 
+  const runSync = async () => {
+    setSyncing(true);
+    try {
+      const r = await syncFn();
+      toast.success(`تمت المزامنة: ${r.updated} جهاز، ${r.inserted} نقطة مسار`);
+      load();
+    } catch (e: any) {
+      toast.error(e?.message ?? "فشل الاتصال بـ Traccar");
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   return (
+
     <>
       <PageHeader
         title="أجهزة GPS"
@@ -97,6 +120,22 @@ function GpsPage() {
               ]}
             />
             <button
+              onClick={runSync}
+              disabled={syncing}
+              className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold hover:bg-secondary disabled:opacity-60"
+              title="مزامنة المواقع من Traccar"
+            >
+              {syncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+              مزامنة Traccar
+            </button>
+            <button
+              onClick={() => setSettingsOpen(true)}
+              className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold hover:bg-secondary"
+              title="إعدادات Traccar"
+            >
+              <Settings className="h-4 w-4" /> إعدادات
+            </button>
+            <button
               onClick={() => {
                 setEditing(null);
                 setOpen(true);
@@ -106,6 +145,7 @@ function GpsPage() {
               <Plus className="h-4 w-4" /> إضافة جهاز
             </button>
           </div>
+
         }
       />
 
@@ -220,9 +260,13 @@ function GpsPage() {
           }}
         />
       )}
+      {settingsOpen && (
+        <TraccarSettingsDialog onClose={() => setSettingsOpen(false)} />
+      )}
     </>
   );
 }
+
 
 function DeviceDialog({
   device,
@@ -242,7 +286,9 @@ function DeviceDialog({
     vehicle_id: device?.vehicle_id ?? "",
     status: device?.status ?? "active",
     notes: device?.notes ?? "",
+    traccar_device_id: device?.traccar_device_id ?? "",
   });
+
   const [saving, setSaving] = useState(false);
 
   const save = async () => {
@@ -263,7 +309,9 @@ function DeviceDialog({
       vehicle_id: form.vehicle_id || null,
       status: form.status,
       notes: form.notes || null,
+      traccar_device_id: form.traccar_device_id?.trim() || null,
     };
+
     const { error } = device
       ? await supabase.from("gps_devices").update(payload).eq("id", device.id)
       : await supabase
@@ -335,6 +383,14 @@ function DeviceDialog({
               </select>
             </Field>
           </div>
+          <Field label="معرّف الجهاز في Traccar (uniqueId / id)">
+            <input
+              value={form.traccar_device_id}
+              onChange={(e) => setForm({ ...form, traccar_device_id: e.target.value })}
+              placeholder="مثال: 123 أو 860123456789"
+              className="input"
+            />
+          </Field>
           <Field label="ملاحظات">
             <textarea
               value={form.notes}
@@ -342,6 +398,7 @@ function DeviceDialog({
               className="input min-h-[70px]"
             />
           </Field>
+
         </div>
         <div className="mt-5 flex justify-end gap-2">
           <button
@@ -370,5 +427,203 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <span className="mb-1 block text-xs font-bold text-muted-foreground">{label}</span>
       {children}
     </label>
+  );
+}
+
+type TraccarConfig = {
+  base_url: string;
+  username: string | null;
+  password: string | null;
+  enabled: boolean;
+  last_sync_at: string | null;
+};
+
+function TraccarSettingsDialog({ onClose }: { onClose: () => void }) {
+  const [form, setForm] = useState<TraccarConfig>({
+    base_url: "",
+    username: "",
+    password: "",
+    enabled: true,
+    last_sync_at: null,
+  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [tenantId, setTenantId] = useState<string | null>(null);
+  const [remoteDevices, setRemoteDevices] = useState<Array<{ id: number; name: string; uniqueId: string; status: string }>>([]);
+  const testFn = useServerFn(testTraccarConnection);
+
+  useEffect(() => {
+    (async () => {
+      const { data: profile } = await supabase.from("profiles").select("tenant_id").maybeSingle();
+      if (!profile?.tenant_id) {
+        toast.error("لا توجد شركة مرتبطة");
+        onClose();
+        return;
+      }
+      setTenantId(profile.tenant_id);
+      const { data } = await supabase
+        .from("traccar_configs")
+        .select("*")
+        .eq("tenant_id", profile.tenant_id)
+        .maybeSingle();
+      if (data) {
+        setForm({
+          base_url: data.base_url ?? "",
+          username: data.username ?? "",
+          password: data.password ?? "",
+          enabled: data.enabled ?? true,
+          last_sync_at: data.last_sync_at,
+        });
+      }
+      setLoading(false);
+    })();
+  }, [onClose]);
+
+  const save = async () => {
+    if (!tenantId) return;
+    if (!form.base_url.trim()) return toast.error("عنوان الخادم مطلوب");
+    setSaving(true);
+    const payload = {
+      tenant_id: tenantId,
+      base_url: form.base_url.trim().replace(/\/+$/, ""),
+      username: form.username || null,
+      password: form.password || null,
+      enabled: form.enabled,
+    };
+    const { error } = await supabase
+      .from("traccar_configs")
+      .upsert(payload, { onConflict: "tenant_id" });
+    setSaving(false);
+    if (error) return toast.error(error.message);
+    toast.success("تم الحفظ");
+  };
+
+  const test = async () => {
+    if (!form.base_url.trim()) return toast.error("أدخل عنوان الخادم أولاً");
+    setTesting(true);
+    try {
+      const r = await testFn({
+        data: {
+          base_url: form.base_url.trim(),
+          username: form.username || undefined,
+          password: form.password || undefined,
+        },
+      });
+      setRemoteDevices(r.devices);
+      toast.success(`اتصال ناجح — ${r.count} جهاز في Traccar`);
+    } catch (e: any) {
+      toast.error(e?.message ?? "فشل الاتصال");
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="w-full max-w-2xl rounded-2xl border border-border bg-card p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-bold">إعدادات Traccar</h2>
+          <button onClick={onClose} className="rounded p-1 hover:bg-secondary">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        {loading ? (
+          <div className="flex justify-center py-10">
+            <Loader2 className="h-6 w-6 animate-spin text-accent" />
+          </div>
+        ) : (
+          <div className="grid gap-3">
+            <Field label="عنوان خادم Traccar *">
+              <input
+                value={form.base_url}
+                onChange={(e) => setForm({ ...form, base_url: e.target.value })}
+                placeholder="https://demo.traccar.org"
+                className="input"
+                dir="ltr"
+              />
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="اسم المستخدم">
+                <input
+                  value={form.username ?? ""}
+                  onChange={(e) => setForm({ ...form, username: e.target.value })}
+                  className="input"
+                  dir="ltr"
+                />
+              </Field>
+              <Field label="كلمة السر">
+                <input
+                  type="password"
+                  value={form.password ?? ""}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  className="input"
+                  dir="ltr"
+                />
+              </Field>
+            </div>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={form.enabled}
+                onChange={(e) => setForm({ ...form, enabled: e.target.checked })}
+              />
+              مُفعّل
+            </label>
+            {form.last_sync_at && (
+              <div className="text-xs text-muted-foreground">
+                آخر مزامنة: {new Date(form.last_sync_at).toLocaleString("ar")}
+              </div>
+            )}
+            {remoteDevices.length > 0 && (
+              <div className="max-h-48 overflow-y-auto rounded-lg border border-border p-2">
+                <div className="mb-1 text-xs font-bold text-muted-foreground">أجهزة Traccar المكتشفة:</div>
+                <table className="w-full text-xs">
+                  <thead className="text-muted-foreground">
+                    <tr><th className="text-right">ID</th><th className="text-right">الاسم</th><th className="text-right">uniqueId</th><th className="text-right">الحالة</th></tr>
+                  </thead>
+                  <tbody>
+                    {remoteDevices.map((d) => (
+                      <tr key={d.id} className="border-t border-border">
+                        <td className="py-1 font-mono">{d.id}</td>
+                        <td>{d.name}</td>
+                        <td className="font-mono">{d.uniqueId}</td>
+                        <td>{d.status}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div className="mt-1 text-[10px] text-muted-foreground">
+                  استخدم قيمة ID أو uniqueId في حقل "معرّف جهاز Traccar" لكل جهاز.
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+        <div className="mt-5 flex justify-end gap-2">
+          <button
+            onClick={test}
+            disabled={testing}
+            className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-semibold hover:bg-secondary disabled:opacity-60"
+          >
+            {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+            اختبار وجلب الأجهزة
+          </button>
+          <button
+            onClick={onClose}
+            className="rounded-lg border border-border px-4 py-2 text-sm font-semibold"
+          >
+            إغلاق
+          </button>
+          <button
+            onClick={save}
+            disabled={saving}
+            className="rounded-lg bg-accent px-4 py-2 text-sm font-bold text-accent-foreground disabled:opacity-60"
+          >
+            {saving ? "جاري الحفظ..." : "حفظ"}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
