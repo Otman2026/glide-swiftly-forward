@@ -38,6 +38,7 @@ import { Route as AppInvoicesRouteImport } from './routes/app.invoices'
 import { Route as AppInventoryRouteImport } from './routes/app.inventory'
 import { Route as AppInsightsRouteImport } from './routes/app.insights'
 import { Route as AppHrRouteImport } from './routes/app.hr'
+import { Route as AppHelpRouteImport } from './routes/app.help'
 import { Route as AppGpsRouteImport } from './routes/app.gps'
 import { Route as AppFuelRouteImport } from './routes/app.fuel'
 import { Route as AppFinanceRouteImport } from './routes/app.finance'
@@ -199,6 +200,11 @@ const AppHrRoute = AppHrRouteImport.update({
   path: '/hr',
   getParentRoute: () => AppRoute,
 } as any)
+const AppHelpRoute = AppHelpRouteImport.update({
+  id: '/help',
+  path: '/help',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppGpsRoute = AppGpsRouteImport.update({
   id: '/gps',
   path: '/gps',
@@ -296,6 +302,7 @@ export interface FileRoutesByFullPath {
   '/app/finance': typeof AppFinanceRoute
   '/app/fuel': typeof AppFuelRoute
   '/app/gps': typeof AppGpsRoute
+  '/app/help': typeof AppHelpRoute
   '/app/hr': typeof AppHrRoute
   '/app/insights': typeof AppInsightsRoute
   '/app/inventory': typeof AppInventoryRoute
@@ -341,6 +348,7 @@ export interface FileRoutesByTo {
   '/app/finance': typeof AppFinanceRoute
   '/app/fuel': typeof AppFuelRoute
   '/app/gps': typeof AppGpsRoute
+  '/app/help': typeof AppHelpRoute
   '/app/hr': typeof AppHrRoute
   '/app/insights': typeof AppInsightsRoute
   '/app/inventory': typeof AppInventoryRoute
@@ -388,6 +396,7 @@ export interface FileRoutesById {
   '/app/finance': typeof AppFinanceRoute
   '/app/fuel': typeof AppFuelRoute
   '/app/gps': typeof AppGpsRoute
+  '/app/help': typeof AppHelpRoute
   '/app/hr': typeof AppHrRoute
   '/app/insights': typeof AppInsightsRoute
   '/app/inventory': typeof AppInventoryRoute
@@ -436,6 +445,7 @@ export interface FileRouteTypes {
     | '/app/finance'
     | '/app/fuel'
     | '/app/gps'
+    | '/app/help'
     | '/app/hr'
     | '/app/insights'
     | '/app/inventory'
@@ -481,6 +491,7 @@ export interface FileRouteTypes {
     | '/app/finance'
     | '/app/fuel'
     | '/app/gps'
+    | '/app/help'
     | '/app/hr'
     | '/app/insights'
     | '/app/inventory'
@@ -527,6 +538,7 @@ export interface FileRouteTypes {
     | '/app/finance'
     | '/app/fuel'
     | '/app/gps'
+    | '/app/help'
     | '/app/hr'
     | '/app/insights'
     | '/app/inventory'
@@ -771,6 +783,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppHrRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/help': {
+      id: '/app/help'
+      path: '/help'
+      fullPath: '/app/help'
+      preLoaderRoute: typeof AppHelpRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/gps': {
       id: '/app/gps'
       path: '/gps'
@@ -904,6 +923,7 @@ interface AppRouteChildren {
   AppFinanceRoute: typeof AppFinanceRoute
   AppFuelRoute: typeof AppFuelRoute
   AppGpsRoute: typeof AppGpsRoute
+  AppHelpRoute: typeof AppHelpRoute
   AppHrRoute: typeof AppHrRoute
   AppInsightsRoute: typeof AppInsightsRoute
   AppInventoryRoute: typeof AppInventoryRoute
@@ -941,6 +961,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppFinanceRoute: AppFinanceRoute,
   AppFuelRoute: AppFuelRoute,
   AppGpsRoute: AppGpsRoute,
+  AppHelpRoute: AppHelpRoute,
   AppHrRoute: AppHrRoute,
   AppInsightsRoute: AppInsightsRoute,
   AppInventoryRoute: AppInventoryRoute,

@@ -33,6 +33,7 @@ import {
   CreditCard,
   KeyRound,
   Pencil,
+  HelpCircle,
 
   type LucideIcon,
 } from "lucide-react";
