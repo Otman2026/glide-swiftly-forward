@@ -50,11 +50,12 @@ type BillingRequest = {
   tenants?: { name: string; contact_email: string | null } | null;
 };
 
-type TabKey = "overview" | "tenants" | "subs" | "licenses" | "plans" | "requests" | "report";
+type TabKey = "overview" | "tenants" | "accounts" | "subs" | "licenses" | "plans" | "requests" | "report";
 
 const TABS: { key: TabKey; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { key: "overview", label: "نظرة عامة", icon: Crown },
   { key: "tenants", label: "الشركات", icon: Building2 },
+  { key: "accounts", label: "الحسابات والصلاحيات", icon: UserCog },
   { key: "subs", label: "الاشتراكات", icon: ShieldCheck },
   { key: "licenses", label: "التراخيص", icon: Key },
   { key: "plans", label: "الخطط والأسعار", icon: Layers },
