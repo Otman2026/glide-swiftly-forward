@@ -286,7 +286,9 @@ function DeviceDialog({
     vehicle_id: device?.vehicle_id ?? "",
     status: device?.status ?? "active",
     notes: device?.notes ?? "",
+    traccar_device_id: device?.traccar_device_id ?? "",
   });
+
   const [saving, setSaving] = useState(false);
 
   const save = async () => {
