@@ -229,10 +229,16 @@ function TripsPage() {
                   <option value="">—</option>{customers.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
                 </select></div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div><Label>من</Label><Input value={form.origin} onChange={(e) => setForm({ ...form, origin: e.target.value })} /></div>
-              <div><Label>إلى</Label><Input value={form.destination} onChange={(e) => setForm({ ...form, destination: e.target.value })} /></div>
-            </div>
+            <RoutePicker
+              value={{
+                origin_country: form.origin_country,
+                origin_city: form.origin_city,
+                destination_country: form.destination_country,
+                destination_city: form.destination_city,
+              }}
+              onChange={(v: RouteValue) => setForm({ ...form, ...v })}
+              onLegacyChange={(o, d) => setForm((f) => ({ ...f, origin: o, destination: d }))}
+            />
             <div className="grid grid-cols-3 gap-3">
               <div><Label>المسافة (كم)</Label><Input type="number" dir="ltr" value={form.distance_km} onChange={(e) => setForm({ ...form, distance_km: e.target.value })} /></div>
               <div><Label>الإيرادات (MAD)</Label><Input type="number" dir="ltr" value={form.revenue} onChange={(e) => setForm({ ...form, revenue: e.target.value })} /></div>
