@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/dashboard-layout";
 import {
   Check, Clock, Crown, Building2, Key, Rocket, ShieldCheck, Users2, Loader2, X,
   Plus, Pencil, Trash2, Copy, PauseCircle, PlayCircle, CalendarPlus, Ban,
-  DollarSign, FileCheck2, Layers, ClipboardList,
+  DollarSign, FileCheck2, Layers, ClipboardList, UserCog, Lock, Unlock,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
