@@ -25,8 +25,10 @@ type Device = {
   last_longitude: number | null;
   notes: string | null;
   archived_at: string | null;
+  traccar_device_id: string | null;
 };
 type Vehicle = { id: string; plate_number: string };
+
 
 function GpsPage() {
   const [devices, setDevices] = useState<Device[]>([]);
