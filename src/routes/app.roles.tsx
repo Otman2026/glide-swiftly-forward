@@ -1,11 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/dashboard-layout";
-import { Shield, Loader2, Check, X, Users as UsersIcon } from "lucide-react";
+import { Shield, Loader2, Check, X, Users as UsersIcon, Save } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { invalidatePermissionsCache } from "@/hooks/use-permission";
 
 export const Route = createFileRoute("/app/roles")({ component: RolesPage });
+
+type Level = "none" | "read" | "write" | "full";
+const LEVEL_TO_CAP: Record<Level, "-" | "R" | "W" | "F"> = { none: "-", read: "R", write: "W", full: "F" };
+const CAP_TO_LEVEL: Record<"-" | "R" | "W" | "F", Level> = { "-": "none", R: "read", W: "write", F: "full" };
+
 
 type RoleKey =
   | "system_owner" | "company_admin" | "ops_manager" | "fleet_manager"
