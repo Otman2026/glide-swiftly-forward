@@ -56,7 +56,7 @@ const TONE_STYLES: Record<
 export type StatCardProps = {
   label: string;
   value: string | number;
-  icon: LucideIcon;
+  icon?: LucideIcon;
   tone?: StatTone;
   hint?: string;
   suffix?: string;
@@ -95,14 +95,18 @@ export function StatCard({
       />
 
       <div className="relative flex items-start justify-between gap-3">
-        <div
-          className={cn(
-            "flex h-11 w-11 items-center justify-center rounded-xl transition-transform group-hover:scale-110",
-            s.icon,
-          )}
-        >
-          <Icon className="h-5 w-5" strokeWidth={2.2} />
-        </div>
+        {Icon ? (
+          <div
+            className={cn(
+              "flex h-11 w-11 items-center justify-center rounded-xl transition-transform group-hover:scale-110",
+              s.icon,
+            )}
+          >
+            <Icon className="h-5 w-5" strokeWidth={2.2} />
+          </div>
+        ) : (
+          <div className={cn("h-2 w-10 rounded-full", s.icon.split(" ")[0])} />
+        )}
         {trend && (
           <div
             className={cn(

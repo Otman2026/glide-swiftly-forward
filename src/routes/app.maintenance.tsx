@@ -1,3 +1,4 @@
+import { StatCard } from "@/components/stat-card";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader, EmptyState } from "@/components/dashboard-layout";
@@ -269,11 +270,6 @@ function MaintPage() {
 }
 
 function Card({ label, value, tone }: { label: string; value: string | number; tone?: "success" | "warning" | "accent" }) {
-  const cls = tone === "success" ? "text-success" : tone === "warning" ? "text-warning-foreground" : tone === "accent" ? "text-accent" : "";
-  return (
-    <div className="rounded-xl border border-border bg-card p-4">
-      <div className="text-xs text-muted-foreground">{label}</div>
-      <div className={`mt-1 text-2xl font-black ${cls}`}>{value}</div>
-    </div>
-  );
+  const t = tone === "success" ? "success" : tone === "warning" ? "warning" : tone === "accent" ? "brand" : "muted";
+  return <StatCard label={label} value={value} tone={t} />;
 }

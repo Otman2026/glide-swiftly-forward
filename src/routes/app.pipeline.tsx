@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/dashboard-layout";
+import { StatCard as SharedStatCard } from "@/components/stat-card";
 import { Loader2, ClipboardList, Package, Truck, CheckCircle2, FileText, XCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -171,11 +172,6 @@ function OrderCard({ o }: { o: OrderRow }) {
 }
 
 function StatCard({ label, value, tone }: { label: string; value: string | number; tone?: "success" | "accent" }) {
-  const cls = tone === "success" ? "text-success" : tone === "accent" ? "text-accent" : "";
-  return (
-    <div className="rounded-xl border border-border bg-card p-4">
-      <div className="text-xs text-muted-foreground">{label}</div>
-      <div className={`mt-1 text-2xl font-black ${cls}`}>{value}</div>
-    </div>
-  );
+  const t = tone === "success" ? "success" : tone === "accent" ? "brand" : "muted";
+  return <SharedStatCard label={label} value={value} tone={t} />;
 }

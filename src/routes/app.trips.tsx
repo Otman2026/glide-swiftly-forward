@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { PageHeader, EmptyState } from "@/components/dashboard-layout";
+import { StatCard } from "@/components/stat-card";
 import { Route as RouteIcon, Plus, Search, Trash2, Loader2, Play, Square, MapPin, Printer, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -233,11 +234,12 @@ function TripsPage() {
       </Dialog>
 
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-2xl border border-border bg-card p-4"><div className="text-xs text-muted-foreground">جارية</div><div className="mt-1 text-2xl font-black text-accent">{active}</div></div>
-        <div className="rounded-2xl border border-border bg-card p-4"><div className="text-xs text-muted-foreground">مكتملة</div><div className="mt-1 text-2xl font-black text-success">{done}</div></div>
-        <div className="rounded-2xl border border-border bg-card p-4"><div className="text-xs text-muted-foreground">الإيرادات</div><div className="mt-1 text-2xl font-black">{(revenue / 1000).toFixed(1)}K MAD</div></div>
-        <div className="rounded-2xl border border-border bg-card p-4"><div className="text-xs text-muted-foreground">صافي الربح</div><div className={`mt-1 text-2xl font-black ${revenue - cost >= 0 ? "text-success" : "text-destructive"}`}>{((revenue - cost) / 1000).toFixed(1)}K MAD</div></div>
+        <StatCard label="جارية" value={active} tone="brand" />
+        <StatCard label="مكتملة" value={done} tone="success" />
+        <StatCard label="الإيرادات" value={`${(revenue / 1000).toFixed(1)}K MAD`} tone="info" />
+        <StatCard label="صافي الربح" value={`${((revenue - cost) / 1000).toFixed(1)}K MAD`} tone={revenue - cost >= 0 ? "success" : "danger"} />
       </div>
+
 
       <div className="mb-4 relative">
         <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

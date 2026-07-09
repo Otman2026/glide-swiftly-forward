@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { PageHeader, EmptyState } from "@/components/dashboard-layout";
+import { StatCard } from "@/components/stat-card";
 import { Warehouse, Plus, Search, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -140,10 +141,11 @@ function WarehousesPage() {
       />
 
       <div className="mb-4 grid gap-3 sm:grid-cols-3">
-        <div className="rounded-2xl border border-border bg-card p-4"><div className="text-xs text-muted-foreground">المستودعات</div><div className="mt-1 text-2xl font-black">{rows.length}</div></div>
-        <div className="rounded-2xl border border-border bg-card p-4"><div className="text-xs text-muted-foreground">إجمالي السعة</div><div className="mt-1 text-2xl font-black">{totalCap.toLocaleString()} m³</div></div>
-        <div className="rounded-2xl border border-border bg-card p-4"><div className="text-xs text-muted-foreground">النشطة</div><div className="mt-1 text-2xl font-black text-success">{rows.filter(r => r.status === "active").length}</div></div>
+        <StatCard label="المستودعات" value={rows.length} tone="info" />
+        <StatCard label="إجمالي السعة" value={`${totalCap.toLocaleString()} m³`} tone="brand" />
+        <StatCard label="النشطة" value={rows.filter(r => r.status === "active").length} tone="success" />
       </div>
+
 
       <div className="mb-4">
         <div className="relative">
