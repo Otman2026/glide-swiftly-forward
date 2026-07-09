@@ -236,14 +236,7 @@ function KpiPage() {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {cards.map((c) => (
-          <div key={c.label} className="rounded-2xl border border-border bg-card p-5">
-            <div className="mb-3 flex items-center justify-between">
-              <c.icon className={`h-5 w-5 ${c.tint}`} />
-              <span className="text-xs text-muted-foreground">{c.sub}</span>
-            </div>
-            <div className="text-2xl font-black">{c.value}</div>
-            <div className="mt-1 text-xs text-muted-foreground">{c.label}</div>
-          </div>
+          <StatCard key={c.label} label={c.label} value={c.value} icon={c.icon} tone={c.tone} hint={c.hint} />
         ))}
       </div>
     </>
