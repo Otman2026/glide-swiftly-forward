@@ -32,6 +32,7 @@ import {
   MapPin,
   CreditCard,
   KeyRound,
+  Pencil,
 
   type LucideIcon,
 } from "lucide-react";
@@ -128,6 +129,14 @@ export function DashboardLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unread, setUnread] = useState(0);
   const [isSysOwner, setIsSysOwner] = useState(false);
+  const [canEditBrand, setCanEditBrand] = useState(false);
+  const [tenantId, setTenantId] = useState<string | null>(null);
+  const [brandName, setBrandName] = useState<string>(() =>
+    (typeof window !== "undefined" && localStorage.getItem("brand_name")) || "SAIFO"
+  );
+  const [brandTagline, setBrandTagline] = useState<string>(() =>
+    (typeof window !== "undefined" && localStorage.getItem("brand_tagline")) || "TRANSPORT ERP"
+  );
   const [me, setMe] = useState<{
     full_name: string | null;
     tenant_name: string | null;
@@ -148,6 +157,11 @@ export function DashboardLayout() {
       if (u.user) {
         const { data: sys } = await supabase.rpc("is_system_owner", { _user_id: u.user.id });
         setIsSysOwner(!!sys);
+        const { data: adminRole } = await supabase.rpc("has_role", {
+          _user_id: u.user.id,
+          _role: "company_admin",
+        });
+        setCanEditBrand(!!adminRole || !!sys);
       }
       const { data: profile } = await supabase
         .from("profiles")
@@ -160,6 +174,7 @@ export function DashboardLayout() {
         ends_at: null,
       };
       if (profile?.tenant_id) {
+        setTenantId(profile.tenant_id);
         const [{ data: t }, { data: sub }] = await Promise.all([
           supabase.from("tenants").select("name").eq("id", profile.tenant_id).maybeSingle(),
           supabase
@@ -171,6 +186,7 @@ export function DashboardLayout() {
             .maybeSingle(),
         ]);
         tenant_name = t?.name ?? null;
+        if (tenant_name && !localStorage.getItem("brand_name")) setBrandName(tenant_name);
         subscription = {
           plan: sub?.plan ?? null,
           status: sub?.status ?? null,
@@ -202,6 +218,28 @@ export function DashboardLayout() {
     await supabase.auth.signOut();
     toast.success("تم تسجيل الخروج");
     navigate({ to: "/auth" });
+  };
+
+  const handleEditBrand = async () => {
+    const newName = window.prompt("اسم العلامة التجارية (السطر الأول)", brandName);
+    if (newName === null) return;
+    const newTagline = window.prompt("الوصف (السطر الثاني)", brandTagline);
+    if (newTagline === null) return;
+    const name = newName.trim() || "SAIFO";
+    const tagline = newTagline.trim();
+    setBrandName(name);
+    setBrandTagline(tagline);
+    localStorage.setItem("brand_name", name);
+    localStorage.setItem("brand_tagline", tagline);
+    if (tenantId) {
+      const { error } = await supabase.from("tenants").update({ name }).eq("id", tenantId);
+      if (error) {
+        toast.error("تعذر حفظ اسم الشركة: " + error.message);
+        return;
+      }
+      setMe((m) => ({ ...m, tenant_name: name }));
+    }
+    toast.success("تم تحديث اسم العلامة");
   };
 
   const remainingTrialDays = me.ends_at
@@ -236,19 +274,33 @@ export function DashboardLayout() {
               <Truck className="h-5 w-5 text-white" strokeWidth={2.5} />
             </div>
             <div>
-              <div className="text-sm font-black leading-tight">SAIFO</div>
-              <div className="-mt-0.5 text-[10px] font-bold tracking-widest text-accent">
-                TRANSPORT ERP
-              </div>
+              <div className="text-sm font-black leading-tight">{brandName}</div>
+              {brandTagline && (
+                <div className="-mt-0.5 text-[10px] font-bold tracking-widest text-accent">
+                  {brandTagline}
+                </div>
+              )}
             </div>
           </div>
-          <button
-            onClick={() => setMobileOpen(false)}
-            className="rounded-lg p-1 text-sidebar-foreground/70 hover:bg-sidebar-accent lg:hidden"
-            aria-label="إغلاق القائمة"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-1">
+            {canEditBrand && (
+              <button
+                onClick={handleEditBrand}
+                className="rounded-lg p-1 text-sidebar-foreground/70 hover:bg-sidebar-accent"
+                aria-label="تعديل اسم العلامة"
+                title="تعديل الاسم"
+              >
+                <Pencil className="h-4 w-4" />
+              </button>
+            )}
+            <button
+              onClick={() => setMobileOpen(false)}
+              className="rounded-lg p-1 text-sidebar-foreground/70 hover:bg-sidebar-accent lg:hidden"
+              aria-label="إغلاق القائمة"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         <nav className="flex-1 overflow-y-auto px-3 py-4">
