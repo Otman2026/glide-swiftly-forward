@@ -119,12 +119,7 @@ function InventoryPage() {
 }
 
 function Kpi({ label, value, tone }: { label: string; value: string; tone?: "ok" | "danger" }) {
-  return (
-    <div className="rounded-2xl border border-border bg-card p-4">
-      <div className="text-xs text-muted-foreground">{label}</div>
-      <div className={`mt-1 text-2xl font-black ${tone === "danger" ? "text-destructive" : tone === "ok" ? "text-success" : ""}`}>{value}</div>
-    </div>
-  );
+  return <StatCard label={label} value={value} tone={tone === "danger" ? "danger" : tone === "ok" ? "success" : "muted"} />;
 }
 
 /* ---------------- Items ---------------- */
