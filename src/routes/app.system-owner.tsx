@@ -150,6 +150,7 @@ function SystemOwnerPage() {
 
       {tab === "overview" && <OverviewTab stats={stats} userCount={userCount} />}
       {tab === "tenants" && <TenantsTab tenants={tenants} onReload={load} />}
+      {tab === "accounts" && <AccountsTab tenants={tenants} licenses={licenses} />}
       {tab === "subs" && <SubsTab tenants={tenants} plans={plans} onReload={load} />}
       {tab === "licenses" && <LicensesTab licenses={licenses} tenants={tenants} plans={plans} onReload={load} />}
       {tab === "plans" && <PlansTab plans={plans} onReload={load} />}
