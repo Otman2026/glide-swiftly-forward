@@ -32,6 +32,7 @@ import {
   MapPin,
   CreditCard,
   KeyRound,
+  Pencil,
 
   type LucideIcon,
 } from "lucide-react";
