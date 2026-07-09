@@ -50,6 +50,10 @@ const emptyForm = {
   origin: "", destination: "", pickup_date: "", delivery_date: "",
   price: "", currency: "MAD", status: "pending" as Status,
   goods_description: "", weight_tons: "",
+  origin_country: DEFAULT_COUNTRY as string | null,
+  origin_city: null as string | null,
+  destination_country: DEFAULT_COUNTRY as string | null,
+  destination_city: null as string | null,
 };
 
 function OrdersPage() {
