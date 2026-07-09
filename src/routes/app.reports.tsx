@@ -102,7 +102,7 @@ function ReportsPage() {
       supabase.from("customers").select("id,name"),
       supabase.from("drivers").select("id,full_name"),
       supabase.from("trips").select("id,vehicle_id,driver_id,distance_km,created_at").gte("created_at", fromIso).lte("created_at", toIso),
-      supabase.from("invoices").select("id,invoice_number,customer_id,issue_date,total_amount,status").gte("issue_date", from).lte("issue_date", to),
+      supabase.from("invoices").select("id,invoice_number,customer_id,issue_date,total,status").gte("issue_date", from).lte("issue_date", to),
     ]);
     setInvoices(invs.data ?? []);
     setData({
@@ -195,8 +195,8 @@ function ReportsPage() {
     if (!data) return [];
     return data.customers.map((c) => {
       const inv = invoices.filter((i) => i.customer_id === c.id);
-      const invoiced = sum(inv, "total_amount");
-      const paid = sum(inv.filter((i) => i.status === "paid"), "total_amount");
+      const invoiced = sum(inv, "total");
+      const paid = sum(inv.filter((i) => i.status === "paid"), "total");
       return {
         "العميل": c.name,
         "عدد الفواتير": inv.length,
