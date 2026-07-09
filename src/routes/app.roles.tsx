@@ -67,6 +67,25 @@ const CAP_META: Record<"R" | "W" | "F" | "-", { label: string; cls: string }> = 
 function RolesPage() {
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
+  const [tenantId, setTenantId] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [overrides, setOverrides] = useState<Record<string, Level>>({}); // key: `${module}::${role}`
+  const [dirty, setDirty] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const keyOf = (module: string, role: RoleKey) => `${module}::${role}`;
+
+  const effective = useMemo(() => {
+    const m: Record<string, Level> = {};
+    MATRIX.forEach((row) => {
+      ROLES.forEach((r) => {
+        const cap = row.caps[r.key] ?? "-";
+        m[keyOf(row.module, r.key)] = CAP_TO_LEVEL[cap];
+      });
+    });
+    Object.entries(overrides).forEach(([k, v]) => { m[k] = v; });
+    return m;
+  }, [overrides]);
 
   useEffect(() => {
     (async () => {
@@ -74,20 +93,54 @@ function RolesPage() {
       if (!u.user) { setLoading(false); return; }
       const { data: prof } = await supabase.from("profiles").select("tenant_id").eq("id", u.user.id).maybeSingle();
       if (!prof?.tenant_id) { setLoading(false); return; }
-      const { data, error } = await supabase.from("user_roles").select("role").eq("tenant_id", prof.tenant_id);
+      setTenantId(prof.tenant_id);
+
+      const [{ data: rolesRows, error }, { data: adminRow }, { data: perms }] = await Promise.all([
+        supabase.from("user_roles").select("role").eq("tenant_id", prof.tenant_id),
+        supabase.from("user_roles").select("role")
+          .eq("tenant_id", prof.tenant_id).eq("user_id", u.user.id).eq("role", "company_admin").maybeSingle(),
+        supabase.from("tenant_role_permissions").select("role,module,level").eq("tenant_id", prof.tenant_id),
+      ]);
       if (error) toast.error(error.message);
+      setIsAdmin(!!adminRow);
       const map: Record<string, number> = {};
-      (data ?? []).forEach((r) => { map[r.role] = (map[r.role] ?? 0) + 1; });
+      (rolesRows ?? []).forEach((r) => { map[r.role] = (map[r.role] ?? 0) + 1; });
       setCounts(map);
+      const ov: Record<string, Level> = {};
+      (perms ?? []).forEach((p: any) => { ov[`${p.module}::${p.role}`] = p.level as Level; });
+      setOverrides(ov);
       setLoading(false);
     })();
   }, []);
 
+  const setCell = (module: string, role: RoleKey, level: Level) => {
+    setOverrides((prev) => ({ ...prev, [keyOf(module, role)]: level }));
+    setDirty(true);
+  };
+
+  const save = async () => {
+    if (!tenantId) return;
+    setSaving(true);
+    const rows = Object.entries(overrides).map(([k, level]) => {
+      const [module, role] = k.split("::");
+      return { tenant_id: tenantId, module, role: role as RoleKey, level };
+    });
+    const { error } = await supabase
+      .from("tenant_role_permissions")
+      .upsert(rows, { onConflict: "tenant_id,role,module" });
+    setSaving(false);
+    if (error) return toast.error(error.message);
+    invalidatePermissionsCache();
+    setDirty(false);
+    toast.success("تم حفظ مصفوفة الصلاحيات");
+  };
+
   return (
     <>
       <PageHeader
-        title="الأدوار والصلاحيات"
-        subtitle="مرجع كامل لأدوار المنصة، وصف كل دور، ومصفوفة الصلاحيات على الوحدات"
+        title="الأدوار والصلاحيات الدقيقة"
+        subtitle="مصفوفة قابلة للتخصيص لكل شركة — عيّن مستوى الوصول لكل دور على كل وحدة"
+
         action={
           <Link
             to="/app/users"
