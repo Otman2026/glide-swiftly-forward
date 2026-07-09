@@ -142,14 +142,27 @@ function RolesPage() {
         subtitle="مصفوفة قابلة للتخصيص لكل شركة — عيّن مستوى الوصول لكل دور على كل وحدة"
 
         action={
-          <Link
-            to="/app/users"
-            className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:bg-accent/90"
-          >
-            <UsersIcon className="h-4 w-4" /> إدارة المستخدمين
-          </Link>
+          <div className="flex items-center gap-2">
+            {isAdmin && dirty && (
+              <button
+                onClick={save}
+                disabled={saving}
+                className="inline-flex items-center gap-2 rounded-lg bg-success px-4 py-2 text-sm font-bold text-success-foreground disabled:opacity-60"
+              >
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                حفظ التغييرات
+              </button>
+            )}
+            <Link
+              to="/app/users"
+              className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:bg-accent/90"
+            >
+              <UsersIcon className="h-4 w-4" /> إدارة المستخدمين
+            </Link>
+          </div>
         }
       />
+
 
       {loading ? (
         <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-accent" /></div>
