@@ -700,3 +700,286 @@ function ReportTab({ stats, userCount, plans, licenses }: any) {
     </>
   );
 }
+
+/* ==================== Accounts & Permissions ==================== */
+type AccountRow = {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  tenant_id: string | null;
+  disabled_at: string | null;
+  roles: string[];
+};
+
+const MODULES = [
+  { key: "dashboard", label: "لوحة القيادة" },
+  { key: "trips", label: "الرحلات" },
+  { key: "orders", label: "الأوامر" },
+  { key: "drivers", label: "السائقون" },
+  { key: "vehicles", label: "المركبات" },
+  { key: "customers", label: "العملاء" },
+  { key: "contracts", label: "العقود" },
+  { key: "invoices", label: "الفواتير" },
+  { key: "finance", label: "المالية" },
+  { key: "hr", label: "الموارد البشرية" },
+  { key: "inventory", label: "المخزون" },
+  { key: "maintenance", label: "الصيانة" },
+  { key: "gps", label: "التتبع" },
+  { key: "reports", label: "التقارير" },
+  { key: "settings", label: "الإعدادات" },
+];
+const ROLES: { key: string; label: string }[] = [
+  { key: "company_admin", label: "مدير الشركة" },
+  { key: "ops_manager", label: "مدير العمليات" },
+  { key: "fleet_manager", label: "مدير الأسطول" },
+  { key: "maintenance", label: "الصيانة" },
+  { key: "accountant", label: "المحاسب" },
+  { key: "receptionist", label: "الاستقبال" },
+  { key: "driver", label: "سائق" },
+];
+const LEVELS = ["none", "read", "write", "full"] as const;
+type Level = typeof LEVELS[number];
+
+function AccountsTab({ tenants, licenses }: { tenants: Tenant[]; licenses: License[] }) {
+  const [rows, setRows] = useState<AccountRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [q, setQ] = useState("");
+  const [tenantFilter, setTenantFilter] = useState<string>("");
+  const [permsFor, setPermsFor] = useState<Tenant | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    const [{ data: profs }, { data: urs }] = await Promise.all([
+      supabase.from("profiles").select("id,full_name,email,tenant_id,disabled_at"),
+      supabase.from("user_roles").select("user_id,role,tenant_id"),
+    ]);
+    const map = new Map<string, AccountRow>();
+    (profs ?? []).forEach((p: any) => map.set(p.id, { ...p, roles: [] }));
+    (urs ?? []).forEach((r: any) => {
+      const row = map.get(r.user_id);
+      if (row) row.roles.push(r.role);
+    });
+    setRows(Array.from(map.values()));
+    setLoading(false);
+  };
+  useEffect(() => { load(); }, []);
+
+  async function toggleDisabled(row: AccountRow) {
+    const disabling = !row.disabled_at;
+    if (disabling && !confirm(`تعطيل حساب ${row.email}؟`)) return;
+    const { error } = await supabase
+      .from("profiles")
+      .update({ disabled_at: disabling ? new Date().toISOString() : null })
+      .eq("id", row.id);
+    if (error) toast.error(error.message);
+    else { toast.success(disabling ? "تم التعطيل" : "تم التفعيل"); load(); }
+  }
+
+  const filtered = rows.filter((r) => {
+    if (tenantFilter && r.tenant_id !== tenantFilter) return false;
+    if (!q) return true;
+    const s = q.toLowerCase();
+    return (r.email ?? "").toLowerCase().includes(s) || (r.full_name ?? "").toLowerCase().includes(s);
+  });
+
+  const tenantMap = new Map(tenants.map((t) => [t.id, t]));
+  const licByTenant = new Map<string, License>();
+  licenses.filter((l) => !l.revoked_at && l.tenant_id).forEach((l) => {
+    const cur = licByTenant.get(l.tenant_id!);
+    if (!cur || (l.activated_at ?? "") > (cur.activated_at ?? "")) licByTenant.set(l.tenant_id!, l);
+  });
+
+  return (
+    <>
+      <PageHeader title="الحسابات والصلاحيات" subtitle="عرض كل الحسابات، اشتراكاتها، تراخيصها، وقفل/فتح صلاحياتها" />
+      <div className="mb-4 flex flex-wrap gap-2">
+        <Input placeholder="بحث بالبريد أو الاسم..." value={q} onChange={(e) => setQ(e.target.value)} className="max-w-xs" />
+        <select value={tenantFilter} onChange={(e) => setTenantFilter(e.target.value)}
+          className="rounded-md border border-border bg-background px-3 py-2 text-sm">
+          <option value="">كل الشركات</option>
+          {tenants.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+        </select>
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-accent" /></div>
+      ) : (
+        <div className="overflow-x-auto rounded-2xl border border-border bg-card">
+          <table className="w-full text-sm">
+            <thead className="bg-secondary/50 text-right text-xs font-bold uppercase text-muted-foreground">
+              <tr>
+                <th className="p-3">المستخدم</th>
+                <th className="p-3">الشركة</th>
+                <th className="p-3">الأدوار</th>
+                <th className="p-3">الاشتراك</th>
+                <th className="p-3">الترخيص</th>
+                <th className="p-3">انتهاء الصلاحية</th>
+                <th className="p-3">الحالة</th>
+                <th className="p-3">إجراءات</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {filtered.map((r) => {
+                const tenant = r.tenant_id ? tenantMap.get(r.tenant_id) : null;
+                const sub = tenant?.subscriptions?.[0];
+                const lic = r.tenant_id ? licByTenant.get(r.tenant_id) : null;
+                const expiry = lic?.expires_at ?? sub?.ends_at ?? null;
+                const expired = expiry ? new Date(expiry).getTime() < Date.now() : false;
+                return (
+                  <tr key={r.id}>
+                    <td className="p-3">
+                      <div className="font-semibold">{r.full_name ?? "—"}</div>
+                      <div className="text-xs text-muted-foreground" dir="ltr">{r.email ?? "—"}</div>
+                    </td>
+                    <td className="p-3">{tenant?.name ?? <span className="text-muted-foreground">—</span>}</td>
+                    <td className="p-3 text-xs">{r.roles.join(", ") || "—"}</td>
+                    <td className="p-3">
+                      {sub ? (
+                        <span className="rounded-md bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary uppercase">
+                          {sub.plan} · {sub.status}
+                        </span>
+                      ) : <span className="text-xs text-muted-foreground">—</span>}
+                    </td>
+                    <td className="p-3 font-mono text-[11px]" dir="ltr">
+                      {lic ? lic.license_key : <span className="text-muted-foreground">لا يوجد</span>}
+                    </td>
+                    <td className="p-3 text-xs">
+                      {expiry ? (
+                        <span className={expired ? "text-destructive font-bold" : ""}>
+                          {new Date(expiry).toLocaleDateString("ar")}
+                        </span>
+                      ) : "دائم"}
+                    </td>
+                    <td className="p-3">
+                      {r.disabled_at ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-destructive/15 px-2 py-0.5 text-[10px] font-bold text-destructive">
+                          <Lock className="h-3 w-3" /> معطّل
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-bold text-success">
+                          <Unlock className="h-3 w-3" /> نشط
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-3">
+                      <div className="flex items-center gap-1">
+                        <Button size="sm" variant="outline" onClick={() => toggleDisabled(r)}>
+                          {r.disabled_at ? <Unlock className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+                        </Button>
+                        {tenant && (
+                          <Button size="sm" variant="outline" onClick={() => setPermsFor(tenant)}>
+                            <ShieldCheck className="h-3 w-3" />
+                          </Button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+              {filtered.length === 0 && (
+                <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">لا توجد حسابات</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {permsFor && <PermissionsDialog tenant={permsFor} onClose={() => setPermsFor(null)} />}
+    </>
+  );
+}
+
+function PermissionsDialog({ tenant, onClose }: { tenant: Tenant; onClose: () => void }) {
+  const [matrix, setMatrix] = useState<Record<string, Record<string, Level>>>({});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("tenant_role_permissions")
+        .select("role,module,level")
+        .eq("tenant_id", tenant.id);
+      const m: Record<string, Record<string, Level>> = {};
+      ROLES.forEach((r) => {
+        m[r.key] = {};
+        MODULES.forEach((mod) => { m[r.key][mod.key] = "none"; });
+      });
+      (data ?? []).forEach((p: any) => {
+        if (m[p.role]) m[p.role][p.module] = p.level as Level;
+      });
+      setMatrix(m);
+      setLoading(false);
+    })();
+  }, [tenant.id]);
+
+  async function save() {
+    setSaving(true);
+    const rows: any[] = [];
+    Object.entries(matrix).forEach(([role, mods]) => {
+      Object.entries(mods).forEach(([module, level]) => {
+        rows.push({ tenant_id: tenant.id, role, module, level });
+      });
+    });
+    await supabase.from("tenant_role_permissions").delete().eq("tenant_id", tenant.id);
+    const { error } = await supabase.from("tenant_role_permissions").insert(rows);
+    setSaving(false);
+    if (error) toast.error(error.message);
+    else { toast.success("تم حفظ الصلاحيات"); onClose(); }
+  }
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>صلاحيات {tenant.name}</DialogTitle>
+        </DialogHeader>
+        {loading ? (
+          <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin" /></div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead className="bg-secondary/50">
+                <tr>
+                  <th className="p-2 text-right">الوحدة</th>
+                  {ROLES.map((r) => <th key={r.key} className="p-2">{r.label}</th>)}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {MODULES.map((mod) => (
+                  <tr key={mod.key}>
+                    <td className="p-2 font-semibold">{mod.label}</td>
+                    {ROLES.map((r) => (
+                      <td key={r.key} className="p-1">
+                        <select
+                          value={matrix[r.key]?.[mod.key] ?? "none"}
+                          onChange={(e) => setMatrix((prev) => ({
+                            ...prev,
+                            [r.key]: { ...prev[r.key], [mod.key]: e.target.value as Level },
+                          }))}
+                          className="w-full rounded border border-border bg-background px-1 py-1 text-[11px]"
+                        >
+                          <option value="none">✕ لا شيء</option>
+                          <option value="read">👁 قراءة</option>
+                          <option value="write">✎ كتابة</option>
+                          <option value="full">★ كامل</option>
+                        </select>
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>إلغاء</Button>
+          <Button onClick={save} disabled={saving || loading}>
+            {saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
+            حفظ
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
