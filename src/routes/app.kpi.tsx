@@ -18,6 +18,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
+import { StatCard, type StatTone } from "@/components/stat-card";
 
 export const Route = createFileRoute("/app/kpi")({
   component: KpiPage,
