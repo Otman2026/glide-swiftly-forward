@@ -67,7 +67,7 @@ function TripsPage() {
   const load = async () => {
     setLoading(true);
     const [t, v, d, c] = await Promise.all([
-      supabase.from("trips").select("id,trip_number,origin,destination,distance_km,revenue,cost,status,start_date,end_date,vehicles(plate_number),drivers(full_name),customers(name)").order("created_at", { ascending: false }),
+      supabase.from("trips").select("id,trip_number,origin,destination,distance_km,revenue,cost,status,start_date,end_date,scope,origin_country,origin_city,destination_country,destination_city,vehicles(plate_number),drivers(full_name),customers(name)").order("created_at", { ascending: false }),
       supabase.from("vehicles").select("id,plate_number"),
       supabase.from("drivers").select("id,full_name"),
       supabase.from("customers").select("id,name"),
