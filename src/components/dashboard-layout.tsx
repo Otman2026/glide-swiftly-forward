@@ -129,6 +129,14 @@ export function DashboardLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unread, setUnread] = useState(0);
   const [isSysOwner, setIsSysOwner] = useState(false);
+  const [canEditBrand, setCanEditBrand] = useState(false);
+  const [tenantId, setTenantId] = useState<string | null>(null);
+  const [brandName, setBrandName] = useState<string>(() =>
+    (typeof window !== "undefined" && localStorage.getItem("brand_name")) || "SAIFO"
+  );
+  const [brandTagline, setBrandTagline] = useState<string>(() =>
+    (typeof window !== "undefined" && localStorage.getItem("brand_tagline")) || "TRANSPORT ERP"
+  );
   const [me, setMe] = useState<{
     full_name: string | null;
     tenant_name: string | null;
