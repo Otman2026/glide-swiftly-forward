@@ -19,10 +19,14 @@ import { DEFAULT_COUNTRY, SCOPE_LABELS, scopeFor } from "@/lib/geo";
 
 export const Route = createFileRoute("/app/trips")({ component: TripsPage });
 
+type Scope = "local" | "national" | "international";
 type Trip = {
   id: string; trip_number: string; origin: string | null; destination: string | null;
   distance_km: number | null; revenue: number | null; cost: number | null;
   status: string; start_date: string | null; end_date: string | null;
+  scope: Scope | null;
+  origin_country: string | null; origin_city: string | null;
+  destination_country: string | null; destination_city: string | null;
   vehicles: { plate_number: string } | null;
   drivers: { full_name: string } | null;
   customers: { name: string } | null;
