@@ -37,11 +37,13 @@ async function loadPermissions() {
         .from("tenant_role_permissions")
         .select("role,module,level")
         .eq("tenant_id", tenantId);
-      (data ?? []).forEach((r: Row) => {
+      (data ?? []).forEach((r: any) => {
         if (!myRoles.has(r.role)) return;
+        const lvl = r.level as Level;
         const cur = map.get(r.module) ?? "none";
-        if (RANK[r.level] > RANK[cur]) map.set(r.module, r.level);
+        if (RANK[lvl] > RANK[cur]) map.set(r.module, lvl);
       });
+
     }
     cache = { tenantId, isCompanyAdmin, rowsByModule: map };
   })();
