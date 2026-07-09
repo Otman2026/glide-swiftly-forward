@@ -120,6 +120,22 @@ function GpsPage() {
               ]}
             />
             <button
+              onClick={runSync}
+              disabled={syncing}
+              className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold hover:bg-secondary disabled:opacity-60"
+              title="مزامنة المواقع من Traccar"
+            >
+              {syncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+              مزامنة Traccar
+            </button>
+            <button
+              onClick={() => setSettingsOpen(true)}
+              className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold hover:bg-secondary"
+              title="إعدادات Traccar"
+            >
+              <Settings className="h-4 w-4" /> إعدادات
+            </button>
+            <button
               onClick={() => {
                 setEditing(null);
                 setOpen(true);
@@ -129,6 +145,7 @@ function GpsPage() {
               <Plus className="h-4 w-4" /> إضافة جهاز
             </button>
           </div>
+
         }
       />
 
