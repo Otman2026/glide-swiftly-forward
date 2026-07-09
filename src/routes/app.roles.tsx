@@ -186,12 +186,13 @@ function RolesPage() {
             ))}
           </div>
 
-          {/* مصفوفة الصلاحيات */}
+          {/* مصفوفة الصلاحيات القابلة للتخصيص */}
           <div className="rounded-2xl border border-border bg-card overflow-x-auto">
             <div className="border-b border-border p-4">
-              <h2 className="text-sm font-bold">مصفوفة الصلاحيات</h2>
+              <h2 className="text-sm font-bold">مصفوفة الصلاحيات {isAdmin ? "— قابلة للتعديل" : "— للعرض فقط"}</h2>
               <p className="mt-1 text-xs text-muted-foreground">
-                كامل = قراءة/كتابة/حذف · كتابة = إضافة وتعديل · قراءة = عرض فقط
+                كامل = قراءة/كتابة/حذف · كتابة = إضافة وتعديل · قراءة = عرض فقط · بدون = لا وصول
+                {isAdmin && " · اضغط على الخلية لتغيير المستوى ثم احفظ."}
               </p>
             </div>
             <table className="w-full text-xs">
@@ -199,9 +200,7 @@ function RolesPage() {
                 <tr>
                   <th className="p-3 text-right font-semibold sticky right-0 bg-secondary/50 min-w-[180px]">الوحدة</th>
                   {ROLES.map((r) => (
-                    <th key={r.key} className="p-3 text-center font-semibold min-w-[90px]">
-                      {r.label}
-                    </th>
+                    <th key={r.key} className="p-3 text-center font-semibold min-w-[110px]">{r.label}</th>
                   ))}
                 </tr>
               </thead>
@@ -210,17 +209,34 @@ function RolesPage() {
                   <tr key={row.module} className="border-t border-border hover:bg-secondary/30">
                     <td className="p-3 font-semibold sticky right-0 bg-card">{row.module}</td>
                     {ROLES.map((r) => {
-                      const cap = row.caps[r.key] ?? "-";
+                      const lvl = effective[`${row.module}::${r.key}`] ?? "none";
+                      const cap = LEVEL_TO_CAP[lvl];
                       const meta = CAP_META[cap];
+                      if (!isAdmin) {
+                        return (
+                          <td key={r.key} className="p-3 text-center">
+                            {cap === "-" ? (
+                              <X className="mx-auto h-3.5 w-3.5 text-muted-foreground/40" />
+                            ) : (
+                              <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-bold ${meta.cls}`}>
+                                <Check className="h-3 w-3" /> {meta.label}
+                              </span>
+                            )}
+                          </td>
+                        );
+                      }
                       return (
-                        <td key={r.key} className="p-3 text-center">
-                          {cap === "-" ? (
-                            <X className="mx-auto h-3.5 w-3.5 text-muted-foreground/40" />
-                          ) : (
-                            <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-bold ${meta.cls}`}>
-                              <Check className="h-3 w-3" /> {meta.label}
-                            </span>
-                          )}
+                        <td key={r.key} className="p-2 text-center">
+                          <select
+                            value={lvl}
+                            onChange={(e) => setCell(row.module, r.key, e.target.value as Level)}
+                            className={`rounded-md border border-border bg-background px-2 py-1 text-[11px] font-bold ${meta.cls}`}
+                          >
+                            <option value="none">— بدون —</option>
+                            <option value="read">قراءة</option>
+                            <option value="write">كتابة</option>
+                            <option value="full">كامل</option>
+                          </select>
                         </td>
                       );
                     })}
@@ -231,7 +247,8 @@ function RolesPage() {
           </div>
 
           <p className="mt-4 text-xs text-muted-foreground">
-            الصلاحيات مطبَّقة على مستوى قاعدة البيانات عبر Row-Level Security مع دالة <code dir="ltr">has_role()</code>. لإسناد أو إزالة دور من مستخدم استخدم صفحة{" "}
+            الصلاحيات مطبَّقة على قاعدة البيانات عبر Row-Level Security ودالة <code dir="ltr">has_module_permission()</code>.
+            مدير الشركة يتجاوز كل القيود. لإسناد أو إزالة دور من مستخدم استخدم صفحة{" "}
             <Link to="/app/users" className="text-accent underline">المستخدمين</Link>.
           </p>
         </>
@@ -239,3 +256,4 @@ function RolesPage() {
     </>
   );
 }
+
