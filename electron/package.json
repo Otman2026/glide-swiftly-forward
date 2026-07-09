@@ -17,6 +17,7 @@
   "build": {
     "appId": "com.saifo.transport.erp",
     "productName": "SAIFO TRANSPORT ERP",
+    "publish": null,
     "directories": {
       "output": "release"
     },
