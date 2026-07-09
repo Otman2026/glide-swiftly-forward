@@ -260,9 +260,13 @@ function GpsPage() {
           }}
         />
       )}
+      {settingsOpen && (
+        <TraccarSettingsDialog onClose={() => setSettingsOpen(false)} />
+      )}
     </>
   );
 }
+
 
 function DeviceDialog({
   device,
