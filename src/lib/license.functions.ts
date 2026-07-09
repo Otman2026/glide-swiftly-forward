@@ -137,5 +137,6 @@ export const verifyOfflineToken = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => d as { token: string })
   .handler(async ({ data }) => {
     const { payload } = await jwtVerify(data.token, getSecret(), { issuer: "saifo-erp" });
-    return { valid: true, payload };
+    return { valid: true, payload: payload as Record<string, unknown> };
   });
+
