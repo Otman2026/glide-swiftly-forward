@@ -17,7 +17,14 @@
   "build": {
     "appId": "com.saifo.transport.erp",
     "productName": "SAIFO TRANSPORT ERP",
-    "publish": null,
+    "publish": [
+      {
+        "provider": "generic",
+        "url": "https://github.com/Otman2026/glide-swiftly-forward/releases/download/windows-latest",
+        "channel": "latest",
+        "publishAutoUpdate": false
+      }
+    ],
     "generateUpdatesFilesForAllChannels": false,
     "detectUpdateChannel": false,
     "directories": {
@@ -29,7 +36,6 @@
       "package.json"
     ],
     "win": {
-      "publish": null,
       "target": [
         { "target": "nsis", "arch": ["x64"] }
       ],
@@ -37,7 +43,6 @@
       "artifactName": "SAIFO-TRANSPORT-ERP-Setup-${version}.${ext}"
     },
     "nsis": {
-      "publish": null,
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
